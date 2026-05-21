@@ -6,14 +6,8 @@
 <title>산안법 검색기</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --primary: #1a3a5c; --accent: #e8500a;
-  --bg: #ffffff; --text: #1a1a2e; --text-sub: #5a6a7a;
-  --border: #dde3ea; --radius: 10px;
-}
+:root { --primary: #1a3a5c; --accent: #e8500a; --bg: #ffffff; --text: #1a1a2e; --text-sub: #5a6a7a; --border: #dde3ea; --radius: 10px; }
 body { font-family: 'Apple SD Gothic Neo','Malgun Gothic',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
-
-/* 홈 */
 #home { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; padding:20px; padding-bottom:120px; }
 .logo-area { text-align:center; margin-bottom:32px; }
 .logo-main { font-size:52px; font-weight:800; letter-spacing:-2px; }
@@ -28,8 +22,6 @@ body { font-family: 'Apple SD Gothic Neo','Malgun Gothic',sans-serif; background
 .quick-tags { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:20px; }
 .q-tag { font-size:13px; padding:5px 14px; border-radius:16px; border:1px solid var(--border); background:white; color:var(--text-sub); cursor:pointer; transition:all 0.15s; }
 .q-tag:hover { background:#f1f3f4; border-color:#aaa; color:var(--text); }
-
-/* 결과 */
 #result-page { display:none; }
 .result-header { border-bottom:1px solid var(--border); padding:10px 24px; display:flex; align-items:center; gap:20px; position:sticky; top:0; background:white; z-index:100; }
 .result-logo { font-size:22px; font-weight:800; letter-spacing:-1px; cursor:pointer; white-space:nowrap; }
@@ -73,13 +65,9 @@ footer { text-align:center; padding:20px; font-size:11px; color:#bbb; border-top
 </style>
 </head>
 <body>
-
-<!-- 홈 -->
 <div id="home">
   <div class="logo-area">
-    <div class="logo-main">
-      <span class="k1">산</span><span class="k2">안</span><span class="k3">법</span><span class="k4">검</span><span class="k5">색</span><span class="k6">기</span>
-    </div>
+    <div class="logo-main"><span class="k1">산</span><span class="k2">안</span><span class="k3">법</span><span class="k4">검</span><span class="k5">색</span><span class="k6">기</span></div>
     <div class="logo-sub">법제처 국가법령정보 원문 기반 · 산업안전보건법 · 중대재해처벌법</div>
   </div>
   <div class="search-wrap">
@@ -102,13 +90,9 @@ footer { text-align:center; padding:20px; font-size:11px; color:#bbb; border-top
     </div>
   </div>
 </div>
-
-<!-- 결과 -->
 <div id="result-page">
   <div class="result-header">
-    <div class="result-logo" onclick="goHome()">
-      <span class="k1">산</span><span class="k2">안</span><span class="k3">법</span><span class="k4">검</span><span class="k5">색</span><span class="k6">기</span>
-    </div>
+    <div class="result-logo" onclick="goHome()"><span class="k1">산</span><span class="k2">안</span><span class="k3">법</span><span class="k4">검</span><span class="k5">색</span><span class="k6">기</span></div>
     <div class="result-search-box">
       <input type="text" id="resultQuery" autocomplete="off" />
       <button onclick="doSearch()">검색</button>
@@ -127,13 +111,8 @@ footer { text-align:center; padding:20px; font-size:11px; color:#bbb; border-top
   </div>
   <footer>출처: 법제처 국가법령정보센터 (law.go.kr) | 원문 기준, 법적 효력은 공식 법령 확인 필요 | AI 해석은 참고용</footer>
 </div>
-
 <script>
-const LAW_API_KEY = '2996e0ff7a81735858fb7cee9b38b23fb8899a56c40c30c0ca15837d88638a12';
-let selectedLaw = '산업안전보건법';
-let currentQuery = '';
-let articles = [];
-
+const PROXY = 'https://law-proxy.leehyunsoo15.workers.dev';
 const LAW_LINK_MAP = {
   '산업안전보건법':'산업안전보건법',
   '산업안전보건법 시행령':'산업안전보건법+시행령',
@@ -142,36 +121,35 @@ const LAW_LINK_MAP = {
   '중대재해 처벌 등에 관한 법률':'중대재해+처벌+등에+관한+법률',
   '중대재해 처벌 등에 관한 법률 시행령':'중대재해+처벌+등에+관한+법률+시행령'
 };
+let selectedLaw = '산업안전보건법';
+let currentQuery = '';
+let articles = [];
 
 function goHome() {
-  document.getElementById('home').style.display = 'flex';
-  document.getElementById('result-page').style.display = 'none';
-  document.getElementById('homeQuery').value = '';
+  document.getElementById('home').style.display='flex';
+  document.getElementById('result-page').style.display='none';
+  document.getElementById('homeQuery').value='';
 }
-
 function goSearch() {
   const q = document.getElementById('homeQuery').value.trim();
   if (!q) return;
   currentQuery = q;
   document.getElementById('resultQuery').value = q;
-  document.getElementById('home').style.display = 'none';
-  document.getElementById('result-page').style.display = 'block';
+  document.getElementById('home').style.display='none';
+  document.getElementById('result-page').style.display='block';
   doSearch();
 }
-
 function quickSearch(q) {
   currentQuery = q;
   document.getElementById('homeQuery').value = q;
   goSearch();
 }
-
 function switchLaw(el, law) {
-  document.querySelectorAll('.l-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.l-tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
   selectedLaw = law;
   doSearch();
 }
-
 async function doSearch() {
   const q = document.getElementById('resultQuery').value.trim() || currentQuery;
   if (!q) return;
@@ -180,23 +158,16 @@ async function doSearch() {
   const div = document.getElementById('results');
   div.innerHTML = '<div class="loading"><div class="spinner"></div> 법령 원문 검색 중...</div>';
   try {
-    const data = await fetchLaw(selectedLaw, q);
-    articles = data;
-    renderResults(data, q);
+    const url = PROXY + '?LawNm=' + encodeURIComponent(selectedLaw) + '&query=' + encodeURIComponent(q) + '&display=10';
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('API ' + r.status);
+    const data = await r.json();
+    articles = parseResponse(data, selectedLaw);
+    renderResults(articles, q);
   } catch(e) {
-    const link = LAW_LINK_MAP[selectedLaw] || '';
-    div.innerHTML = '<div class="state-msg"><div class="icon">⚠️</div><p>검색 중 오류가 발생했습니다.<br><small style="color:#bbb">'+e.message+'</small></p><br><a href="https://www.law.go.kr/법령/'+link+'" target="_blank" style="display:inline-block;padding:10px 24px;background:#1a3a5c;color:white;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">법제처에서 직접 검색하기 →</a></div>';
+    div.innerHTML = '<div class="state-msg"><div class="icon">⚠️</div><p>검색 중 오류가 발생했습니다.<br><small style="color:#bbb">'+e.message+'</small></p><br><a href="https://www.law.go.kr/법령/'+(LAW_LINK_MAP[selectedLaw]||'')+'" target="_blank" style="display:inline-block;padding:10px 24px;background:#1a3a5c;color:white;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px">법제처에서 직접 검색하기 →</a></div>';
   }
 }
-
-async function fetchLaw(lawName, query) {
-  const url = 'https://apis.data.go.kr/1170000/law/getLawSearchList?serviceKey=' + encodeURIComponent(LAW_API_KEY) + '&LawNm=' + encodeURIComponent(lawName) + '&query=' + encodeURIComponent(query) + '&display=10&type=JSON';
-  const r = await fetch(url);
-  if (!r.ok) throw new Error('API ' + r.status);
-  const data = await r.json();
-  return parseResponse(data, lawName);
-}
-
 function parseResponse(data, lawName) {
   try {
     const root = data?.LawSearch || data?.response?.body || data;
@@ -207,11 +178,9 @@ function parseResponse(data, lawName) {
       article: item.조문번호 ? '제'+item.조문번호+'조' : '',
       title: item.조문제목 || item.ArticleTitle || '',
       content: item.조문내용 || item.ArticleContent || item.조항내용 || '',
-      lsId: item.법령ID || item.LsId || ''
     })).filter(a => a.content);
   } catch(e) { return []; }
 }
-
 function renderResults(data, query) {
   const div = document.getElementById('results');
   if (!data || data.length === 0) {
@@ -224,7 +193,7 @@ function renderResults(data, query) {
       '<div class="r-card">' +
         '<div class="r-law-badge">'+lawShort+(a.article?' · '+a.article:'')+'</div>' +
         '<div class="r-title">'+(a.article||'')+' '+(a.title||'')+'</div>' +
-        '<div class="r-content">'+highlight(a.content, query)+'</div>' +
+        '<div class="r-content">'+highlight(a.content,query)+'</div>' +
         '<div class="r-footer">' +
           '<a class="r-link" href="https://www.law.go.kr/법령/'+(LAW_LINK_MAP[selectedLaw]||'')+'" target="_blank">📄 법제처 원문 보기</a>' +
           '<button class="ai-btn" onclick="getAI('+i+')">🤖 AI 해석</button>' +
@@ -234,15 +203,13 @@ function renderResults(data, query) {
     ).join('');
   window._articles = data;
 }
-
 function highlight(text, query) {
-  if (!query || !text) return text;
+  if (!query||!text) return text;
   const e = query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-  return text.replace(new RegExp(e,'gi'), m => '<mark style="background:#fff3b0;border-radius:2px;padding:0 2px">'+m+'</mark>');
+  return text.replace(new RegExp(e,'gi'),m=>'<mark style="background:#fff3b0;border-radius:2px;padding:0 2px">'+m+'</mark>');
 }
-
 async function getAI(idx) {
-  let ck = localStorage.getItem('claudeApiKey') || '';
+  let ck = localStorage.getItem('claudeApiKey')||'';
   if (!ck) {
     const k = prompt('Claude API 키를 입력해주세요 (한 번만 입력하면 저장됩니다):');
     if (!k) return;
@@ -253,25 +220,24 @@ async function getAI(idx) {
   const box = document.getElementById('aibox-'+idx);
   box.innerHTML = '<div class="ai-box"><div class="ai-header"><span class="ai-badge">AI 해석</span><span class="ai-caution">참고용 — 법적 판단은 원문 확인 필수</span></div><div class="ai-txt"><div class="loading" style="padding:8px 0"><div class="spinner"></div> 해석 중...</div></div></div>';
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    const resp = await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
       headers:{'Content-Type':'application/json','x-api-key':ck,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
       body:JSON.stringify({
-        model:'claude-sonnet-4-20250514', max_tokens:1000,
-        system:'산업안전보건 분야 전문가로서 법령 조문을 현장 안전관리자가 이해하기 쉽게 해석해주세요.\n1. 원문 내용만 기반으로 해석\n2. 핵심 의무사항과 적용 대상 중심으로 설명\n3. 위반시 처벌이 있으면 명시\n4. 3~5문장으로 간결하게\n5. 마지막에 "※ AI 해석은 참고용입니다. 정확한 법적 판단은 원문 및 전문가 확인이 필요합니다." 추가',
+        model:'claude-sonnet-4-20250514',max_tokens:1000,
+        system:'산업안전보건 분야 전문가로서 법령 조문을 현장 안전관리자가 이해하기 쉽게 해석해주세요.\n1. 원문 내용만 기반으로 해석\n2. 핵심 의무사항과 적용 대상 중심\n3. 위반시 처벌 명시\n4. 3~5문장으로 간결하게\n5. 마지막에 "※ AI 해석은 참고용입니다. 정확한 법적 판단은 원문 및 전문가 확인이 필요합니다." 추가',
         messages:[{role:'user',content:'법령: '+a.lawName+'\n'+a.article+' '+a.title+'\n\n'+a.content}]
       })
     });
     const data = await resp.json();
-    const text = data.content?.[0]?.text || '해석을 가져오지 못했습니다.';
-    box.innerHTML = '<div class="ai-box"><div class="ai-header"><span class="ai-badge">AI 해석</span><span class="ai-caution">참고용 — 법적 판단은 원문 확인 필수</span></div><div class="ai-txt">'+text.replace(/\n/g,'<br>')+'</div></div>';
+    const text = data.content?.[0]?.text||'해석을 가져오지 못했습니다.';
+    box.innerHTML='<div class="ai-box"><div class="ai-header"><span class="ai-badge">AI 해석</span><span class="ai-caution">참고용 — 법적 판단은 원문 확인 필수</span></div><div class="ai-txt">'+text.replace(/\n/g,'<br>')+'</div></div>';
   } catch(e) {
-    box.innerHTML = '<div class="ai-box"><div class="ai-txt">오류: '+e.message+'</div></div>';
+    box.innerHTML='<div class="ai-box"><div class="ai-txt">오류: '+e.message+'</div></div>';
   }
 }
-
-document.getElementById('homeQuery').addEventListener('keydown', e => { if(e.key==='Enter') goSearch(); });
-document.getElementById('resultQuery').addEventListener('keydown', e => { if(e.key==='Enter') doSearch(); });
+document.getElementById('homeQuery').addEventListener('keydown',e=>{if(e.key==='Enter')goSearch();});
+document.getElementById('resultQuery').addEventListener('keydown',e=>{if(e.key==='Enter')doSearch();});
 </script>
 </body>
 </html>
