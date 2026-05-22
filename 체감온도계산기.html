@@ -266,10 +266,7 @@ td.highlight{
       <input type="text" id="city-input" placeholder="지역명 입력 (예: 여주, 수원, 부산)" onkeydown="if(event.key==='Enter')searchCity()" style="flex:1;font-family:inherit;font-size:13px;padding:8px 12px;border:1.5px solid rgba(2,136,209,0.25);border-radius:8px;outline:none;background:rgba(255,255,255,0.9);color:#0d2a3e;">
       <button onclick="searchCity()" style="font-family:inherit;font-size:12px;font-weight:600;padding:8px 14px;background:rgba(2,136,209,0.12);color:#0288d1;border:1px solid rgba(2,136,209,0.3);border-radius:8px;cursor:pointer;white-space:nowrap;">🔍 검색</button>
     </div>
-    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px;margin-top:6px;">
-      <div style="font-size:11px;color:#4a7a99;">※ 외부 기온·습도 참고용 — 체감온도 계산은 위 입력칸에 직접 입력하세요</div>
-      <div style="font-size:10px;color:#7a9ab0;">날씨 출처: Open-Meteo.com (유럽 기상 모델 기반, 기상청과 다소 차이 있을 수 있음)</div>
-    </div>
+    <div style="margin-top:6px;font-size:10px;color:#7a9ab0;">날씨 출처: Open-Meteo.com (유럽 기상 모델 기반, 기상청과 다소 차이 있을 수 있음) · <span id="w-update-time">마지막 업데이트: --</span> · 10분마다 자동갱신</div>
   </div>
 </div>
 
@@ -641,6 +638,7 @@ async function fetchWeatherByCoords(lat, lng, cityName) {
       document.getElementById('w-icon').textContent = wIcon(wcode);
       document.getElementById('w-desc').textContent = wDesc(wcode);
       setWeatherBg(wcode);
+      updateTime();
 
       if(cityName) {
         document.getElementById('w-location').textContent = '📍 '+cityName+' (현재 날씨)';
@@ -666,7 +664,9 @@ async function loadWeather() {
   if(!navigator.geolocation){ alert('위치 정보를 지원하지 않는 브라우저입니다.'); return; }
   navigator.geolocation.getCurrentPosition(async pos => {
     const lat = pos.coords.latitude, lng = pos.coords.longitude;
+    lastSearchType='gps'; lastLat=lat; lastLng=lng;
     await fetchWeatherByCoords(lat, lng, null);
+    startAutoRefresh();
   }, err => {
     document.getElementById('w-location').textContent = '❌ 위치 권한을 허용해주세요';
   });
@@ -681,7 +681,9 @@ async function searchCity() {
     const geoData = await geoRes.json();
     if(!geoData.length){ document.getElementById('w-location').textContent = '❌ 지역을 찾을 수 없습니다'; return; }
     const lat = parseFloat(geoData[0].lat), lng = parseFloat(geoData[0].lon);
+    lastSearchType='city'; lastCity=city; lastLat=lat; lastLng=lng;
     await fetchWeatherByCoords(lat, lng, city);
+    startAutoRefresh();
   } catch(e) {
     document.getElementById('w-location').textContent = '❌ 검색 실패';
   }
@@ -774,6 +776,41 @@ function startSnow(){
 function removeSnow(){
   const el=document.getElementById('snow-layer');
   if(el) el.remove();
+}
+
+
+/* ── 자동 갱신 ── */
+let autoRefreshTimer = null;
+let lastSearchType = null; // 'gps' or 'city'
+let lastCity = null;
+let lastLat = null, lastLng = null;
+
+function updateTime() {
+  const now = new Date();
+  const timeStr = String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+  const el = document.getElementById('w-update-time');
+  if(el) el.textContent = '마지막 업데이트: '+timeStr;
+}
+
+function startAutoRefresh() {
+  if(autoRefreshTimer) clearInterval(autoRefreshTimer);
+  autoRefreshTimer = setInterval(async () => {
+    if(lastSearchType === 'gps' && lastLat !== null) {
+      await fetchWeatherByCoords(lastLat, lastLng, null);
+    } else if(lastSearchType === 'city' && lastCity) {
+      await searchCityAuto(lastCity);
+    }
+  }, 10 * 60 * 1000);
+}
+
+async function searchCityAuto(city) {
+  try {
+    const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1&accept-language=ko`);
+    const geoData = await geoRes.json();
+    if(!geoData.length) return;
+    const lat = parseFloat(geoData[0].lat), lng = parseFloat(geoData[0].lon);
+    await fetchWeatherByCoords(lat, lng, city);
+  } catch(e) {}
 }
 
 calc();
