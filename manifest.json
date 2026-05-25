@@ -2,10 +2,10 @@
   "name": "체감온도 계산기",
   "short_name": "체감온도",
   "description": "안전보건공단 기준 체감온도 계산기",
-  "start_url": "/gussu26/체감온도계산기.html",
+  "start_url": "./체감온도계산기.html",
   "display": "standalone",
   "background_color": "#29b6f6",
-  "theme_color": "#29b6f6",
+  "theme_color": "#0288d1",
   "icons": [
     {
       "src": "icon-192.png",

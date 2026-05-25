@@ -3,6 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0288d1">
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./service-worker.js');
+  }
+</script>
 <title>체감온도 계산기 — 안전보건공단 기준</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=JetBrains+Mono:wght@600;700&display=swap');
@@ -357,7 +364,6 @@ td.highlight{
 </p>
 
 <script>
-/* ── 공단 표 원본 데이터 ── */
 const TEMPS = [25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40];
 const RHS   = [25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100];
 const TABLE = {
@@ -379,7 +385,6 @@ const TABLE = {
   40: [35.9,36.7,37.5,38.2,38.8,39.4,40.0,40.5,41.0,41.5,42.0,42.4,42.9,43.3,43.7,44.1]
 };
 
-/* 공단 표 색상 구분 기준 */
 function getLevel(v) {
   if (v < 31)  return { key:'safe',   dot:'#0288d1', bg:'rgba(187,222,251,0.5)',  border:'rgba(2,136,209,0.3)',  text:'관심 — 야외 활동 모니터링' };
   if (v < 33)  return { key:'watch',  dot:'#f9a825', bg:'rgba(255,249,196,0.85)', border:'rgba(249,168,37,0.4)', text:'주의 — 장시간 야외활동 자제, 규칙적 수분 섭취' };
@@ -387,7 +392,6 @@ function getLevel(v) {
   return             { key:'danger', dot:'#c62828', bg:'rgba(255,205,210,0.85)', border:'rgba(211,47,47,0.4)',  text:'위험 — 실외 작업 중단, 즉시 시원한 곳 대피' };
 }
 
-/* 셀 색상 (공단 표 색상 기준) */
 function cellColor(v) {
   if (v < 31)  return 'color:#0277bd;';
   if (v < 33)  return 'color:#f57f17;';
@@ -415,28 +419,22 @@ function calc(){
   const RH = parseFloat(document.getElementById('hi-rh').value);
   if(isNaN(T)||isNaN(RH)) return;
   curT=T; curRH=RH;
-
   const hi  = bilinear(T,RH);
   const diff = hi - T;
   const lv   = getLevel(hi);
-
   document.getElementById('r-val').textContent    = hi.toFixed(1)+'°C';
   document.getElementById('r-actual').textContent = T.toFixed(1)+'°C';
   document.getElementById('r-diff').textContent   = (diff>=0?'+':'')+diff.toFixed(1)+'°C';
-
   const valEl = document.getElementById('r-val');
   valEl.style.color = lv.dot;
-
   const box = document.getElementById('result-box');
   box.style.background   = lv.bg;
   box.style.borderColor  = lv.border;
-
   const badge = document.getElementById('r-badge');
   badge.style.background  = lv.bg;
   badge.style.borderColor = lv.border;
   document.getElementById('r-dot').style.background = lv.dot;
   document.getElementById('r-text').textContent = lv.text;
-
   if(document.getElementById('table-wrap').classList.contains('open')) highlightTable(T,RH);
 }
 
@@ -476,7 +474,6 @@ function toggleTable(){
   }
 }
 
-/* ── 기록 저장 ── */
 let records = JSON.parse(localStorage.getItem('heatRecords') || '[]');
 
 function saveRecord(){
@@ -510,12 +507,8 @@ function clearRecords(){
   renderRecords();
 }
 
-function levelLabel(k){
-  return {safe:'관심',watch:'주의',warn:'경고',danger:'위험'}[k]||k;
-}
-function levelDot(k){
-  return {safe:'#0288d1',watch:'#f9a825',warn:'#ef6c00',danger:'#c62828'}[k]||'#999';
-}
+function levelLabel(k){ return {safe:'관심',watch:'주의',warn:'경고',danger:'위험'}[k]||k; }
+function levelDot(k){ return {safe:'#0288d1',watch:'#f9a825',warn:'#ef6c00',danger:'#c62828'}[k]||'#999'; }
 
 function renderRecords(){
   const wrap = document.getElementById('record-list');
@@ -549,114 +542,55 @@ function exportCSV(){
   URL.revokeObjectURL(url);
 }
 
-
-/* ── 날씨 ── */
 let weatherTemp = null, weatherHumid = null;
 
-function getWeatherIcon(sky, pty) {
-  if(pty==='1'||pty==='2'||pty==='5'||pty==='6') return '🌧';
-  if(pty==='3'||pty==='7') return '🌨';
-  if(sky==='1') return '☀️';
-  if(sky==='3') return '⛅';
-  if(sky==='4') return '☁️';
-  return '🌤';
-}
-
-function getWeatherDesc(sky, pty) {
-  if(pty==='1') return '비';
-  if(pty==='2') return '비/눈';
-  if(pty==='3') return '눈';
-  if(pty==='5') return '빗방울';
-  if(pty==='6') return '빗방울/눈날림';
-  if(pty==='7') return '눈날림';
-  if(sky==='1') return '맑음';
-  if(sky==='3') return '구름많음';
-  if(sky==='4') return '흐림';
-  return '맑음';
-}
-
-function toGrid(lat, lng) {
-  const RE=6371.00877, GRID=5.0, SLAT1=30.0, SLAT2=60.0, OLON=126.0, OLAT=38.0, XO=43, YO=136;
-  const DEGRAD=Math.PI/180.0;
-  const re=RE/GRID, slat1=SLAT1*DEGRAD, slat2=SLAT2*DEGRAD, olon=OLON*DEGRAD, olat=OLAT*DEGRAD;
-  let sn=Math.tan(Math.PI*0.25+slat2*0.5)/Math.tan(Math.PI*0.25+slat1*0.5);
-  sn=Math.log(Math.cos(slat1)/Math.cos(slat2))/Math.log(sn);
-  let sf=Math.tan(Math.PI*0.25+slat1*0.5); sf=Math.pow(sf,sn)*Math.cos(slat1)/sn;
-  let ro=Math.tan(Math.PI*0.25+olat*0.5); ro=re*sf/Math.pow(ro,sn);
-  let ra=Math.tan(Math.PI*0.25+lat*DEGRAD*0.5); ra=re*sf/Math.pow(ra,sn);
-  let theta=lng*DEGRAD-olon; if(theta>Math.PI)theta-=2*Math.PI; if(theta<-Math.PI)theta+=2*Math.PI;
-  theta*=sn;
-  const x=Math.floor(ra*Math.sin(theta)+XO+0.5);
-  const y=Math.floor(ro-ra*Math.cos(theta)+YO+0.5);
-  return {x, y};
-}
-
 async function fetchWeatherByCoords(lat, lng, cityName) {
-    try {
-      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&wind_speed_unit=ms&timezone=Asia%2FSeoul`;
-      const res = await fetch(url);
-      const data = await res.json();
-      const cur = data.current;
-
-      const T1H = cur.temperature_2m.toFixed(1);
-      const REH = cur.relative_humidity_2m;
-      const WSD = cur.wind_speed_10m.toFixed(1);
-      const wcode = cur.weather_code;
-
-      // 날씨 코드 → 아이콘/설명
-      function wIcon(c){
-        if(c===0) return '☀️';
-        if(c<=2) return '⛅';
-        if(c<=3) return '☁️';
-        if(c<=49) return '🌫';
-        if(c<=59) return '🌦';
-        if(c<=69) return '🌧';
-        if(c<=79) return '🌨';
-        if(c<=82) return '🌧';
-        if(c<=86) return '🌨';
-        return '⛈';
-      }
-      function wDesc(c){
-        if(c===0) return '맑음';
-        if(c<=2) return '구름조금';
-        if(c<=3) return '흐림';
-        if(c<=49) return '안개';
-        if(c<=59) return '이슬비';
-        if(c<=69) return '비';
-        if(c<=79) return '눈';
-        if(c<=82) return '강한비';
-        if(c<=86) return '강한눈';
-        return '천둥번개';
-      }
-
-      weatherTemp = parseFloat(T1H);
-      weatherHumid = parseFloat(REH);
-
-      document.getElementById('w-temp').textContent = T1H+'°C';
-      document.getElementById('w-humid').textContent = REH+'%';
-      document.getElementById('w-wind').textContent = WSD+'m/s';
-      document.getElementById('w-icon').textContent = wIcon(wcode);
-      document.getElementById('w-desc').textContent = wDesc(wcode);
-      setWeatherBg(wcode);
-      updateTime();
-
-      if(cityName) {
-        document.getElementById('w-location').textContent = '📍 '+cityName+' (현재 날씨)';
-      } else {
-        try {
-          const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=ko`);
-          const geoData = await geoRes.json();
-          const addr = geoData.address;
-          const loc = addr.city||addr.town||addr.county||addr.state||'현재위치';
-          document.getElementById('w-location').textContent = '📍 '+loc+' (현재 날씨)';
-        } catch {
-          document.getElementById('w-location').textContent = '📍 현재위치 (현재 날씨)';
-        }
-      }
-    } catch(e) {
-      document.getElementById('w-location').textContent = '❌ 날씨 불러오기 실패';
-      console.error(e);
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&wind_speed_unit=ms&timezone=Asia%2FSeoul`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const cur = data.current;
+    const T1H = cur.temperature_2m.toFixed(1);
+    const REH = cur.relative_humidity_2m;
+    const WSD = cur.wind_speed_10m.toFixed(1);
+    const wcode = cur.weather_code;
+    function wIcon(c){
+      if(c===0) return '☀️'; if(c<=2) return '⛅'; if(c<=3) return '☁️';
+      if(c<=49) return '🌫'; if(c<=59) return '🌦'; if(c<=69) return '🌧';
+      if(c<=79) return '🌨'; if(c<=82) return '🌧'; if(c<=86) return '🌨';
+      return '⛈';
     }
+    function wDesc(c){
+      if(c===0) return '맑음'; if(c<=2) return '구름조금'; if(c<=3) return '흐림';
+      if(c<=49) return '안개'; if(c<=59) return '이슬비'; if(c<=69) return '비';
+      if(c<=79) return '눈'; if(c<=82) return '강한비'; if(c<=86) return '강한눈';
+      return '천둥번개';
+    }
+    weatherTemp = parseFloat(T1H);
+    weatherHumid = parseFloat(REH);
+    document.getElementById('w-temp').textContent = T1H+'°C';
+    document.getElementById('w-humid').textContent = REH+'%';
+    document.getElementById('w-wind').textContent = WSD+'m/s';
+    document.getElementById('w-icon').textContent = wIcon(wcode);
+    document.getElementById('w-desc').textContent = wDesc(wcode);
+    setWeatherBg(wcode);
+    updateTime();
+    if(cityName) {
+      document.getElementById('w-location').textContent = '📍 '+cityName+' (현재 날씨)';
+    } else {
+      try {
+        const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=ko`);
+        const geoData = await geoRes.json();
+        const addr = geoData.address;
+        const loc = addr.city||addr.town||addr.county||addr.state||'현재위치';
+        document.getElementById('w-location').textContent = '📍 '+loc+' (현재 날씨)';
+      } catch {
+        document.getElementById('w-location').textContent = '📍 현재위치 (현재 날씨)';
+      }
+    }
+  } catch(e) {
+    document.getElementById('w-location').textContent = '❌ 날씨 불러오기 실패';
+  }
 }
 
 async function loadWeather() {
@@ -689,39 +623,31 @@ async function searchCity() {
   }
 }
 
-
-/* ── 날씨별 배경 변경 ── */
 function setWeatherBg(wcode) {
   const body = document.body;
   const sun  = document.querySelector('.sun');
   const clouds = document.querySelector('.clouds');
-
   if(wcode <= 2) {
-    // 맑음/구름조금 — 기존 하늘색
     body.style.background = 'linear-gradient(175deg, #29b6f6 0%, #81d4fa 35%, #b3e5fc 65%, #e1f5fe 100%)';
     if(sun) sun.style.opacity = '1';
     if(clouds) clouds.style.opacity = '1';
     removeRain(); removeSnow();
   } else if(wcode <= 3) {
-    // 흐림 — 회색빛
     body.style.background = 'linear-gradient(175deg, #78909c 0%, #90a4ae 35%, #b0bec5 65%, #cfd8dc 100%)';
     if(sun) sun.style.opacity = '0.2';
     if(clouds) clouds.style.opacity = '1';
     removeRain(); removeSnow();
   } else if(wcode <= 67) {
-    // 비
     body.style.background = 'linear-gradient(175deg, #546e7a 0%, #607d8b 35%, #78909c 65%, #90a4ae 100%)';
     if(sun) sun.style.opacity = '0';
     if(clouds) clouds.style.opacity = '0.6';
     removeSnow(); startRain();
   } else if(wcode <= 77) {
-    // 눈
     body.style.background = 'linear-gradient(175deg, #90a4ae 0%, #b0bec5 35%, #cfd8dc 65%, #eceff1 100%)';
     if(sun) sun.style.opacity = '0.3';
     if(clouds) clouds.style.opacity = '1';
     removeRain(); startSnow();
   } else {
-    // 천둥번개
     body.style.background = 'linear-gradient(175deg, #37474f 0%, #455a64 35%, #546e7a 65%, #607d8b 100%)';
     if(sun) sun.style.opacity = '0';
     if(clouds) clouds.style.opacity = '0.5';
@@ -729,7 +655,6 @@ function setWeatherBg(wcode) {
   }
 }
 
-let rainInterval = null;
 function startRain() {
   if(document.getElementById('rain-layer')) return;
   const layer = document.createElement('div');
@@ -749,10 +674,7 @@ function startRain() {
   }
   document.body.appendChild(layer);
 }
-function removeRain(){
-  const el=document.getElementById('rain-layer');
-  if(el) el.remove();
-}
+function removeRain(){ const el=document.getElementById('rain-layer'); if(el) el.remove(); }
 
 function startSnow(){
   if(document.getElementById('snow-layer')) return;
@@ -773,15 +695,10 @@ function startSnow(){
   }
   document.body.appendChild(layer);
 }
-function removeSnow(){
-  const el=document.getElementById('snow-layer');
-  if(el) el.remove();
-}
+function removeSnow(){ const el=document.getElementById('snow-layer'); if(el) el.remove(); }
 
-
-/* ── 자동 갱신 ── */
 let autoRefreshTimer = null;
-let lastSearchType = null; // 'gps' or 'city'
+let lastSearchType = null;
 let lastCity = null;
 let lastLat = null, lastLng = null;
 
