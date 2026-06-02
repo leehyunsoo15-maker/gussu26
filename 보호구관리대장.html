@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>보호구 관리대장</title>
+<script src="https://unpkg.com/docx@8.5.0/build/index.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--orange:#ff6b35;--navy:#1a2744;--bg:#f8f9fa;--white:#ffffff;--border:#e2e8f0;--text:#2d3748;--muted:#718096;--red:#e53e3e;--green:#38a169;--amber:#d69e2e;--blue:#3182ce;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Malgun Gothic',sans-serif;background:var(--bg);color:var(--text);font-size:13px;}
+.topbar{background:var(--navy);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.topbar-title{color:white;font-size:15px;font-weight:700;}
+.topbar-btns{display:flex;gap:6px;align-items:center;}
+.tbtn{font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid rgba(255,255,255,0.3);color:white;background:rgba(255,255,255,0.1);cursor:pointer;}
+.tbtn.orange{background:var(--orange);border-color:var(--orange);}
+.tbtn:hover{opacity:0.85;}
+.wrap{max-width:1200px;margin:0 auto;padding:14px;}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;}
+.kpi{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;}
+.kpi-num{font-size:24px;font-weight:800;color:var(--navy);}
+.kpi-num.orange{color:var(--orange);}
+.kpi-num.red{color:var(--red);}
+.kpi-num.green{color:var(--green);}
+.kpi-label{font-size:11px;color:var(--muted);margin-top:2px;}
+.tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
+.tab{font-size:12px;padding:6px 16px;border:1px solid var(--border);border-radius:20px;cursor:pointer;background:var(--white);color:var(--muted);}
+.tab.active{background:var(--orange);color:white;border-color:var(--orange);font-weight:700;}
+.section{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;}
+.section-title{font-size:12px;font-weight:700;color:var(--navy);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+.search-bar{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+.search-bar input,.search-bar select{font-size:12px;padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:white;font-family:inherit;}
+.search-bar input{flex:1;min-width:150px;}
+.btn{font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid var(--border);cursor:pointer;font-family:inherit;background:white;}
+.btn.orange{background:var(--orange);color:white;border-color:var(--orange);}
+.btn.navy{background:var(--navy);color:white;border-color:var(--navy);}
+.btn.green{background:var(--green);color:white;border-color:var(--green);}
+.btn.red{background:var(--red);color:white;border-color:var(--red);}
+.btn:hover{opacity:0.85;}
+table{width:100%;border-collapse:collapse;font-size:11px;}
+th{background:#f7f8fa;padding:7px 8px;text-align:left;font-weight:700;color:var(--navy);border-bottom:2px solid var(--border);white-space:nowrap;}
+td{padding:5px 8px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tr:hover td{background:#fafbfc;}
+.badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:4px;font-weight:700;}
+.b-dry{background:#ebf8ff;color:#2b6cb0;}
+.b-wet{background:#e6fffa;color:#234e52;}
+.b-dc{background:#f0e6ff;color:#553c9a;}
+.b-rdc{background:#fff5e6;color:#7b341e;}
+.b-dcw{background:#e6f4ff;color:#1a365d;}
+.b-sup{background:#f0fff4;color:#22543d;}
+.b-warn{background:#fffbeb;color:#744210;}
+.b-danger{background:#fff5f5;color:#742a2a;}
+.b-retired{background:#f7f7f7;color:#999;}
+.name-link{color:var(--orange);cursor:pointer;font-weight:700;text-decoration:underline;text-underline-offset:2px;}
+.ie-cell{cursor:pointer;}
+.ie-cell:hover{background:#fff3ee!important;}
+.page-info{font-size:11px;color:var(--muted);margin-top:8px;display:flex;align-items:center;justify-content:space-between;}
+.page-btns{display:flex;gap:4px;}
+.page-btn{padding:3px 8px;border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:11px;background:white;}
+.page-btn.active{background:var(--orange);color:white;border-color:var(--orange);}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;}
+.modal-overlay.show{display:flex;}
+.modal{background:white;border-radius:14px;padding:20px;width:90%;max-width:600px;max-height:90vh;overflow-y:auto;}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+.modal-title{font-size:15px;font-weight:700;color:var(--navy);}
+.modal-close{background:none;border:none;font-size:18px;cursor:pointer;color:var(--muted);}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.form-row{display:flex;flex-direction:column;gap:4px;}
+.form-label{font-size:11px;font-weight:700;color:var(--muted);}
+.form-input{font-size:12px;padding:7px 10px;border:1px solid var(--border);border-radius:6px;font-family:inherit;}
+.form-input:focus{outline:none;border-color:var(--orange);}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;padding-top:12px;border-top:1px solid var(--border);}
+.history-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.history-chip{font-size:11px;padding:3px 10px;background:#fff3ee;color:var(--orange);border-radius:20px;border:1px solid var(--orange);}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.forms-box{background:#e6f1fb;border:1px solid #b5d4f4;border-radius:8px;padding:12px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
+.forms-text{font-size:12px;color:#1a365d;font-weight:700;}
+.issue-card{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);}
+.dept-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);}
+.size-table{border-collapse:collapse;width:100%;font-size:12px;}
+.size-table th{background:var(--navy);color:white;padding:6px 10px;text-align:center;border:1px solid #ddd;}
+.size-table td{padding:6px 10px;text-align:center;border:1px solid #ddd;font-weight:700;}
+.size-table .copy-row td{background:#fffbeb;cursor:pointer;}
+.copy-hint{font-size:11px;color:var(--muted);margin-top:6px;}
+.new-badge{display:inline-block;font-size:9px;padding:1px 5px;background:#e53e3e;color:white;border-radius:3px;margin-left:4px;vertical-align:middle;}
+#toast{position:fixed;bottom:20px;right:20px;background:var(--navy);color:white;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:700;z-index:9999;transition:opacity .3s;opacity:0;pointer-events:none;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="topbar-title">🛡️ 보호구 관리대장 — 안전화</span>
+  <div class="topbar-btns">
+    <button class="tbtn" onclick="saveData()">💾 저장+백업</button>
+    <button class="tbtn" onclick="exportCSV()">📋 CSV</button>
+    <button class="tbtn" onclick="document.getElementById('importInput').click()">📂 불러오기</button>
+    <input type="file" id="importInput" accept=".json" onchange="importJSON(this)" style="display:none">
+    <a class="tbtn" href="index.html">← 메인</a>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="kpi-grid" id="kpiGrid"></div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('대시보드')">🏠 홈</div>
+    <div class="tab" onclick="switchTab('신청접수')">📥 신청접수 <span id="newBadge" class="new-badge" style="display:none">0</span></div>
+    <div class="tab" onclick="switchTab('지급확인서')">🖨️ 지급확인서</div>
+    <div class="tab" onclick="switchTab('교체주의')">⚠️ 교체주의</div>
+    <div class="tab" onclick="switchTab('명부')">📋 명부 전체</div>
+  </div>
+
+  <div id="tabContent"></div>
+</div>
+
+<!-- 상세/수정 모달 -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modalTitle">근로자 상세</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-row"><label class="form-label">성명</label><input class="form-input" id="f_name"></div>
+      <div class="form-row"><label class="form-label">파트</label>
+        <select class="form-input" id="f_part">
+          <option>DRY</option><option>WET</option><option>DC</option><option>RDC</option><option>DC-W</option><option>지원</option><option>기타</option>
+        </select>
+      </div>
+      <div class="form-row"><label class="form-label">직무</label><input class="form-input" id="f_job"></div>
+      <div class="form-row"><label class="form-label">사이즈</label>
+        <select class="form-input" id="f_size">
+          <option value="">-</option>
+          <option>230</option><option>235</option><option>240</option><option>245</option><option>250</option>
+          <option>255</option><option>260</option><option>265</option><option>270</option><option>275</option>
+          <option>280</option><option>285</option><option>290</option><option>295</option><option>300</option>
+        </select>
+      </div>
+      <div class="form-row"><label class="form-label">입사일 (선택)</label><input class="form-input" id="f_joinDate" type="date"></div>
+      <div class="form-row"><label class="form-label">비고</label><input class="form-input" id="f_note"></div>
+    </div>
+    <div style="margin-top:12px;">
+      <div class="form-label" style="margin-bottom:6px;">지급 이력 (전체)</div>
+      <div class="history-list" id="historyList"></div>
+      <div style="display:flex;gap:6px;margin-top:8px;">
+        <input class="form-input" id="newDate" type="date" style="flex:1;" placeholder="새 지급일">
+        <button class="btn orange" onclick="addHistory()">+ 지급 추가</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn red" onclick="toggleRetired()">퇴사처리</button>
+      <button class="btn" onclick="closeModal()">취소</button>
+      <button class="btn orange" onclick="saveModal()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 신규인원 추가 모달 -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">➕ 근로자 추가</span>
+      <button class="modal-close" onclick="document.getElementById('addModal').classList.remove('show')">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-row"><label class="form-label">성명 *</label><input class="form-input" id="a_name"></div>
+      <div class="form-row"><label class="form-label">파트 *</label>
+        <select class="form-input" id="a_part">
+          <option>DRY</option><option>WET</option><option>DC</option><option>RDC</option><option>DC-W</option><option>지원</option><option>기타</option>
+        </select>
+      </div>
+      <div class="form-row"><label class="form-label">직무</label><input class="form-input" id="a_job"></div>
+      <div class="form-row"><label class="form-label">사이즈</label>
+        <select class="form-input" id="a_size">
+          <option value="">-</option>
+          <option>230</option><option>235</option><option>240</option><option>245</option><option>250</option>
+          <option>255</option><option>260</option><option>265</option><option>270</option><option>275</option>
+          <option>280</option><option>285</option><option>290</option><option>295</option><option>300</option>
+        </select>
+      </div>
+      <div class="form-row"><label class="form-label">입사일 (선택)</label><input class="form-input" id="a_joinDate" type="date"></div>
+      <div class="form-row"><label class="form-label">첫 지급일 (선택)</label><input class="form-input" id="a_firstDate" type="date"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="document.getElementById('addModal').classList.remove('show')">취소</button>
+      <button class="btn orange" onclick="confirmAdd()">추가</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ===== DB =====
+const DB_NAME='enone_prot_v1', STORE='people';
+let db, allData=[], filteredData=[], currentPage=1, currentTab='대시보드', editingNo=null;
+const PAGE=50;
+const SIZES=[230,235,240,245,250,255,260,265,270,275,280,285,290];
+
+function initDB(){
+  return new Promise((res,rej)=>{
+    const req=indexedDB.open(DB_NAME,1);
+    req.onupgradeneeded=e=>{
+      const d=e.target.result;
+      if(!d.objectStoreNames.contains(STORE)) d.createObjectStore(STORE,{keyPath:'no',autoIncrement:true});
+    };
+    req.onsuccess=e=>{db=e.target.result;res();};
+    req.onerror=()=>rej();
+  });
+}
+function dbPut(r){return new Promise((res,rej)=>{const tx=db.transaction(STORE,'readwrite');tx.objectStore(STORE).put(r);tx.oncomplete=res;tx.onerror=rej;});}
+function dbGetAll(){return new Promise((res,rej)=>{const tx=db.transaction(STORE,'readonly');const req=tx.objectStore(STORE).getAll();req.onsuccess=()=>res(req.result);req.onerror=rej;});}
+
+// ===== 날짜 변환 =====
+function excelDate(n){
+  if(!n||isNaN(n))return '';
+  const d=new Date((n-25569)*86400*1000);
+  return d.toISOString().slice(0,10);
+}
+function daysBetween(d1,d2){
+  const a=new Date(d1),b=new Date(d2);
+  return Math.floor((b-a)/(1000*60*60*24));
+}
+function lastDate(r){
+  const dates=(r.history||[]).filter(d=>d).sort();
+  return dates.length?dates[dates.length-1]:'';
+}
+
+// ===== KPI =====
+function renderKPI(){
+  const active=allData.filter(r=>!r.retired);
+  const today=new Date().toISOString().slice(0,10);
+  const warn=active.filter(r=>{
+    const ld=lastDate(r);
+    if(!ld)return false;
+    const days=daysBetween(ld,today);
+    return days<240&&days>=0&&(r.history||[]).length>=2;
+  });
+  const pending=(window._pending||[]).length;
+  const thisMonth=new Date().toISOString().slice(0,7);
+  const dueThis=active.filter(r=>{
+    const hist=(r.history||[]).slice().sort();
+    if(!hist.length)return false;
+    const last=new Date(hist[hist.length-1]);
+    const next=new Date(last);
+    next.setDate(next.getDate()+(r.part==='WET'?304:365));
+    return next.toISOString().slice(0,7)===thisMonth;
+  });
+  const todayN=new Date();
+  const urgentN=active.filter(r=>{
+    const hist=(r.history||[]).slice().sort();
+    if(!hist.length)return false;
+    const last=new Date(hist[hist.length-1]);
+    const next=new Date(last);
+    next.setDate(next.getDate()+(r.part==='WET'?304:365));
+    return Math.ceil((next-todayN)/(1000*60*60*24))<=90;
+  });
+  document.getElementById('kpiGrid').innerHTML=`
+    <div class="kpi"><div class="kpi-num">${active.length}</div><div class="kpi-label">재직 인원</div></div>
+    <div class="kpi"><div class="kpi-num orange">${dueThis.length}</div><div class="kpi-label">이번달 지급예정</div></div>
+    <div class="kpi"><div class="kpi-num red">${urgentN.length}</div><div class="kpi-label">교체임박·초과</div></div>
+    <div class="kpi"><div class="kpi-num green">${allData.filter(r=>r.retired).length}</div><div class="kpi-label">퇴사 처리</div></div>
+  `;
+}
+
+// ===== 탭 전환 =====
+function switchTab(tab){
+  currentTab=tab;
+  currentPage=1;
+  document.querySelectorAll('.tab').forEach(t=>{
+    const map={'대시보드':'홈','신청접수':'신청접수','지급확인서':'지급확인서','교체주의':'교체주의','명부':'명부 전체'};
+    t.classList.toggle('active', t.textContent.trim().includes(map[tab]||tab));
+  });
+  renderTab();
+}
+
+function renderTab(){
+  if(currentTab==='대시보드') renderDashboard();
+  else if(currentTab==='명부') renderMembership();
+  else if(currentTab==='신청접수') renderApplication();
+  else if(currentTab==='지급확인서') renderConfirm();
+  else if(currentTab==='교체주의') renderWarning();
+}
+
+// ===== 명부 탭 =====
+function renderMembership(){
+  const showRetired=window._showRetired||false;
+  document.getElementById('tabContent').innerHTML=`
+    <div class="section">
+      <div class="section-title">📋 전체 명부
+        <button class="btn orange" onclick="openAddModal()" style="margin-left:auto;">+ 근로자 추가</button>
+        <button class="btn" onclick="toggleRetiredView()" style="margin-left:6px;">${showRetired?'재직자만':'퇴사자 포함'}</button>
+      </div>
+      <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="이름, 직무 검색..." oninput="applyFilter()">
+        <select id="partFilter" onchange="applyFilter()">
+          <option value="">전체 파트</option>
+          <option>DRY</option><option>WET</option><option>DC</option><option>RDC</option><option>DC-W</option><option>지원</option>
+        </select>
+        <select id="jobFilter" onchange="applyFilter()">
+          <option value="">전체 직무</option>
+          <option>1조</option><option>2조</option><option>3조</option><option>4조</option><option>5조</option><option>6조</option>
+          <option>DAS</option><option>입하팀</option><option>출하팀(22)</option><option>소터</option><option>리콘다</option>
+          <option>패션</option><option>수출</option><option>운영팀(10)</option><option>백암DC</option>
+        </select>
+      </div>
+      <div style="overflow-x:auto;">
+        <table id="memberTable">
+          <thead><tr>
+            <th>No</th><th>성명</th><th>파트</th><th>직무</th><th>사이즈</th>
+            <th>최근지급일</th><th>지급횟수</th><th>경과일</th><th>비고</th>
+          </tr></thead>
+          <tbody id="memberBody"></tbody>
+        </table>
+      </div>
+      <div class="page-info">
+        <span id="pageInfo"></span>
+        <div class="page-btns" id="pageBtns"></div>
+      </div>
+    </div>
+  `;
+  applyFilter();
+}
+
+function applyFilter(){
+  const q=(document.getElementById('searchInput')?.value||'').toLowerCase();
+  const part=document.getElementById('partFilter')?.value||'';
+  const job=document.getElementById('jobFilter')?.value||'';
+  const showRetired=window._showRetired||false;
+  filteredData=allData.filter(r=>{
+    if(!showRetired&&r.retired)return false;
+    if(part&&r.part!==part)return false;
+    if(job&&r.job!==job)return false;
+    if(q&&!r.name?.toLowerCase().includes(q)&&!r.job?.toLowerCase().includes(q))return false;
+    return true;
+  });
+  currentPage=1;
+  renderMemberTable();
+}
+
+function renderMemberTable(){
+  const today=new Date().toISOString().slice(0,10);
+  const start=(currentPage-1)*PAGE;
+  const pageData=filteredData.slice(start,start+PAGE);
+  const tbody=document.getElementById('memberBody');
+  if(!tbody)return;
+  tbody.innerHTML=pageData.map((r,i)=>{
+    const ld=lastDate(r);
+    const days=ld?daysBetween(ld,today):null;
+    const cnt=(r.history||[]).filter(d=>d).length;
+    let daysBadge=days!==null?`${days}일`:'—';
+    let daysColor=days!==null&&days<240?'color:var(--red);font-weight:700;':'';
+    const partClass={'DRY':'b-dry','WET':'b-wet','DC':'b-dc','RDC':'b-rdc','DC-W':'b-dcw','지원':'b-sup'}[r.part]||'';
+    const retiredStyle=r.retired?'opacity:0.4;text-decoration:line-through;':'';
+    return `<tr style="${retiredStyle}">
+      <td style="color:var(--muted);">${start+i+1}</td>
+      <td><span class="name-link" onclick="openDetail(${r.no})">${r.name||''}</span>${r.retired?'<span class="badge b-retired" style="margin-left:4px;">퇴사</span>':''}</td>
+      <td><span class="badge ${partClass}">${r.part||''}</span></td>
+      <td class="ie-cell" onclick="inlineEdit(${r.no},'job',event)">${r.job||'—'}</td>
+      <td class="ie-cell" onclick="inlineEdit(${r.no},'size',event)">${r.size||'—'}</td>
+      <td>${ld||'—'}</td>
+      <td style="text-align:center;font-weight:700;">${cnt||'—'}</td>
+      <td style="${daysColor}">${daysBadge}</td>
+      <td style="font-size:10px;color:var(--muted);">${r.note||''}</td>
+    </tr>`;
+  }).join('');
+
+  const total=filteredData.length;
+  const totalPage=Math.ceil(total/PAGE);
+  document.getElementById('pageInfo').textContent=`총 ${total}명 (${start+1}~${Math.min(start+PAGE,total)})`;
+  let btns='';
+  for(let p=1;p<=totalPage;p++){
+    if(p===1||p===totalPage||Math.abs(p-currentPage)<=2)
+      btns+=`<button class="page-btn${p===currentPage?' active':''}" onclick="goPage(${p})">${p}</button>`;
+    else if(Math.abs(p-currentPage)===3)btns+=`<span style="padding:0 4px;">…</span>`;
+  }
+  document.getElementById('pageBtns').innerHTML=btns;
+}
+
+function goPage(p){currentPage=p;renderMemberTable();}
+function toggleRetiredView(){window._showRetired=!window._showRetired;renderMembership();}
+
+// ===== 인라인 편집 =====
+async function inlineEdit(no,field,e){
+  const td=e.currentTarget;
+  if(td.querySelector('input,select'))return;
+  const r=allData.find(d=>d.no===no);
+  if(!r)return;
+  let el;
+  if(field==='size'){
+    el=document.createElement('select');
+    el.style.cssText='font-size:11px;padding:2px;border:1.5px solid var(--orange);border-radius:4px;font-family:inherit;';
+    ['',...SIZES,295,300].forEach(s=>{
+      const o=document.createElement('option');
+      o.value=s;o.textContent=s||'-';
+      if(String(s)===String(r[field]))o.selected=true;
+      el.appendChild(o);
+    });
+  } else {
+    el=document.createElement('input');
+    el.value=r[field]||'';
+    el.style.cssText='font-size:11px;padding:2px;border:1.5px solid var(--orange);border-radius:4px;font-family:inherit;width:100%;min-width:80px;';
+  }
+  const orig=td.innerHTML;
+  td.innerHTML='';td.appendChild(el);el.focus();
+  async function commit(){
+    const v=el.value;
+    if(r[field]!==v){r[field]=v;await dbPut(r);showToast('✅ '+field+' 수정됨');}
+    renderMemberTable();
+  }
+  el.addEventListener('change',commit);
+  el.addEventListener('keydown',e2=>{if(e2.key==='Enter')el.blur();if(e2.key==='Escape')td.innerHTML=orig;});
+  el.addEventListener('blur',commit);
+}
+
+// ===== 상세 모달 =====
+function openDetail(no){
+  editingNo=no;
+  const r=allData.find(d=>d.no===no);
+  if(!r)return;
+  document.getElementById('modalTitle').textContent=r.name+(r.retired?' [퇴사]':'');
+  document.getElementById('f_name').value=r.name||'';
+  document.getElementById('f_part').value=r.part||'DRY';
+  document.getElementById('f_job').value=r.job||'';
+  document.getElementById('f_size').value=r.size||'';
+  document.getElementById('f_joinDate').value=r.joinDate||'';
+  document.getElementById('f_note').value=r.note||'';
+  const hist=(r.history||[]).filter(d=>d).sort();
+  document.getElementById('historyList').innerHTML=hist.map((d,i)=>
+    `<div class="history-chip">${i+1}차 ${d} <span style="cursor:pointer;color:#999;" onclick="removeHistory(${i})">×</span></div>`
+  ).join('');
+  document.getElementById('detailModal').classList.add('show');
+}
+function closeModal(){document.getElementById('detailModal').classList.remove('show');editingNo=null;}
+async function saveModal(){
+  const r=allData.find(d=>d.no===editingNo);
+  if(!r)return;
+  r.name=document.getElementById('f_name').value;
+  r.part=document.getElementById('f_part').value;
+  r.job=document.getElementById('f_job').value;
+  r.size=document.getElementById('f_size').value;
+  r.joinDate=document.getElementById('f_joinDate').value;
+  r.note=document.getElementById('f_note').value;
+  await dbPut(r);showToast('✅ 저장됨');closeModal();renderTab();renderKPI();
+}
+function addHistory(){
+  const r=allData.find(d=>d.no===editingNo);
+  const d=document.getElementById('newDate').value;
+  if(!d||!r)return;
+  if(!r.history)r.history=[];
+  r.history.push(d);
+  document.getElementById('newDate').value='';
+  openDetail(editingNo);
+}
+function removeHistory(idx){
+  const r=allData.find(d=>d.no===editingNo);
+  if(!r||!r.history)return;
+  r.history.splice(idx,1);
+  openDetail(editingNo);
+}
+async function toggleRetired(){
+  const r=allData.find(d=>d.no===editingNo);
+  if(!r)return;
+  r.retired=!r.retired;
+  await dbPut(r);showToast(r.retired?'퇴사 처리됨':'재직 복원됨');closeModal();renderTab();renderKPI();
+}
+
+// ===== 근로자 추가 모달 =====
+function openAddModal(prefill){
+  document.getElementById('a_name').value=prefill?.name||'';
+  document.getElementById('a_part').value=prefill?.part||'DRY';
+  document.getElementById('a_job').value=prefill?.job||'';
+  document.getElementById('a_size').value=prefill?.size||'';
+  document.getElementById('a_joinDate').value='';
+  document.getElementById('a_firstDate').value=prefill?.date||'';
+  document.getElementById('addModal').classList.add('show');
+}
+async function confirmAdd(){
+  const name=document.getElementById('a_name').value.trim();
+  if(!name){alert('성명을 입력하세요.');return;}
+  const r={
+    name,part:document.getElementById('a_part').value,
+    job:document.getElementById('a_job').value,
+    size:document.getElementById('a_size').value,
+    joinDate:document.getElementById('a_joinDate').value,
+    history:document.getElementById('a_firstDate').value?[document.getElementById('a_firstDate').value]:[],
+    note:'',retired:false
+  };
+  await dbPut(r);
+  allData=await dbGetAll();
+  document.getElementById('addModal').classList.remove('show');
+  showToast('✅ '+name+' 추가됨');
+  renderTab();renderKPI();
+}
+
+// ===== 신청접수 탭 =====
+function renderApplication(){
+  document.getElementById('tabContent').innerHTML=`
+    <div class="two-col">
+      <div class="section">
+        <div class="section-title">📥 신청 접수 — 엑셀 업로드</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">
+          ※ 양식: <b>파트 / 직무 / 이름 / 사이즈(mm) / 비고</b> 순서<br>
+          취합한 안전화신청서_양식.xlsx 파일을 업로드하세요.
+        </div>
+        <div style="border:2px dashed var(--border);border-radius:10px;padding:1.5rem;text-align:center;margin-bottom:12px;cursor:pointer;" onclick="document.getElementById('xlUpload').click()">
+          <div style="font-size:2rem;margin-bottom:6px">📊</div>
+          <div style="font-size:13px;font-weight:700;margin-bottom:4px">엑셀 파일 클릭 또는 드래그</div>
+          <div style="font-size:11px;color:var(--muted)">.xlsx 지원 | 파트·직무·이름·사이즈 컬럼</div>
+          <input type="file" id="xlUpload" accept=".xlsx,.xls" style="display:none" onchange="parseExcel(this)">
+        </div>
+        <div id="xlPreview" style="display:none">
+          <div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:6px">📋 미리보기 — 확인 후 반영</div>
+          <div style="overflow-x:auto;margin-bottom:10px">
+            <table id="xlPreviewTable">
+              <thead><tr>
+                <th>이름</th><th>파트</th><th>직무</th><th>사이즈</th><th>비고</th><th>기존지급일</th><th>상태</th>
+              </tr></thead>
+              <tbody id="xlPreviewBody"></tbody>
+            </table>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn" onclick="cancelXl()">취소</button>
+            <button class="btn orange" onclick="confirmXl()" style="flex:1">✅ 확정 — 명부반영 + 부서별 지급확인서 출력</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">📊 사이즈별 발주 집계</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">엑셀 취합 후 자동 집계됩니다</div>
+        <div style="overflow-x:auto;">
+          <table class="size-table">
+            <tr><th>구분</th>${SIZES.concat([295,300]).map(s=>`<th>${s}</th>`).join('')}<th>합계</th></tr>
+            <tr class="copy-row" id="sizeRow">
+              <td>VT-011 수량</td>${SIZES.concat([295,300]).map(s=>`<td id="sz_${s}">0</td>`).join('')}<td id="sz_total" style="background:#fff3ee;color:var(--orange);">0</td>
+            </tr>
+          </table>
+        </div>
+        <div class="copy-hint">※ 위 숫자 행 드래그 → Ctrl+C → 엑셀 발주서에 Ctrl+V</div>
+        <div style="margin-top:10px;" id="pendingList"></div>
+      </div>
+    </div>
+  `;
+  renderPending();
+}
+
+let _xlParsed = [];
+
+function parseExcel(input){
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const wb = XLSX.read(e.target.result, {type:'binary'});
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(ws, {defval:'', range:2}); // 3행(index 2)이 실제 헤더
+    const today = new Date().toISOString().slice(0,10);
+    _xlParsed = [];
+    rows.forEach(row => {
+      // 컬럼명 유연하게 파싱 (파트/직무/이름/사이즈)
+      const part = String(row['파트']||row['PART']||'').trim();
+      const job  = String(row['직무']||row['JOB']||'').trim();
+      const name = String(row['이름']||row['NAME']||row['성명']||'').trim();
+      const size = String(row['사이즈(mm)']||row['사이즈']||row['SIZE']||'').trim().replace('mm','');
+      const note = String(row['비고']||'').trim();
+      if(!name) return;
+      const existing = allData.find(r=>r.name===name&&!r.retired);
+      const lastHist = existing ? (existing.history||[]).slice().sort().pop()||'-' : '-';
+      const status = !existing ? '🆕 신규' : existing.size&&existing.size!==size&&size ? '⚠️ SIZE변경' : '✓ 정상';
+      _xlParsed.push({name, part, job, size, note, date:today, isNew:!existing, lastHist, status, existing});
+    });
+    if(!_xlParsed.length){ showToast('❌ 데이터가 없습니다. 양식을 확인하세요.'); return; }
+    // 미리보기 렌더
+    document.getElementById('xlPreviewBody').innerHTML = _xlParsed.map((r,i)=>`
+      <tr>
+        <td style="font-weight:700">${r.name}</td>
+        <td><span class="badge ${r.part==='WET'?'b-wet':r.part==='DRY'?'b-dry':r.part==='DC'?'b-dc':'b-sup'}">${r.part}</span></td>
+        <td>${r.job}</td>
+        <td style="text-align:center">${r.size?r.size+'mm':'-'}</td>
+        <td style="color:var(--muted)">${r.note}</td>
+        <td style="color:var(--muted);text-align:center">${r.lastHist}</td>
+        <td style="font-weight:700;color:${r.status.includes('🆕')?'var(--blue)':r.status.includes('⚠️')?'var(--amber)':'var(--green)'}">${r.status}</td>
+      </tr>`).join('');
+    document.getElementById('xlPreview').style.display='block';
+    updateSizeTable();
+    showToast(`📊 ${_xlParsed.length}명 파싱 완료 — 확인 후 반영하세요`);
+  };
+  reader.readAsBinaryString(file);
+}
+
+function cancelXl(){
+  _xlParsed=[];
+  document.getElementById('xlPreview').style.display='none';
+  document.getElementById('xlUpload').value='';
+  updateSizeTable();
+}
+
+async function confirmXl(){
+  if(!_xlParsed.length) return;
+  const today = new Date().toISOString().slice(0,10);
+
+  // 1. 명부에 반영
+  for(const p of _xlParsed){
+    let r = allData.find(d=>d.name===p.name&&!d.retired);
+    if(!r){
+      const maxNo = Math.max(0,...allData.map(d=>d.no||0));
+      r = {no:maxNo+1, name:p.name, part:p.part, job:p.job, size:p.size,
+           joinDate:'', history:[today], note:p.note||'', retired:false};
+      await dbPut(r);
+    } else {
+      if(!r.history) r.history=[];
+      if(!r.history.includes(today)) r.history.push(today);
+      if(p.size) r.size = p.size;
+      if(p.part) r.part = p.part;
+      if(p.job)  r.job  = p.job;
+      await dbPut(r);
+    }
+  }
+  allData = await dbGetAll();
+
+  // 2. 확정 인원 저장 (지급확인서 탭에서 사용)
+  window._confirmed = _xlParsed.map(p=>{
+    const r = allData.find(d=>d.name===p.name&&!d.retired)||p;
+    return {...r, confirmedDate:today};
+  });
+
+  renderKPI();
+  cancelXl();
+  updateNewBadge();
+  showToast(`✅ ${window._confirmed.length}명 반영 완료 — 지급확인서 탭으로 이동합니다`);
+
+  // 3. 지급확인서 탭으로 이동해서 확정인원 표시
+  setTimeout(()=>switchTab('지급확인서'), 800);
+}
+
+window._pending=window._pending||[];
+function renderPending(){
+  const el=document.getElementById('pendingList');
+  if(!el)return;
+  if(!window._pending.length){el.innerHTML='<div style="font-size:11px;color:var(--muted);">신청 내역 없음</div>';return;}
+  el.innerHTML=`<div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px;">대기 중 신청 (${window._pending.length}건)</div>`+
+    window._pending.map((p,i)=>`
+      <div class="dept-row">
+        <div>
+          <span style="font-weight:700;">${p.name}</span>
+          <span style="font-size:10px;color:var(--muted);margin-left:6px;">${p.part} ${p.job} · ${p.size}mm · ${p.date}</span>
+          ${p.isNew?'<span class="badge b-danger" style="margin-left:4px;">신규</span>':''}
+        </div>
+        <div style="display:flex;gap:4px;">
+          <button class="btn green" onclick="approvePending(${i})">지급확정</button>
+          <button class="btn red" onclick="removePending(${i})">삭제</button>
+        </div>
+      </div>`).join('');
+}
+
+function copyFormsLink(){
+  const url=document.getElementById('formsUrl').value||'링크를 입력하세요';
+  navigator.clipboard.writeText(url).then(()=>showToast('링크 복사됨'));
+}
+
+function parsePaste(){
+  const text=document.getElementById('pasteArea').value.trim();
+  if(!text){alert('신청 내역을 붙여넣어 주세요.');return;}
+  const lines=text.split('\n').filter(l=>l.trim());
+  let added=0,newPeople=[];
+  lines.forEach(line=>{
+    const parts=line.split(',').map(s=>s.trim());
+    if(parts.length<2)return;
+    const [name,part,job,size,date]=parts;
+    const exists=allData.find(r=>r.name===name&&!r.retired);
+    const entry={name,part:part||'DRY',job:job||'',size:size||'',date:date||new Date().toISOString().slice(0,10),isNew:!exists};
+    if(!exists)newPeople.push(entry);
+    window._pending.push(entry);
+    added++;
+  });
+  updateSizeTable();
+  renderPending();
+  updateNewBadge();
+  if(newPeople.length){
+    if(confirm(`신규 인원 ${newPeople.length}명이 감지됐습니다:\n${newPeople.map(p=>p.name).join(', ')}\n\n명부에 추가하시겠습니까?`)){
+      newPeople.forEach(p=>openAddModal(p));
+    }
+  }
+  showToast(`✅ ${added}건 취합됨`);
+}
+
+function updateSizeTable(){
+  const sizeCount={};
+  SIZES.concat([295,300]).forEach(s=>sizeCount[s]=0);
+  // _xlParsed(미리보기) 또는 _confirmed(확정된것) 기준
+  const src = _xlParsed.length ? _xlParsed : (window._confirmed||[]);
+  src.forEach(p=>{
+    const s=String(p.size||'').replace('mm','').trim();
+    if(s && sizeCount[s]!==undefined) sizeCount[s]++;
+    else if(s) sizeCount[s]=(sizeCount[s]||0)+1;
+  });
+  let total=0;
+  SIZES.concat([295,300]).forEach(s=>{
+    const el=document.getElementById('sz_'+s);
+    if(el){el.textContent=sizeCount[s]||0;}
+    total+=sizeCount[s]||0;
+  });
+  const t=document.getElementById('sz_total');
+  if(t)t.textContent=total;
+}
+
+async function approvePending(idx){
+  const p=window._pending[idx];
+  let r=allData.find(d=>d.name===p.name&&!d.retired);
+  if(!r){
+    r={name:p.name,part:p.part,job:p.job,size:p.size,joinDate:'',history:[p.date],note:'',retired:false};
+    await dbPut(r);
+  } else {
+    if(!r.history)r.history=[];
+    r.history.push(p.date);
+    if(p.size) r.size=p.size;  // 사이즈 자동 업데이트
+    await dbPut(r);
+  }
+  window._pending.splice(idx,1);
+  allData=await dbGetAll();
+  updateSizeTable();renderPending();renderKPI();updateNewBadge();
+  showToast('✅ '+p.name+' 지급 확정됨');
+}
+
+function removePending(idx){window._pending.splice(idx,1);updateSizeTable();renderPending();updateNewBadge();}
+function updateNewBadge(){
+  const b=document.getElementById('newBadge');
+  if(b){b.style.display=window._pending.length?'':'none';b.textContent=window._pending.length;}
+}
+
+// ===== 지급확인서 탭 =====
+function renderConfirm(){
+  const confirmed = window._confirmed||[];
+  const hasConfirmed = confirmed.length>0;
+  // 확정인원 있으면 그것만, 없으면 전체 명부 기준
+  const baseData = hasConfirmed ? confirmed : allData.filter(r=>!r.retired);
+  const depts=[...new Set(baseData.map(r=>r.job).filter(Boolean))].sort();
+  const today = new Date().toISOString().slice(0,10);
+
+  document.getElementById('tabContent').innerHTML=`
+    <div class="section">
+      <div class="section-title">🖨️ 부서별 지급확인서 출력
+        ${hasConfirmed?`<span style="font-size:11px;background:#e6fffa;color:#234e52;padding:2px 10px;border-radius:10px;margin-left:8px;font-weight:400">신청접수 확정 ${confirmed.length}명</span>`:'<span style="font-size:11px;color:var(--muted);margin-left:8px;font-weight:400">전체 명부 기준</span>'}
+      </div>
+      ${hasConfirmed?`<div class="warn-bar" style="background:#e6fffa;border-color:#9ae6b4;color:#22543d;margin-bottom:12px">
+        ✅ 신청접수에서 확정된 <b>${confirmed.length}명</b>의 지급확인서입니다.
+        <button class="btn" onclick="window._confirmed=[];renderConfirm();" style="margin-left:12px;font-size:11px">전체 명부로 전환</button>
+      </div>`:''}
+      <div style="display:flex;gap:10px;margin-bottom:12px;align-items:flex-end;flex-wrap:wrap;">
+        <div>
+          <div class="form-label" style="margin-bottom:4px;">지급일</div>
+          <input class="form-input" id="confirmDate" type="date" value="${today}">
+        </div>
+        <div>
+          <div class="form-label" style="margin-bottom:4px;">부서 선택</div>
+          <select class="form-input" id="confirmDept">
+            <option value="">전체</option>
+            ${depts.map(d=>`<option>${d}</option>`).join('')}
+          </select>
+        </div>
+        <button class="btn" onclick="window.print()">🖨️ 화면 인쇄</button>
+        <button class="btn navy" onclick="printAllConfirm()">📄 전체 부서 일괄 저장</button>
+      </div>
+      <div id="confirmPreview" style="overflow-x:auto;"></div>
+    </div>
+  `;
+  renderConfirmPreview();
+  document.getElementById('confirmDept').addEventListener('change',renderConfirmPreview);
+  document.getElementById('confirmDate').addEventListener('change',renderConfirmPreview);
+}
+
+function renderConfirmPreview(){
+  const dept=document.getElementById('confirmDept')?.value||'';
+  const base = (window._confirmed&&window._confirmed.length) ? window._confirmed : allData.filter(r=>!r.retired);
+  const data=base.filter(r=>(dept===''||r.job===dept));
+
+  // 부서별 그룹
+  const deptGroups={};
+  data.forEach(r=>{
+    const d=r.job||'미분류';
+    if(!deptGroups[d])deptGroups[d]=[];
+    deptGroups[d].push(r);
+  });
+
+  // 사이즈 집계
+  const sizeCount={};
+  data.forEach(r=>{ if(r.size){ sizeCount[r.size]=(sizeCount[r.size]||0)+1; }});
+  const sizeChips=Object.keys(sizeCount).sort((a,b)=>Number(a)-Number(b))
+    .map(s=>`<span style="display:inline-block;background:#f7f8fa;border:1px solid var(--border);border-radius:4px;padding:2px 10px;font-size:11px;margin:2px">${s}mm — ${sizeCount[s]}켤레</span>`).join('')
+    + (Object.keys(sizeCount).length?`<span style="display:inline-block;background:#fff3ee;border:1px solid var(--orange);border-radius:4px;padding:2px 10px;font-size:11px;font-weight:700;margin:2px;color:var(--orange)">합계 — ${data.length}켤레</span>`:'');
+
+  // 부서별 목록 + 미리보기 테이블
+  let html='';
+  Object.entries(deptGroups).sort().forEach(([d,people])=>{
+    html+=`
+    <div style="margin-bottom:16px;border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+      <div style="background:#f7f8fa;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;">
+        <div><span style="font-weight:700;font-size:13px;">${d}</span> <span style="font-size:11px;color:var(--muted);">${people.length}명</span></div>
+        <button class="btn orange" onclick="printDeptConfirm(this.dataset.dept)" data-dept="${d}">📄 docx 출력</button>
+      </div>
+      <div style="overflow-x:auto;">
+      <table>
+        <thead><tr>
+          <th style="width:30px">No</th>
+          <th style="text-align:left">성명</th>
+          <th>SIZE</th>
+          <th>기존 지급일</th>
+          <th style="color:var(--orange)">신규 지급일</th>
+          <th style="width:70px">지급 서명</th>
+          <th style="width:70px">반납 서명</th>
+        </tr></thead>
+        <tbody>
+          ${people.map((r,i)=>{
+            const hist=(r.history||[]).slice().sort();
+            const prev=hist.length>=1?hist[hist.length-1]:'—';
+            return `<tr>
+              <td style="text-align:center">${i+1}</td>
+              <td style="font-weight:700">${r.name}</td>
+              <td style="text-align:center">${r.size?r.size+'mm':'<span style="color:var(--muted)">미등록</span>'}</td>
+              <td style="text-align:center;color:var(--muted)">${prev}</td>
+              <td style="text-align:center;color:var(--orange);font-weight:700" id="nd_${r.no}">—</td>
+              <td></td><td></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>`;
+  });
+
+  // 사이즈 집계 + 서명란
+  if(Object.keys(deptGroups).length){
+    html+=`
+    <div style="margin-top:8px;padding:10px 12px;background:#f7f8fa;border-radius:8px;border:1px solid var(--border)">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px">사이즈별 집계</div>
+      <div>${sizeChips||'<span style="color:var(--muted);font-size:11px">사이즈 미등록</span>'}</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px;">
+      ${['작성','검토','승인'].map(l=>`
+        <div style="border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center;">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px">${l}</div>
+          <div style="height:36px;border-bottom:1px solid #888"></div>
+        </div>`).join('')}
+    </div>
+    <div style="margin-top:8px;text-align:center;">
+      <button class="btn navy" onclick="printAllConfirm()" style="width:100%">📄 전체 부서 일괄 출력</button>
+    </div>`;
+  }
+
+  const el=document.getElementById('confirmPreview');
+  if(el)el.innerHTML=html||'<div style="color:var(--muted);font-size:12px;padding:12px">해당 부서 없음</div>';
+
+  // 신규지급일 날짜 반영 (date input 값)
+  updateConfirmDates();
+}
+
+function updateConfirmDates(){
+  const date=document.getElementById('confirmDate')?.value||new Date().toISOString().slice(0,10);
+  document.querySelectorAll('[id^="nd_"]').forEach(el=>{
+    el.textContent=date;
+  });
+}
+
+async function printDeptConfirm(dept){
+  const today=new Date().toISOString().slice(0,10);
+  const el=document.getElementById('confirmDate');if(el)el.value=today;
+  const date=today;
+  const base=(window._confirmed&&window._confirmed.length)?window._confirmed:allData.filter(r=>!r.retired);
+  const people=base.filter(r=>r.job===dept);
+  await generateConfirmDocx(dept,date,people);
+}
+async function printConfirm(){
+  const today=new Date().toISOString().slice(0,10);
+  const el=document.getElementById('confirmDate');if(el)el.value=today;
+  const dept=document.getElementById('confirmDept')?.value||'';
+  const date=today;
+  const people=allData.filter(r=>!r.retired&&(dept===''||r.job===dept));
+  await generateConfirmDocx(dept||'전체',date,people);
+}
+async function printAllConfirm(){
+  const today=new Date().toISOString().slice(0,10);
+  const el=document.getElementById('confirmDate');if(el)el.value=today;
+  const date=today;
+  const base=(window._confirmed&&window._confirmed.length)?window._confirmed:allData.filter(r=>!r.retired);
+  const depts=[...new Set(base.filter(r=>r.job).map(r=>r.job))].sort();
+  for(const d of depts){
+    const people=base.filter(r=>r.job===d);
+    if(people.length){await generateConfirmDocx(d,date,people); await new Promise(r=>setTimeout(r,400));}
+  }
+}
+
+async function generateConfirmDocx(dept,date,people){
+  const {Document,Packer,Paragraph,Table,TableRow,TableCell,TextRun,WidthType,AlignmentType,HeightRule,convertInchesToTwip}=docx;
+
+  // 헤더행 — No/소속/부서/SIZE/기존지급일/신규지급일/성명/지급서명/반납서명
+  const cols=['No','소속','부서','SIZE','기존 지급일','신규 지급일','성명','지급 서명','반납 서명'];
+  const widths=[4,8,12,8,12,12,12,16,16];
+  const headerRow=new TableRow({
+    tableHeader:true,
+    children:cols.map((t,i)=>new TableCell({
+      shading:{fill:'1A2744'},
+      width:{size:widths[i],type:WidthType.PERCENTAGE},
+      children:[new Paragraph({
+        children:[new TextRun({text:t,bold:true,size:16,color:'FFFFFF'})],
+        alignment:AlignmentType.CENTER,
+        spacing:{before:60,after:60}
+      })]
+    }))
+  });
+
+  // 데이터행
+  const dataRows=people.map((r,i)=>{
+    const hist=(r.history||[]).filter(d=>d).sort();
+    const prev=hist.length>=1?hist[hist.length-1]:'—';
+    const mkCell=(txt,bold=false,color='000000',align=AlignmentType.CENTER)=>
+      new TableCell({children:[new Paragraph({
+        children:[new TextRun({text:txt,size:18,bold,color})],
+        alignment:align,
+        spacing:{before:40,after:40}
+      })]});
+    return new TableRow({
+      height:{value:convertInchesToTwip(0.5),rule:HeightRule.ATLEAST},
+      children:[
+        mkCell(String(i+1)),
+        mkCell('여주'),
+        mkCell(dept),
+        mkCell(r.size?r.size+'mm':''),
+        mkCell(prev),
+        mkCell(date,true,'C0392B'),
+        mkCell(r.name||'',true,'000000',AlignmentType.LEFT),
+        new TableCell({children:[new Paragraph({text:''})]}),
+        new TableCell({children:[new Paragraph({text:''})]})
+      ]
+    });
+  });
+
+  // 사이즈 집계
+  const sizeCount={};
+  people.forEach(r=>{if(r.size)sizeCount[r.size]=(sizeCount[r.size]||0)+1;});
+  const sizeText='▶ 사이즈 집계: '+Object.keys(sizeCount).sort((a,b)=>Number(a)-Number(b))
+    .map(s=>`${s}mm × ${sizeCount[s]} 켤레`).join('  ')
+    + `  합계: ${people.length} 켤레`;
+
+  // 서명란
+  const sigTable=new Table({
+    width:{size:100,type:WidthType.PERCENTAGE},
+    rows:[
+      new TableRow({
+        height:{value:convertInchesToTwip(0.8),rule:HeightRule.ATLEAST},
+        children:['작성','검토','승인'].map(l=>
+          new TableCell({
+            children:[new Paragraph({children:[new TextRun({text:l,size:18,bold:true})],alignment:AlignmentType.CENTER})]
+          })
+        )
+      })
+    ]
+  });
+
+  const doc=new Document({sections:[{
+    properties:{page:{margin:{top:720,right:720,bottom:720,left:720}}},
+    children:[
+      new Paragraph({children:[new TextRun({text:`${date.slice(0,4)}년 ${date.slice(5,7)}월 여주물류센터 안전화 지급/반납 확인서`,bold:true,size:28})],alignment:AlignmentType.CENTER,spacing:{before:0,after:120}}),
+      new Paragraph({children:[new TextRun({text:`부서: ${dept}   (총 ${people.length}명)`,bold:true,size:20})],spacing:{after:40}}),
+      new Paragraph({children:[new TextRun({text:'안전화 사용 후 반납에 해당되는 사원님은 반납란에 서명해 주세요.',size:16,color:'888888'})],spacing:{after:120}}),
+      new Table({rows:[headerRow,...dataRows],width:{size:100,type:WidthType.PERCENTAGE}}),
+      new Paragraph({children:[new TextRun({text:' ',size:12})],spacing:{before:120,after:80}}),
+      new Paragraph({children:[new TextRun({text:sizeText,size:18,bold:true})],spacing:{before:160,after:160}}),
+      sigTable,
+      new Paragraph({children:[new TextRun({text:'직성자: 안전관리자 이현수  (인)',size:18})],alignment:AlignmentType.RIGHT,spacing:{before:120}}),
+    ]
+  }]});
+
+  const blob=await Packer.toBlob(doc);
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`지급확인서_${dept}_${date}.docx`;a.click();
+  URL.revokeObjectURL(url);
+  showToast(`✅ ${dept} 지급확인서 다운로드 완료`);
+}
+
+// ===== 교체주기 =====
+function getCycleDay(part){ return part==='WET'?304:365; }
+function getCycleLabel(part){ return part==='WET'?'10개월':'12개월'; }
+
+// ===== 대시보드 (첫 페이지) =====
+function renderDashboard(){
+  const active=allData.filter(r=>!r.retired);
+  const today=new Date();
+  const todayStr=today.toISOString().slice(0,10);
+  const pending=(window._pending||[]).length;
+
+  // 이번달 지급예정 (다음 지급일이 이번달 안에 드는 사람)
+  const thisMonth=todayStr.slice(0,7);
+  const dueThisMonth=active.filter(r=>{
+    const hist=(r.history||[]).slice().sort();
+    if(!hist.length)return false;
+    const last=new Date(hist[hist.length-1]);
+    const next=new Date(last);
+    next.setDate(next.getDate()+getCycleDay(r.part));
+    return next.toISOString().slice(0,7)===thisMonth;
+  });
+
+  // 교체임박 90일
+  const urgentList=active.filter(r=>{
+    const hist=(r.history||[]).slice().sort();
+    if(!hist.length)return false;
+    const last=new Date(hist[hist.length-1]);
+    const next=new Date(last);
+    next.setDate(next.getDate()+getCycleDay(r.part));
+    const dday=Math.ceil((next-today)/(1000*60*60*24));
+    return dday<=90;
+  });
+  const overdue=urgentList.filter(r=>{
+    const hist=(r.history||[]).slice().sort();
+    const last=new Date(hist[hist.length-1]);
+    const next=new Date(last);
+    next.setDate(next.getDate()+getCycleDay(r.part));
+    return next<today;
+  });
+  const noHist=active.filter(r=>!r.history||!r.history.length);
+
+  // 팀별 인원
+  const teamCount={};
+  active.forEach(r=>{teamCount[r.part]=(teamCount[r.part]||0)+1;});
+  const teamOrder=['DRY','WET','DC','ED','ED-15시','지원'];
+  const teamBadge={'DRY':'b-dry','WET':'b-wet','DC':'b-dc','ED':'b-rdc','ED-15시':'b-warn','지원':'b-sup'};
+
+  // 교체주의 카드 (상위 5명)
+  const warnCards=urgentList.slice(0,5).map(r=>{
+    const hist=(r.history||[]).slice().sort();
+    const last=new Date(hist[hist.length-1]);
+    const next=new Date(last);
+    next.setDate(next.getDate()+getCycleDay(r.part));
+    const dday=Math.ceil((next-today)/(1000*60*60*24));
+    const ddLabel=dday<0?`D+${Math.abs(dday)}일 초과`:dday===0?'오늘!':'D-'+dday+'일';
+    const lvColor=dday<0?'var(--red)':dday<=30?'var(--orange)':'var(--amber)';
+    const pc=r.part==='WET'?'b-wet':r.part==='DRY'?'b-dry':r.part==='DC'?'b-dc':'b-sup';
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)">
+      <div>
+        <span class="name-link" onclick="openDetail(${r.no})">${r.name}</span>
+        <span class="badge ${pc}" style="margin:0 5px">${r.part}</span>
+        <span style="font-size:11px;color:var(--muted)">${r.job} · ${getCycleLabel(r.part)}</span>
+      </div>
+      <span style="font-size:12px;font-weight:700;color:${lvColor}">${ddLabel}</span>
+    </div>`;
+  }).join('');
+
+  document.getElementById('tabContent').innerHTML=`
+    <div class="two-col" style="margin-bottom:12px">
+      <!-- 왼쪽: 인원 현황 -->
+      <div class="section">
+        <div class="section-title">👥 팀별 인원 현황 <span style="font-size:11px;font-weight:400;color:var(--muted)">(재직 ${active.length}명)</span></div>
+        ${teamOrder.filter(t=>teamCount[t]).map(t=>`
+          <div class="dept-row">
+            <div><span class="badge ${teamBadge[t]||'b-sup'}">${t}</span></div>
+            <div style="font-size:13px;font-weight:700">${teamCount[t]}명</div>
+          </div>`).join('')}
+        <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn orange" onclick="switchTab('신청접수')">📥 신청접수</button>
+          <button class="btn navy" onclick="switchTab('지급확인서')">🖨️ 지급확인서</button>
+          <button class="btn" onclick="switchTab('명부')">📋 명부 전체</button>
+        </div>
+      </div>
+
+      <!-- 오른쪽: 지급 현황 요약 -->
+      <div class="section">
+        <div class="section-title">📊 지급 현황</div>
+        <div class="dept-row"><span style="font-size:12px">이번달 지급예정</span><span style="font-weight:700;color:var(--orange)">${dueThisMonth.length}명</span></div>
+        <div class="dept-row"><span style="font-size:12px">교체 초과</span><span style="font-weight:700;color:var(--red)">${overdue.length}명</span></div>
+        <div class="dept-row"><span style="font-size:12px">교체임박 (90일이내)</span><span style="font-weight:700;color:var(--amber)">${urgentList.length-overdue.length}명</span></div>
+        <div class="dept-row"><span style="font-size:12px">지급이력 없음</span><span style="font-weight:700;color:var(--muted)">${noHist.length}명</span></div>
+        <div style="margin-top:10px">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:4px">교체주기 기준</div>
+          <div style="font-size:11px">👟 DRY·DC·ED·지원: <b>12개월</b></div>
+          <div style="font-size:11px">👟 WET: <b>10개월</b></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 교체주의 대상자 -->
+    <div class="section">
+      <div class="section-title">⚠️ 교체주의 대상자 (임박·초과 상위 5명)
+        <button class="btn" onclick="switchTab('교체주의')" style="margin-left:auto;font-size:11px">전체 보기</button>
+      </div>
+      ${urgentList.length?warnCards:'<div style="color:var(--muted);font-size:12px;padding:8px">교체임박 대상 없음 ✅</div>'}
+    </div>
+  `;
+}
+
+// ===== 교체주의 탭 =====
+function renderWarning(){
+  const today=new Date();
+  const todayStr=today.toISOString().slice(0,10);
+  const active=allData.filter(r=>!r.retired);
+
+  const overdue=[],urgent=[],noHist=[];
+  active.forEach(r=>{
+    const hist=(r.history||[]).slice().sort();
+    if(!hist.length){noHist.push(r);return;}
+    const last=new Date(hist[hist.length-1]);
+    const next=new Date(last);
+    next.setDate(next.getDate()+getCycleDay(r.part));
+    const dday=Math.ceil((next-today)/(1000*60*60*24));
+    if(dday<0) overdue.push({r,last:hist[hist.length-1],next,dday});
+    else if(dday<=90) urgent.push({r,last:hist[hist.length-1],next,dday});
+  });
+  overdue.sort((a,b)=>a.dday-b.dday);
+  urgent.sort((a,b)=>a.dday-b.dday);
+
+  function wRow({r,last,next,dday}){
+    const pc=r.part==='WET'?'b-wet':r.part==='DRY'?'b-dry':r.part==='DC'?'b-dc':'b-sup';
+    const nextStr=next.toISOString().slice(0,10);
+    const ddLabel=dday<0?`D+${Math.abs(dday)}일 초과`:dday===0?'오늘!':'D-'+dday+'일';
+    const lvColor=dday<0?'var(--red)':dday<=30?'var(--orange)':'var(--amber)';
+    return `<div class="issue-card">
+      <div>
+        <span class="name-link" onclick="openDetail(${r.no})">${r.name}</span>
+        <span class="badge ${pc}" style="margin:0 6px">${r.part}</span>
+        <span style="font-size:11px;color:var(--muted)">${r.job} · ${r.size?r.size+'mm':'사이즈미등록'} · ${getCycleLabel(r.part)}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:12px;color:var(--muted)">최근지급: ${last}</span>
+        <span style="font-size:12px;color:var(--muted)">다음예정: ${nextStr}</span>
+        <span style="font-weight:700;color:${lvColor}">${ddLabel}</span>
+      </div>
+    </div>`;
+  }
+
+  document.getElementById('tabContent').innerHTML=`
+    <div class="section">
+      <div class="section-title" style="color:var(--red)">🔴 교체 초과 (${overdue.length}명)</div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px">DRY·DC·ED·지원 12개월 | WET 10개월</div>
+      ${overdue.length?overdue.map(wRow).join(''):'<div style="color:var(--muted);font-size:12px;padding:8px">해당 없음 ✅</div>'}
+    </div>
+    <div class="section" style="margin-top:12px">
+      <div class="section-title" style="color:var(--amber)">🟡 교체 임박 — 90일 이내 (${urgent.length}명)</div>
+      ${urgent.length?urgent.map(wRow).join(''):'<div style="color:var(--muted);font-size:12px;padding:8px">해당 없음 ✅</div>'}
+    </div>
+    <div class="section" style="margin-top:12px">
+      <div class="section-title">⬜ 지급이력 없음 (${noHist.length}명)</div>
+      ${noHist.map(r=>`<div class="issue-card">
+        <div>
+          <span class="name-link" onclick="openDetail(${r.no})">${r.name}</span>
+          <span class="badge ${r.part==='WET'?'b-wet':r.part==='DRY'?'b-dry':r.part==='DC'?'b-dc':'b-sup'}" style="margin:0 6px">${r.part}</span>
+          <span style="font-size:11px;color:var(--muted)">${r.job} · ${getCycleLabel(r.part)}</span>
+        </div>
+        <span style="font-size:12px;color:var(--muted)">입사일: ${r.joinDate||'-'}</span>
+      </div>`).join('')||'<div style="color:var(--muted);font-size:12px;padding:8px">전원 지급이력 있음 ✅</div>'}
+    </div>
+  `;
+}
+
+// ===== 저장/불러오기 =====
+async function saveData(){
+  for(const r of allData) await dbPut(r);
+  const blob=new Blob([JSON.stringify(allData,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const ym=new Date().getFullYear()+String(new Date().getMonth()+1).padStart(2,'0');
+  a.href=url;a.download=`보호구관리대장_백업_${ym}.json`;a.click();
+  URL.revokeObjectURL(url);
+  showToast('✅ 저장+백업 완료');
+}
+async function importJSON(input){
+  const file=input.files[0];
+  if(!file)return;
+  const text=await file.text();
+  const data=JSON.parse(text);
+  for(const r of data) await dbPut(r);
+  allData=await dbGetAll();
+  renderTab();renderKPI();
+  showToast('✅ '+data.length+'건 불러오기 완료');
+  input.value='';
+}
+function exportCSV(){
+  const headers=['No','성명','파트','직무','사이즈','입사일','지급이력','비고','퇴사'];
+  const rows=allData.map(r=>[r.no,r.name,r.part,r.job,r.size,r.joinDate,(r.history||[]).join(' / '),r.note,r.retired?'Y':'']);
+  const csv=[headers,...rows].map(r=>r.map(v=>`"${v||''}"`).join(',')).join('\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`보호구관리대장_${new Date().toISOString().slice(0,10)}.csv`;a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ===== 토스트 =====
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.style.opacity='1';
+  setTimeout(()=>t.style.opacity='0',3000);
+}
+
+// ===== INIT =====
+const INITIAL_DATA=[{"no":1,"name":"박해문","part":"DC","job":"리콘다","joinDate":"2004-04-28","size":"","history":["2021-06-01","2022-12-13","2025-04-02"],"note":"","retired":false},{"no":2,"name":"박근수","part":"ED","job":"ED(직영)","joinDate":"2008-05-26","size":"","history":["2025-04-30"],"note":"","retired":false},{"no":3,"name":"박근익","part":"DC","job":"대신(태은)","joinDate":"2008-06-09","size":"","history":["2025-08-01"],"note":"","retired":false},{"no":4,"name":"박미옥","part":"DRY","job":"상품관리","joinDate":"2008-06-09","size":"","history":["2022-02-08","2022-10-12","2024-04-29","2026-05-12"],"note":"","retired":false},{"no":5,"name":"홍정호","part":"DRY","job":"2조","joinDate":"2008-06-09","size":"","history":["2022-11-01","2024-10-01","2025-04-29","2026-05-14"],"note":"","retired":false},{"no":6,"name":"강창엽","part":"WET","job":"출하팀(22)","joinDate":"2008-06-16","size":"","history":["2024-07-28","2025-02-08","2025-08-01","2026-01-05"],"note":"","retired":false},{"no":7,"name":"김병길","part":"WET","job":"입하팀","joinDate":"2008-06-16","size":"","history":["2022-01-06"],"note":"","retired":false},{"no":8,"name":"정현숙","part":"지원","job":"사무관리","joinDate":"2008-06-17","size":"","history":["2021-06-25","2025-04-29"],"note":"","retired":false},{"no":9,"name":"엄남기","part":"DRY","job":"4조","joinDate":"2008-07-07","size":"","history":[],"note":"","retired":false},{"no":10,"name":"김인경","part":"WET","job":"출하팀(22)","joinDate":"2008-07-07","size":"","history":["2020-12-16","2022-05-10"],"note":"","retired":false},{"no":11,"name":"김철순","part":"WET","job":"매입","joinDate":"2008-07-07","size":"","history":["2022-04-13","2023-10-31","2025-03-31","2026-05-29"],"note":"","retired":false},{"no":12,"name":"설명룡","part":"지원","job":"DRY1팀장","joinDate":"2008-07-17","size":"","history":["2019-12-21","2022-03-08","2024-07-28","2025-12-08"],"note":"","retired":false},{"no":13,"name":"홍천식","part":"WET","job":"입하팀","joinDate":"2008-07-22","size":"","history":["2024-05-01","2024-07-28","2024-10-30","2025-04-02"],"note":"심한 주의","retired":false},{"no":14,"name":"전영주","part":"DRY","job":"1조","joinDate":"2008-07-25","size":"","history":["2022-03-08","2023-03-31","2024-01-02","2026-05-29"],"note":"","retired":false},{"no":15,"name":"백은자","part":"ED","job":"ED(직영)","joinDate":"2008-08-01","size":"","history":["2019-12-21","2021-11-13","2025-04-30"],"note":"","retired":false},{"no":16,"name":"이상덕","part":"WET","job":"팀장","joinDate":"2008-08-02","size":"","history":["2019-12-23","2022-02-08","2023-10-31"],"note":"","retired":false},{"no":17,"name":"허한임","part":"DRY","job":"2조","joinDate":"2008-08-04","size":"","history":["2023-03-04","2024-01-02","2025-04-29","2025-12-08"],"note":"","retired":false},{"no":18,"name":"김재환","part":"DRY","job":"4조","joinDate":"2008-08-04","size":"","history":["2020-01-23","2022-03-08"],"note":"","retired":false},{"no":19,"name":"김연선","part":"DC","job":"패션","joinDate":"2008-08-07","size":"","history":["2021-06-02","2022-06-07","2024-07-28","2026-04-23"],"note":"","retired":false},{"no":20,"name":"권순일","part":"WET","job":"출하팀(22)","joinDate":"2008-08-07","size":"","history":[],"note":"","retired":false},{"no":21,"name":"권광일","part":"DRY","job":"DAS","joinDate":"2008-08-19","size":"","history":["2019-11-18","2022-03-08","2026-04-22"],"note":"","retired":false},{"no":22,"name":"김흥태","part":"DRY","job":"2조","joinDate":"2008-09-01","size":"","history":["2020-10-24","2021-12-04","2023-05-09","2025-03-31"],"note":"","retired":false},{"no":23,"name":"강윤회","part":"DRY","job":"2조","joinDate":"2008-10-08","size":"","history":["2022-07-05"],"note":"","retired":false},{"no":24,"name":"이상원","part":"DRY","job":"5조","joinDate":"2009-01-01","size":"","history":["2022-02-08"],"note":"","retired":false},{"no":25,"name":"김정훈","part":"ED","job":"팀장","joinDate":"2009-02-09","size":"","history":["2020-12-15","2022-04-12","2025-02-06","2025-10-01"],"note":"","retired":false},{"no":26,"name":"송태준","part":"WET","job":"입하팀","joinDate":"2009-03-02","size":"","history":["2024-02-03","2024-06-07","2024-07-28","2025-04-29"],"note":"","retired":false},{"no":27,"name":"김태호","part":"DRY","job":"6조","joinDate":"2009-04-27","size":"","history":["2023-05-09","2023-10-31","2025-04-29","2026-05-12"],"note":"","retired":false},{"no":28,"name":"권혁도","part":"DRY","job":"2조","joinDate":"2009-06-15","size":"","history":["2022-04-12","2025-12-08"],"note":"","retired":false},{"no":29,"name":"박미선","part":"WET","job":"입하팀","joinDate":"2009-07-01","size":"","history":["2022-01-04"],"note":"","retired":false},{"no":30,"name":"최종구","part":"ED","job":"ED(DPS)","joinDate":"2009-08-20","size":"","history":["2022-03-08","2025-04-01"],"note":"","retired":false},{"no":31,"name":"김종현","part":"DRY","job":"1조","joinDate":"2009-08-31","size":"","history":["2021-12-10","2022-12-13","2024-06-10","2025-08-01"],"note":"","retired":false},{"no":32,"name":"이수경","part":"ED","job":"ED(직영)","joinDate":"2009-11-30","size":"","history":["2022-05-09","2025-04-01"],"note":"","retired":false},{"no":33,"name":"김동순","part":"ED","job":"ED(직영)","joinDate":"2009-11-30","size":"","history":["2022-05-09","2025-04-01"],"note":"","retired":false},{"no":34,"name":"이현우","part":"WET","job":"출하팀(22)","joinDate":"2009-12-29","size":"","history":[],"note":"","retired":false},{"no":35,"name":"석효철","part":"WET","job":"출하팀(22)","joinDate":"2010-01-01","size":"","history":["2021-01-21","2022-05-09","2023-05-08"],"note":"","retired":false},{"no":36,"name":"정배용","part":"DC","job":"리콘다","joinDate":"2010-03-01","size":"","history":["2022-05-10"],"note":"","retired":false},{"no":37,"name":"김복녀","part":"DRY","job":"5조","joinDate":"2010-03-01","size":"","history":[],"note":"","retired":false},{"no":38,"name":"김상숙","part":"DRY","job":"5조","joinDate":"2010-03-01","size":"","history":["2026-05-12"],"note":"","retired":false},{"no":39,"name":"박광선","part":"DRY","job":"DAS","joinDate":"2010-03-01","size":"","history":["2019-12-21","2021-11-13","2022-05-09","2025-12-08"],"note":"","retired":false},{"no":40,"name":"박광민","part":"WET","job":"입하팀","joinDate":"2010-03-12","size":"","history":["2022-05-12","2023-02-03","2023-09-02","2024-05-02"],"note":"","retired":false},{"no":41,"name":"이상무","part":"DRY","job":"6조","joinDate":"2010-03-29","size":"","history":["2023-05-09","2024-02-29","2024-10-08","2025-11-01"],"note":"","retired":false},{"no":42,"name":"안종근","part":"DRY","job":"상품관리","joinDate":"2010-04-05","size":"","history":["2022-08-10","2023-07-29","2024-02-29","2025-03-06"],"note":"","retired":false},{"no":43,"name":"고명화","part":"DRY","job":"상품관리","joinDate":"2010-05-12","size":"","history":["2025-03-31"],"note":"","retired":false},{"no":44,"name":"임홍연","part":"WET","job":"입하팀","joinDate":"2010-05-17","size":"","history":[],"note":"","retired":false},{"no":45,"name":"이은숙","part":"DRY","job":"4조","joinDate":"2010-05-24","size":"","history":["2023-12-14","2026-04-23"],"note":"","retired":false},{"no":46,"name":"정임애","part":"WET","job":"소터팀","joinDate":"2010-06-03","size":"","history":["2024-10-01","2025-02-08","2025-09-03","2026-05-29"],"note":"","retired":false},{"no":47,"name":"김성철","part":"DC","job":"패션","joinDate":"2010-07-01","size":"","history":["2022-06-07"],"note":"","retired":false},{"no":48,"name":"임경식","part":"DC","job":"팀장","joinDate":"2010-08-16","size":"","history":["2021-01-23","2025-02-07"],"note":"","retired":false},{"no":49,"name":"최창민","part":"DRY","job":"6조","joinDate":"2010-08-23","size":"","history":["2023-02-02","2024-05-08","2025-02-07","2026-05-29"],"note":"","retired":false},{"no":50,"name":"장영엽","part":"DRY","job":"3조","joinDate":"2010-08-26","size":"","history":["2023-09-01"],"note":"","retired":false},{"no":51,"name":"김주경","part":"지원","job":"인사관리","joinDate":"2010-08-30","size":"","history":["2022-02-08","2023-10-02","2024-10-29","2025-08-30"],"note":"","retired":false},{"no":52,"name":"이동진","part":"DRY","job":"3조","joinDate":"2010-10-01","size":"","history":["2019-09-20","2022-03-08","2023-09-01","2025-12-08"],"note":"","retired":false},{"no":53,"name":"유미화","part":"DRY","job":"2조","joinDate":"2010-10-04","size":"","history":["2022-05-09","2025-04-29","2025-12-08"],"note":"","retired":false},{"no":54,"name":"김금희","part":"DRY","job":"DAS","joinDate":"2010-10-25","size":"","history":["2022-06-08","2023-10-31","2024-05-01","2025-11-01"],"note":"","retired":false},{"no":55,"name":"박병규","part":"WET","job":"운영팀(10)","joinDate":"2010-11-02","size":"","history":["2023-07-01","2024-03-01","2024-11-01","2025-04-01"],"note":"","retired":false},{"no":56,"name":"이정재","part":"DRY","job":"4조","joinDate":"2010-11-18","size":"","history":["2023-12-14","2025-01-04"],"note":"","retired":false},{"no":57,"name":"김강섭","part":"WET","job":"출하팀(22)","joinDate":"2009-06-15","size":"","history":["2023-12-13","2024-07-28","2025-02-08","2026-01-05"],"note":"","retired":false},{"no":58,"name":"남권희","part":"DRY","job":"2조","joinDate":"2007-04-05","size":"","history":["2022-07-05","2024-04-20","2025-03-31","2025-12-08"],"note":"","retired":false},{"no":59,"name":"유광석","part":"지원","job":"전산관리","joinDate":"2010-12-13","size":"","history":["2019-12-23","2023-10-02","2024-10-01","2025-08-30"],"note":"","retired":false},{"no":60,"name":"송연자","part":"ED","job":"ED(B2B)","joinDate":"2011-03-14","size":"","history":["2021-02-19","2022-06-07","2023-10-31","2025-05-30"],"note":"","retired":false},{"no":61,"name":"조경준","part":"DRY","job":"6조","joinDate":"2011-04-05","size":"","history":["2023-10-31","2024-05-07","2024-10-29","2025-04-29"],"note":"","retired":false},{"no":62,"name":"조영채","part":"WET","job":"입하팀","joinDate":"2011-04-11","size":"","history":["2022-04-13","2023-02-03","2023-10-05","2026-05-29"],"note":"","retired":false},{"no":63,"name":"김영찬","part":"DRY","job":"1조","joinDate":"2011-05-16","size":"","history":["2021-01-21","2021-12-10","2023-03-31"],"note":"","retired":false},{"no":64,"name":"김혜란","part":"DRY","job":"5조","joinDate":"2011-05-16","size":"","history":["2022-03-08","2023-10-31","2025-08-30"],"note":"","retired":false},{"no":65,"name":"하창석","part":"WET","job":"출하팀(22)","joinDate":"2011-05-24","size":"","history":["2023-06-03","2024-06-05","2025-03-31","2025-10-01"],"note":"","retired":false},{"no":66,"name":"김용성","part":"DRY","job":"2조","joinDate":"2011-06-13","size":"","history":["2024-01-02","2025-01-02"],"note":"","retired":false},{"no":67,"name":"윤정섭","part":"WET","job":"출하팀(22)","joinDate":"2011-08-17","size":"","history":["2023-10-06","2024-07-28","2025-02-08","2025-11-01"],"note":"","retired":false},{"no":68,"name":"박수현","part":"DRY","job":"1조","joinDate":"2011-10-03","size":"","history":["2023-03-31"],"note":"","retired":false},{"no":69,"name":"안명수","part":"ED","job":"ED(직영)","joinDate":"2011-10-24","size":"","history":["2022-05-09","2025-05-09"],"note":"","retired":false},{"no":70,"name":"이정우","part":"WET","job":"운영팀(10)","joinDate":"2012-01-27","size":"","history":["2021-11-13","2023-07-03","2023-12-14","2025-01-09"],"note":"","retired":false},{"no":71,"name":"윤종관","part":"DRY","job":"5조","joinDate":"2012-02-13","size":"","history":[],"note":"","retired":false},{"no":72,"name":"이종섭","part":"WET","job":"소터팀","joinDate":"2012-02-20","size":"","history":["2022-01-05","2023-10-05"],"note":"","retired":false},{"no":73,"name":"박숙영","part":"ED","job":"ED(B2B)","joinDate":"2012-02-27","size":"","history":["2023-03-31","2023-10-31","2024-07-27","2025-05-30"],"note":"","retired":false},{"no":74,"name":"이용길","part":"DRY","job":"상품관리","joinDate":"2012-04-02","size":"","history":["2023-03-03","2024-03-01","2024-10-29","2025-04-29"],"note":"","retired":false},{"no":75,"name":"김병길1","part":"DRY","job":"5조","joinDate":"2012-04-26","size":"","history":["2022-03-08"],"note":"","retired":false},{"no":76,"name":"한광태","part":"WET","job":"출하팀(22)","joinDate":"2012-04-30","size":"","history":["2020-09-23","2023-10-31"],"note":"","retired":false},{"no":77,"name":"길병진","part":"DRY","job":"6조","joinDate":"2012-05-07","size":"","history":["2020-02-18"],"note":"","retired":false},{"no":78,"name":"배상석","part":"DC","job":"대신(태은)","joinDate":"2012-05-31","size":"","history":["2019-09-25","2022-01-07","2023-05-10","2025-02-07"],"note":"","retired":false},{"no":79,"name":"이명제","part":"DRY","job":"6조","joinDate":"2012-06-01","size":"","history":["2022-05-09","2025-07-04"],"note":"","retired":false},{"no":80,"name":"이인원","part":"ED","job":"ED(B2B)","joinDate":"2012-07-09","size":"","history":["2022-05-09","2023-03-31","2024-07-28","2025-05-30"],"note":"","retired":false},{"no":81,"name":"홍성남","part":"ED","job":"ED(직영)","joinDate":"2012-07-23","size":"","history":["2019-06-22","2022-03-08","2023-07-01","2025-10-01"],"note":"","retired":false},{"no":82,"name":"김대막","part":"DRY","job":"4조","joinDate":"2012-08-24","size":"","history":["2022-03-08","2023-12-14"],"note":"","retired":false},{"no":83,"name":"최용훈","part":"DRY","job":"6조","joinDate":"2012-10-04","size":"","history":["2020-10-21","2022-01-07","2023-05-09","2025-04-29"],"note":"","retired":false},{"no":84,"name":"김한나","part":"DRY","job":"6조","joinDate":"2012-10-11","size":"","history":["2023-05-08","2024-01-02","2024-10-01","2026-05-12"],"note":"","retired":false},{"no":85,"name":"박순영","part":"DRY","job":"4조","joinDate":"2012-10-29","size":"","history":[],"note":"","retired":false},{"no":86,"name":"곽병하","part":"WET","job":"출하팀(22)","joinDate":"2012-12-03","size":"","history":["2022-01-04","2024-07-05","2025-12-06"],"note":"","retired":false},{"no":87,"name":"임경호","part":"WET","job":"입하팀","joinDate":"2012-12-06","size":"","history":["2024-02-29","2024-09-19","2025-01-08"],"note":"심한 주의","retired":false},{"no":88,"name":"박태호","part":"WET","job":"입하팀","joinDate":"2013-01-07","size":"","history":["2024-07-28","2024-10-31","2025-03-06","2026-04-23"],"note":"심한 주의","retired":false},{"no":89,"name":"박윤기","part":"DC","job":"리콘다","joinDate":"2013-02-04","size":"","history":["2020-05-02","2022-01-07","2026-05-29"],"note":"","retired":false},{"no":90,"name":"박태준","part":"DRY","job":"상품관리","joinDate":"2013-03-04","size":"","history":["2023-07-29","2024-04-29","2024-10-29"],"note":"","retired":false},{"no":91,"name":"김종철","part":"DRY","job":"1조","joinDate":"2013-03-15","size":"","history":["2021-12-10","2023-03-31","2024-06-10","2025-08-01"],"note":"","retired":false},{"no":92,"name":"곽노훈","part":"DRY","job":"DAS","joinDate":"2013-03-15","size":"","history":["2022-04-12","2023-03-31","2023-10-31","2025-11-01"],"note":"","retired":false},{"no":93,"name":"김충실","part":"DRY","job":"2조","joinDate":"2013-03-25","size":"","history":["2022-04-12","2025-04-29"],"note":"","retired":false},{"no":94,"name":"김주석","part":"WET","job":"운영팀(10)","joinDate":"2013-04-01","size":"","history":["2023-12-14","2024-05-01","2024-10-30","2025-11-01"],"note":"","retired":false},{"no":95,"name":"손종현1","part":"ED","job":"ED(DPS)","joinDate":"2014-01-20","size":"","history":["2025-04-01"],"note":"","retired":false},{"no":96,"name":"김희열1","part":"WET","job":"매입","joinDate":"2014-07-01","size":"","history":["2022-07-07","2024-03-30"],"note":"","retired":false},{"no":97,"name":"한평근","part":"DRY","job":"3조","joinDate":"2014-07-22","size":"","history":["2022-11-01","2023-09-01","2024-10-29","2025-08-01"],"note":"","retired":false},{"no":98,"name":"김영희","part":"WET","job":"입하팀","joinDate":"2014-07-29","size":"","history":["2023-03-31","2024-06-10","2025-03-31","2026-05-12"],"note":"","retired":false},{"no":99,"name":"정택성","part":"DRY","job":"3조","joinDate":"2014-08-05","size":"","history":["2020-11-16","2021-12-10","2024-03-30","2025-08-01"],"note":"","retired":false},{"no":100,"name":"임은희","part":"WET","job":"입하팀","joinDate":"2014-08-28","size":"","history":["2019-11-20","2022-02-10"],"note":"","retired":false},{"no":101,"name":"강민수","part":"WET","job":"출하팀(22)","joinDate":"2014-10-07","size":"","history":["2021-06-29","2023-02-03","2024-01-02"],"note":"","retired":false},{"no":102,"name":"신인선","part":"DRY","job":"DAS","joinDate":"2014-10-16","size":"","history":["2021-02-19","2022-02-12","2023-10-31"],"note":"","retired":false},{"no":103,"name":"신윤호","part":"DRY","job":"4조","joinDate":"2014-12-30","size":"","history":[],"note":"","retired":false},{"no":104,"name":"신정호","part":"DRY","job":"4조","joinDate":"2014-12-30","size":"","history":[],"note":"","retired":false},{"no":105,"name":"박유섭","part":"WET","job":"출하팀(22)","joinDate":"2015-01-13","size":"","history":["2023-03-03"],"note":"","retired":false},{"no":106,"name":"최성우","part":"DRY","job":"3조","joinDate":"2015-04-30","size":"","history":["2022-03-08","2024-03-30"],"note":"","retired":false},{"no":107,"name":"김태우","part":"WET","job":"출하팀(22)","joinDate":"2015-05-12","size":"","history":["2021-03-21","2022-04-14"],"note":"","retired":false},{"no":108,"name":"이근원","part":"WET","job":"입하팀","joinDate":"2015-05-14","size":"","history":[],"note":"","retired":false},{"no":109,"name":"조규선","part":"DC","job":"리콘다","joinDate":"2015-06-23","size":"","history":["2022-12-13"],"note":"","retired":false},{"no":110,"name":"이철민","part":"DRY","job":"4조","joinDate":"2015-07-09","size":"","history":[],"note":"","retired":false},{"no":111,"name":"오희경","part":"DRY","job":"상품관리","joinDate":"2015-08-18","size":"","history":["2022-02-08"],"note":"","retired":false},{"no":112,"name":"이점순","part":"ED","job":"ED(직영)","joinDate":"2015-08-20","size":"","history":["2022-04-12","2023-07-30","2024-07-05","2025-01-10"],"note":"","retired":false},{"no":113,"name":"이안재","part":"DRY","job":"5조","joinDate":"2015-10-01","size":"","history":["2024-03-29","2024-10-08","2025-04-30","2026-05-12"],"note":"","retired":false},{"no":114,"name":"박성우","part":"DRY","job":"상품관리","joinDate":"2015-10-06","size":"","history":["2022-03-08","2023-03-03","2024-04-29","2025-10-01"],"note":"","retired":false},{"no":115,"name":"김윤기","part":"WET","job":"출하팀(22)","joinDate":"2015-11-03","size":"","history":["2021-11-18"],"note":"","retired":false},{"no":116,"name":"김채안","part":"DRY","job":"1조","joinDate":"2015-11-11","size":"","history":["2022-02-09","2025-08-01"],"note":"","retired":false},{"no":117,"name":"전홍숙","part":"DRY","job":"6조","joinDate":"2015-11-11","size":"","history":[],"note":"","retired":false},{"no":118,"name":"이광수","part":"WET","job":"출하팀(22)","joinDate":"2015-11-11","size":"","history":["2023-05-08","2024-03-30","2025-02-08","2025-11-01"],"note":"","retired":false},{"no":119,"name":"유자","part":"WET","job":"입하팀","joinDate":"2015-11-24","size":"","history":["2022-01-13","2022-04-17","2023-10-31","2025-03-06"],"note":"","retired":false},{"no":120,"name":"한상근","part":"DRY","job":"1조","joinDate":"2015-12-09","size":"","history":["2022-12-13","2025-08-01"],"note":"","retired":false},{"no":121,"name":"배순화","part":"ED","job":"ED(직영)","joinDate":"2015-12-21","size":"","history":["2022-12-13","2023-06-07","2025-04-01","2026-05-29"],"note":"","retired":false},{"no":122,"name":"구경애","part":"DRY","job":"DAS","joinDate":"2015-12-21","size":"","history":["2022-03-09","2023-02-03","2025-11-01"],"note":"","retired":false},{"no":123,"name":"이은라","part":"DRY","job":"DAS","joinDate":"2015-12-21","size":"","history":["2024-11-01"],"note":"","retired":false},{"no":124,"name":"최영미","part":"ED","job":"ED(직영)","joinDate":"2015-12-21","size":"","history":["2022-04-12","2025-04-01"],"note":"","retired":false},{"no":125,"name":"손윤정","part":"ED-15시","job":"ED(DPS)-15시","joinDate":"2015-12-21","size":"","history":["2022-03-08","2022-12-13","2025-04-29"],"note":"","retired":false},{"no":126,"name":"김미성","part":"ED","job":"ED(직영)","joinDate":"2015-12-21","size":"","history":["2019-12-22","2022-03-08","2025-04-01","2026-02-28"],"note":"","retired":false},{"no":127,"name":"김선화","part":"DRY","job":"DAS","joinDate":"2015-12-21","size":"","history":["2022-03-08","2023-06-02","2023-10-31","2025-11-01"],"note":"","retired":false},{"no":128,"name":"박미영","part":"DRY","job":"DAS","joinDate":"2015-12-21","size":"","history":["2022-05-09","2023-03-31","2023-10-31","2025-11-01"],"note":"","retired":false},{"no":129,"name":"김갑숙","part":"DC","job":"수출","joinDate":"2015-12-21","size":"","history":["2022-04-13","2025-02-07"],"note":"","retired":false},{"no":130,"name":"이미정","part":"DC","job":"패션","joinDate":"2015-12-21","size":"","history":["2022-03-09","2022-12-13","2024-11-01","2026-04-23"],"note":"","retired":false},{"no":131,"name":"한선희","part":"WET","job":"소터팀","joinDate":"2015-12-21","size":"","history":["2020-06-08","2022-05-09","2025-09-03"],"note":"","retired":false},{"no":132,"name":"김부늠","part":"DRY","job":"DAS","joinDate":"2015-12-21","size":"","history":["2022-03-08","2023-05-08","2024-02-29","2026-02-28"],"note":"","retired":false},{"no":133,"name":"김한규","part":"DC","job":"대신(태은)","joinDate":"2016-01-06","size":"","history":["2022-05-10","2024-10-31"],"note":"","retired":false},{"no":134,"name":"이종수","part":"DC","job":"리콘다","joinDate":"2016-01-11","size":"","history":[],"note":"","retired":false},{"no":135,"name":"정행영","part":"DC","job":"리콘다","joinDate":"2016-01-14","size":"","history":["2023-09-02"],"note":"","retired":false},{"no":136,"name":"김승환","part":"DC","job":"리콘다","joinDate":"2016-01-14","size":"","history":[],"note":"","retired":false},{"no":137,"name":"최종열","part":"DC","job":"리콘다","joinDate":"2016-01-14","size":"","history":["2022-04-12"],"note":"","retired":false},{"no":138,"name":"조정호","part":"DRY","job":"1조","joinDate":"2016-03-02","size":"","history":["2021-12-10","2022-12-13","2024-01-02","2025-12-06"],"note":"","retired":false},{"no":139,"name":"이광열","part":"WET","job":"소터팀","joinDate":"2016-03-09","size":"","history":[],"note":"","retired":false},{"no":140,"name":"김상근","part":"DC","job":"리콘다","joinDate":"2016-03-23","size":"","history":["2022-04-12","2023-09-02","2024-05-01","2026-05-29"],"note":"","retired":false},{"no":141,"name":"최명진1","part":"DRY","job":"5조","joinDate":"2016-04-06","size":"","history":["2022-02-08"],"note":"","retired":false},{"no":142,"name":"최선희","part":"ED","job":"ED(DPS)","joinDate":"2016-04-27","size":"","history":["2022-03-09","2023-02-03"],"note":"","retired":false},{"no":143,"name":"마자순","part":"WET","job":"소터팀","joinDate":"2016-05-03","size":"","history":["2024-10-01","2025-02-07","2025-06-01","2026-05-12"],"note":"심한 주의","retired":false},{"no":144,"name":"박영희","part":"WET","job":"소터팀","joinDate":"2016-05-03","size":"","history":["2022-04-13","2025-08-01"],"note":"","retired":false},{"no":145,"name":"이재선","part":"DRY","job":"DAS","joinDate":"2016-05-12","size":"","history":["2022-05-09"],"note":"","retired":false},{"no":146,"name":"임윤호1","part":"WET","job":"출하팀(22)","joinDate":"2016-06-02","size":"","history":[],"note":"","retired":false},{"no":147,"name":"한지원1","part":"DRY","job":"DAS","joinDate":"2016-06-21","size":"","history":["2025-07-04"],"note":"","retired":false},{"no":148,"name":"김창순","part":"WET","job":"소터팀","joinDate":"2016-06-21","size":"","history":[],"note":"","retired":false},{"no":149,"name":"오진석","part":"DRY","job":"5조","joinDate":"2016-07-13","size":"","history":["2022-11-01","2023-10-05","2024-03-29","2025-05-31"],"note":"","retired":false},{"no":150,"name":"박승임","part":"DRY","job":"DAS","joinDate":"2016-07-13","size":"","history":["2022-04-12","2023-07-30","2024-05-01","2025-11-01"],"note":"","retired":false},{"no":151,"name":"신동미","part":"ED","job":"ED(B2B)","joinDate":"2016-08-24","size":"","history":["2019-11-18","2022-03-08","2023-03-31"],"note":"","retired":false},{"no":152,"name":"최동일","part":"DRY","job":"DAS","joinDate":"2016-09-28","size":"","history":["2019-11-18","2022-03-08"],"note":"","retired":false},{"no":153,"name":"김은옥","part":"WET","job":"입하팀","joinDate":"2016-10-26","size":"","history":["2022-04-12","2026-01-05"],"note":"","retired":false},{"no":154,"name":"하태욱","part":"DRY","job":"1조","joinDate":"2016-11-23","size":"","history":["2023-09-01","2024-06-10","2025-08-01","2026-05-29"],"note":"","retired":false},{"no":155,"name":"한진","part":"DC","job":"리콘다","joinDate":"2017-01-04","size":"","history":["2022-04-12","2023-09-02"],"note":"","retired":false},{"no":156,"name":"김동현","part":"DRY","job":"1조","joinDate":"2017-02-15","size":"","history":["2019-12-21","2021-12-10","2025-12-08"],"note":"","retired":false},{"no":157,"name":"김백호1","part":"DC","job":"수출","joinDate":"2017-02-15","size":"","history":["2022-04-12","2022-12-13"],"note":"","retired":false},{"no":158,"name":"김인숙2","part":"DRY","job":"5조","joinDate":"2017-02-22","size":"","history":["2025-05-30"],"note":"","retired":false},{"no":159,"name":"양선주","part":"DRY","job":"1조","joinDate":"2017-04-12","size":"","history":["2022-02-09","2022-11-01","2024-06-10"],"note":"","retired":false},{"no":160,"name":"고현수1","part":"WET","job":"출하팀(22)","joinDate":"2017-04-12","size":"","history":["2023-12-13","2024-07-28","2025-01-10","2026-01-05"],"note":"","retired":false},{"no":161,"name":"박민성","part":"WET","job":"소터팀","joinDate":"2017-04-21","size":"","history":["2024-01-04","2024-03-21","2024-06-07","2026-04-15"],"note":"","retired":false},{"no":162,"name":"안명선","part":"DRY","job":"1조","joinDate":"2017-05-04","size":"","history":["2021-12-10","2024-06-10","2025-08-01","2026-05-29"],"note":"","retired":false},{"no":163,"name":"최양배","part":"WET","job":"운영팀(10)","joinDate":"2017-07-26","size":"","history":["2022-12-13","2023-05-08","2025-01-09","2025-04-01"],"note":"","retired":false},{"no":164,"name":"이은석","part":"DC","job":"수출","joinDate":"2017-10-13","size":"","history":["2020-08-30","2022-05-10","2023-12-19","2024-11-01"],"note":"","retired":false},{"no":165,"name":"허숙","part":"DRY","job":"1조","joinDate":"2017-10-19","size":"","history":["2022-02-09","2023-09-01","2025-08-01"],"note":"","retired":false},{"no":166,"name":"김기영","part":"DRY","job":"상품관리","joinDate":"2017-11-01","size":"","history":["2022-10-12","2023-07-29","2024-10-29","2026-01-01"],"note":"","retired":false},{"no":167,"name":"민경준1","part":"DC","job":"리콘다","joinDate":"2017-11-08","size":"","history":[],"note":"","retired":false},{"no":168,"name":"김영훈","part":"WET","job":"출하팀(22)","joinDate":"2017-11-22","size":"","history":["2024-10-31"],"note":"","retired":false},{"no":169,"name":"강현구","part":"ED","job":"ED(B2B)","joinDate":"2018-02-28","size":"","history":["2024-07-27"],"note":"","retired":false},{"no":170,"name":"이덕희","part":"WET","job":"소터팀","joinDate":"2018-02-28","size":"","history":["2022-11-16","2023-05-08","2024-03-01"],"note":"","retired":false},{"no":171,"name":"김해남","part":"DC","job":"패션","joinDate":"2018-03-07","size":"","history":["2022-06-07","2025-05-30"],"note":"","retired":false},{"no":172,"name":"이재봉","part":"DRY","job":"6조","joinDate":"2018-03-07","size":"","history":[],"note":"","retired":false},{"no":173,"name":"차순남","part":"DRY","job":"5조","joinDate":"2018-03-07","size":"","history":["2020-06-02","2022-04-13"],"note":"","retired":false},{"no":174,"name":"김은경1","part":"DRY","job":"1조","joinDate":"2018-03-07","size":"","history":["2022-03-08","2023-03-31","2024-06-10","2026-05-29"],"note":"","retired":false},{"no":175,"name":"이은경","part":"DC","job":"패션","joinDate":"2018-03-20","size":"","history":["2022-04-12","2025-04-30"],"note":"","retired":false},{"no":176,"name":"김미희1","part":"DC","job":"패션","joinDate":"2018-03-20","size":"","history":["2022-06-07","2025-04-30"],"note":"","retired":false},{"no":177,"name":"최정미","part":"DC","job":"패션","joinDate":"2018-03-20","size":"","history":["2022-06-07","2025-07-08"],"note":"","retired":false},{"no":178,"name":"변숙희","part":"DC","job":"패션","joinDate":"2018-03-20","size":"","history":["2022-05-10"],"note":"","retired":false},{"no":179,"name":"이순녀1","part":"DRY","job":"DAS","joinDate":"2018-03-27","size":"","history":["2022-09-15","2023-07-29","2024-06-10","2026-02-28"],"note":"","retired":false},{"no":180,"name":"문연화","part":"DC","job":"패션","joinDate":"2018-04-16","size":"","history":["2021-06-02","2022-06-07","2024-11-01","2025-12-15"],"note":"","retired":false},{"no":181,"name":"이승현1","part":"DC","job":"패션","joinDate":"2018-04-30","size":"","history":["2022-05-10","2024-07-28","2025-12-15"],"note":"","retired":false},{"no":182,"name":"최영희","part":"DRY","job":"상품관리","joinDate":"2018-05-09","size":"","history":["2021-02-18"],"note":"","retired":false},{"no":183,"name":"박준섭","part":"WET","job":"입하팀","joinDate":"2018-06-27","size":"","history":["2024-07-28","2024-10-31","2025-03-06","2026-01-05"],"note":"심한 주의","retired":false},{"no":184,"name":"변동오","part":"DRY","job":"1조","joinDate":"2018-07-25","size":"","history":[],"note":"","retired":false},{"no":185,"name":"박명균","part":"WET","job":"소터팀","joinDate":"2018-07-25","size":"","history":["2022-12-13","2024-02-01","2025-12-06","2026-05-12"],"note":"","retired":false},{"no":186,"name":"권용진","part":"DRY","job":"DAS","joinDate":"2018-10-31","size":"","history":["2019-12-21","2021-11-13","2024-07-28","2025-07-04"],"note":"","retired":false},{"no":187,"name":"최관성","part":"DRY","job":"4조","joinDate":"2019-01-02","size":"","history":["2022-03-08","2023-05-11","2025-01-04"],"note":"","retired":false},{"no":188,"name":"박찬선1","part":"WET","job":"출하팀(22)","joinDate":"2019-01-09","size":"","history":["2020-08-03","2022-01-05","2023-03-31"],"note":"","retired":false},{"no":189,"name":"유봉열","part":"ED","job":"ED(직영)","joinDate":"2019-01-30","size":"","history":["2022-04-12","2025-04-30","2026-02-28"],"note":"","retired":false},{"no":190,"name":"김동성","part":"WET","job":"출하팀(22)","joinDate":"2019-02-07","size":"","history":["2024-05-02","2024-07-28","2025-02-08","2025-09-03"],"note":"심한 주의","retired":false},{"no":191,"name":"이성만","part":"DC","job":"패션","joinDate":"2019-02-13","size":"","history":["2022-05-10","2023-06-07","2024-11-01","2025-12-15"],"note":"","retired":false},{"no":192,"name":"장수오","part":"DRY","job":"5조","joinDate":"2019-02-27","size":"","history":["2022-02-08"],"note":"","retired":false},{"no":193,"name":"박진희","part":"ED","job":"ED(DPS)","joinDate":"2019-03-06","size":"","history":["2022-03-09","2025-04-01"],"note":"","retired":false},{"no":194,"name":"이종민","part":"WET","job":"출하팀(22)","joinDate":"2019-03-06","size":"","history":["2021-01-21"],"note":"","retired":false},{"no":195,"name":"이병화","part":"DC","job":"패션","joinDate":"2019-04-03","size":"","history":["2022-05-10","2023-06-07"],"note":"","retired":false},{"no":196,"name":"김동일","part":"DC","job":"패션","joinDate":"2019-04-24","size":"","history":["2025-07-04"],"note":"","retired":false},{"no":197,"name":"남상민","part":"ED","job":"ED(DPS)","joinDate":"2019-05-22","size":"","history":["2022-03-09","2025-04-29"],"note":"","retired":false},{"no":198,"name":"이재영1","part":"DRY","job":"DAS","joinDate":"2019-06-05","size":"","history":["2022-03-08","2023-03-31","2024-07-28","2025-05-30"],"note":"","retired":false},{"no":199,"name":"양창모","part":"DC","job":"대신(태은)","joinDate":"2019-07-03","size":"","history":["2022-05-11","2023-06-07","2025-02-07","2026-04-23"],"note":"","retired":false},{"no":200,"name":"한누미","part":"DRY","job":"2조","joinDate":"2019-07-03","size":"","history":["2023-03-04","2024-01-02","2025-04-30","2025-12-08"],"note":"","retired":false},{"no":201,"name":"박영호","part":"WET","job":"출하팀(22)","joinDate":"2019-07-17","size":"","history":["2020-10-27","2021-11-14"],"note":"","retired":false},{"no":202,"name":"송영하","part":"WET","job":"입하팀","joinDate":"2019-08-21","size":"","history":["2025-04-29","2026-04-23"],"note":"","retired":false},{"no":203,"name":"조경선","part":"DC","job":"리콘다","joinDate":"2019-10-16","size":"","history":["2022-04-12","2023-09-02","2026-01-02"],"note":"","retired":false},{"no":204,"name":"김종윤","part":"DRY","job":"1조","joinDate":"2019-10-16","size":"","history":["2021-12-10","2022-12-13","2023-09-01","2025-08-01"],"note":"","retired":false},{"no":205,"name":"김기숙","part":"DRY","job":"상품관리","joinDate":"2019-10-23","size":"","history":["2023-07-29","2024-02-29","2024-10-29","2025-03-31"],"note":"","retired":false},{"no":206,"name":"김용한","part":"ED","job":"ED(DPS)","joinDate":"2019-10-31","size":"","history":["2025-04-01"],"note":"","retired":false},{"no":207,"name":"유해권","part":"DRY","job":"3조","joinDate":"2019-10-31","size":"","history":["2022-03-08","2023-09-01"],"note":"","retired":false},{"no":208,"name":"심장우","part":"DC","job":"리콘다","joinDate":"2019-11-06","size":"","history":["2021-10-12","2022-12-13","2024-05-01","2025-07-04"],"note":"","retired":false},{"no":209,"name":"이종우","part":"WET","job":"출하팀(22)","joinDate":"2019-11-20","size":"","history":["2021-01-21"],"note":"","retired":false},{"no":210,"name":"여진욱","part":"DRY","job":"4조","joinDate":"2019-11-27","size":"","history":[],"note":"","retired":false},{"no":211,"name":"도현미","part":"DRY","job":"4조","joinDate":"2019-11-27","size":"","history":["2022-03-08","2023-05-11","2025-02-06"],"note":"","retired":false},{"no":212,"name":"장현민","part":"ED","job":"ED(DPS)","joinDate":"2019-12-04","size":"","history":["2022-03-08","2026-05-12"],"note":"","retired":false},{"no":213,"name":"김상혁","part":"WET","job":"출하팀(22)","joinDate":"2019-12-04","size":"","history":["2022-01-07","2023-02-03","2023-10-06","2024-07-05"],"note":"","retired":false},{"no":214,"name":"이태화","part":"DRY","job":"3조","joinDate":"2019-12-19","size":"","history":["2022-11-01","2023-10-31","2024-10-29","2025-08-01"],"note":"","retired":false},{"no":215,"name":"이재만","part":"WET","job":"출하팀(22)","joinDate":"2020-01-02","size":"","history":["2020-11-19","2021-11-16","2023-05-10"],"note":"","retired":false},{"no":216,"name":"김다남","part":"DRY","job":"6조","joinDate":"2020-02-05","size":"","history":["2023-01-10","2024-02-02","2024-10-30","2026-05-12"],"note":"","retired":false},{"no":217,"name":"김영낙","part":"WET","job":"출하팀(22)","joinDate":"2020-02-26","size":"","history":["2021-11-18"],"note":"","retired":false},{"no":218,"name":"유성빈","part":"WET","job":"출하팀(22)","joinDate":"2020-05-06","size":"","history":["2021-02-18","2021-11-16","2022-07-08","2023-07-03"],"note":"","retired":false},{"no":219,"name":"박홍선","part":"DRY","job":"6조","joinDate":"2020-07-15","size":"","history":["1900-01-03","2023-06-03","2024-02-02","2024-10-08"],"note":"","retired":false},{"no":220,"name":"채병민","part":"DRY","job":"3조","joinDate":"2020-09-16","size":"","history":["2022-04-12","2023-10-31"],"note":"","retired":false},{"no":221,"name":"오희택","part":"DC","job":"대신(태은)","joinDate":"2020-10-07","size":"","history":["2022-05-10","2022-12-13","2023-12-19","2026-04-23"],"note":"","retired":false},{"no":222,"name":"이경랑","part":"WET","job":"입하팀","joinDate":"2020-10-29","size":"","history":["2022-01-05","2023-03-31","2023-10-05"],"note":"","retired":false},{"no":223,"name":"박명훈","part":"WET","job":"소터팀","joinDate":"2020-11-18","size":"","history":["2023-05-09","2024-07-28","2024-10-30","2026-05-12"],"note":"","retired":false},{"no":224,"name":"권오준1","part":"DC","job":"수출","joinDate":"2021-01-06","size":"","history":["2022-01-07","2023-09-02","2025-07-04"],"note":"","retired":false},{"no":225,"name":"한인철","part":"WET","job":"출하팀(22)","joinDate":"2021-01-06","size":"","history":["2021-06-30","2023-05-08","2023-10-06"],"note":"","retired":false},{"no":226,"name":"장권희","part":"DC","job":"대신(태은)","joinDate":"2021-02-24","size":"","history":["2022-05-11"],"note":"","retired":false},{"no":227,"name":"김기덕1","part":"DC","job":"패션","joinDate":"2021-03-31","size":"","history":["2022-01-07","2023-06-07"],"note":"","retired":false},{"no":228,"name":"박성호","part":"WET","job":"출하팀(22)","joinDate":"2021-04-21","size":"","history":["2022-12-13","2024-01-02","2025-01-10","2026-01-29"],"note":"","retired":false},{"no":229,"name":"박순미","part":"DC","job":"패션","joinDate":"2021-06-16","size":"","history":["2022-03-08","2023-06-07","2025-07-04"],"note":"","retired":false},{"no":230,"name":"김성근","part":"WET","job":"출하팀(22)","joinDate":"2021-06-16","size":"","history":[],"note":"","retired":false},{"no":231,"name":"김성욱","part":"WET","job":"출하팀(22)","joinDate":"2021-06-16","size":"","history":[],"note":"","retired":false},{"no":232,"name":"오영석","part":"DRY","job":"3조","joinDate":"2021-06-30","size":"","history":[],"note":"","retired":false},{"no":233,"name":"김장식","part":"WET","job":"입하팀","joinDate":"2021-07-21","size":"","history":["2024-02-02","2024-07-05","2024-10-31","2025-04-30"],"note":"주의","retired":false},{"no":234,"name":"김정용1","part":"DC","job":"대신(태은)","joinDate":"2021-08-25","size":"","history":["2021-08-25","2022-05-11","2023-05-09","2026-01-03"],"note":"","retired":false},{"no":235,"name":"박정환","part":"WET","job":"입하팀","joinDate":"2021-09-29","size":"","history":["2022-04-13"],"note":"","retired":false},{"no":236,"name":"임은규","part":"WET","job":"출하팀(22)","joinDate":"2021-10-07","size":"","history":["2022-06-13"],"note":"","retired":false},{"no":237,"name":"곽은혜","part":"DRY","job":"3조","joinDate":"2021-10-20","size":"","history":["2022-03-08","2023-10-11","2025-02-06"],"note":"","retired":false},{"no":238,"name":"김원","part":"WET","job":"입하팀","joinDate":"2021-11-11","size":"","history":["2022-04-13","2024-02-29","2024-06-10"],"note":"","retired":false},{"no":239,"name":"김대현","part":"WET","job":"출하팀(22)","joinDate":"2021-11-17","size":"","history":["2023-02-03","2024-07-28","2025-01-10","2026-01-05"],"note":"","retired":false},{"no":240,"name":"이희진","part":"DC","job":"대신(태은)","joinDate":"2021-12-22","size":"","history":["2026-04-23"],"note":"","retired":false},{"no":241,"name":"백혜연","part":"지원","job":"보건관리","joinDate":"2022-01-05","size":"","history":["2022-01-05"],"note":"입사시 헌거지급","retired":false},{"no":242,"name":"박종삼","part":"WET","job":"운영팀(10)","joinDate":"2022-02-11","size":"","history":["2022-12-13","2023-05-08","2023-10-31","2024-07-28"],"note":"","retired":false},{"no":243,"name":"곽일규","part":"WET","job":"출하팀(22)","joinDate":"2022-02-16","size":"","history":["2022-06-12","2023-10-31","2024-07-28","2025-06-03"],"note":"","retired":false},{"no":244,"name":"원지연1","part":"DRY","job":"1조","joinDate":"2022-03-02","size":"","history":["2022-03-02"],"note":"입사시 헌거지급","retired":false},{"no":245,"name":"김진광","part":"WET","job":"출하팀(22)","joinDate":"2022-04-06","size":"","history":["2022-07-08","2023-06-03","2026-01-30"],"note":"","retired":false},{"no":246,"name":"김남일","part":"WET","job":"출하팀(22)","joinDate":"2022-04-06","size":"","history":["2022-07-08","2024-01-02"],"note":"","retired":false},{"no":247,"name":"이정희","part":"WET","job":"소터팀","joinDate":"2022-04-06","size":"","history":["2022-04-06","2023-06-03","2025-02-07","2026-05-12"],"note":"","retired":false},{"no":248,"name":"김선아","part":"WET","job":"입하팀","joinDate":"2022-04-06","size":"","history":["2022-07-08","2023-02-03","2023-07-29","2025-04-29"],"note":"","retired":false},{"no":249,"name":"김문기","part":"DRY","job":"3조","joinDate":"2022-04-13","size":"","history":["2022-11-01","2024-03-30","2024-10-29","2025-04-29"],"note":"입사시 헌거지급","retired":false},{"no":250,"name":"석태성","part":"WET","job":"출하팀(22)","joinDate":"2022-04-27","size":"","history":["2022-04-27"],"note":"입사시 헌거지급","retired":false},{"no":251,"name":"이명구2","part":"DRY","job":"5조","joinDate":"2022-05-11","size":"","history":["2022-05-09","2025-04-29"],"note":"","retired":false},{"no":252,"name":"박찬주","part":"DRY","job":"3조","joinDate":"2022-05-11","size":"","history":["2023-01-10","2024-03-30"],"note":"","retired":false},{"no":253,"name":"박희자","part":"WET","job":"입하팀","joinDate":"2022-05-11","size":"","history":["2022-05-11","2026-05-29"],"note":"입사시 헌거지급","retired":false},{"no":254,"name":"최중남","part":"DC","job":"리콘다","joinDate":"2022-06-08","size":"","history":["2022-12-13"],"note":"","retired":false},{"no":255,"name":"원경묵1","part":"DRY","job":"5조","joinDate":"2022-06-08","size":"","history":[],"note":"","retired":false},{"no":256,"name":"김민기","part":"WET","job":"입하팀","joinDate":"2022-06-08","size":"","history":["2026-01-05"],"note":"","retired":false},{"no":257,"name":"정현수2","part":"DC","job":"수출","joinDate":"2022-06-22","size":"","history":["2022-06-22","2022-11-01","2023-12-19"],"note":"입사시 헌거지급","retired":false},{"no":258,"name":"최민욱","part":"ED","job":"ED(직영)","joinDate":"2022-08-03","size":"","history":["2022-08-03","2025-03-06","2026-02-28","2026-03-02"],"note":"입사시 헌거지급","retired":false},{"no":259,"name":"장재민","part":"WET","job":"소터팀","joinDate":"2022-08-31","size":"","history":["2023-06-03","2024-01-02","2024-10-01","2025-12-06"],"note":"입사시 헌거지급","retired":false},{"no":260,"name":"이현수","part":"지원","job":"안전관리","joinDate":"2022-09-28","size":"","history":["2022-09-30","2025-08-01"],"note":"","retired":false},{"no":261,"name":"방태환","part":"WET","job":"입하팀","joinDate":"2022-09-28","size":"","history":["2022-09-28","2023-03-31","2023-12-13","2024-07-28"],"note":"입사시 헌거지급","retired":false},{"no":262,"name":"황유빈","part":"DRY","job":"2조","joinDate":"2022-10-19","size":"","history":["2022-10-19","2023-05-09","2025-04-29","2025-12-08"],"note":"입사시 헌거지급","retired":false},{"no":263,"name":"윤지영","part":"WET","job":"출하팀(22)","joinDate":"2022-10-19","size":"","history":["2022-10-19","2023-03-03"],"note":"입사시 헌거지급","retired":false},{"no":264,"name":"김현호","part":"DRY","job":"6조","joinDate":"2022-10-26","size":"","history":[],"note":"입사시 헌거지급","retired":false},{"no":265,"name":"이상민","part":"WET","job":"출하팀(22)","joinDate":"2022-10-26","size":"","history":["2022-10-26"],"note":"입사시 헌거지급","retired":false},{"no":266,"name":"엄현기","part":"WET","job":"입하팀","joinDate":"2022-10-26","size":"","history":["2022-10-26","2023-04-01","2026-05-12"],"note":"입사시 헌거지급","retired":false},{"no":267,"name":"강미선1","part":"DRY","job":"DAS","joinDate":"2022-11-02","size":"","history":["2022-11-02","2023-02-03","2025-04-29"],"note":"입사시 헌거지급","retired":false},{"no":268,"name":"설지용2","part":"DRY","job":"4조","joinDate":"2022-11-02","size":"","history":["2022-11-02","2023-05-09","2023-12-13","2025-02-07"],"note":"입사시 헌거지급","retired":false},{"no":269,"name":"안희준2","part":"DC","job":"수출","joinDate":"2022-11-02","size":"","history":[],"note":"신규추가","retired":false},{"no":270,"name":"김태린","part":"WET","job":"출하팀(22)","joinDate":"2022-11-02","size":"","history":[],"note":"신규추가","retired":false},{"no":271,"name":"원용기","part":"WET","job":"출하팀(22)","joinDate":"2022-11-02","size":"","history":["2023-03-03","2023-10-31","2024-04-03","2025-08-01"],"note":"입사시 헌거지급","retired":false},{"no":272,"name":"홍순성","part":"WET","job":"출하팀(22)","joinDate":"2022-11-02","size":"","history":["2023-03-03","2023-10-31","2024-05-02","2025-01-01"],"note":"입사시 헌거지급","retired":false},{"no":273,"name":"김민호1","part":"DC","job":"수출","joinDate":"2022-12-07","size":"","history":["2023-03-10"],"note":"","retired":false},{"no":274,"name":"박현숙","part":"DC","job":"패션","joinDate":"2022-12-07","size":"","history":["2023-03-10","2025-12-15"],"note":"","retired":false},{"no":275,"name":"박용석","part":"DRY","job":"3조","joinDate":"2022-12-28","size":"","history":["2024-03-30","2025-02-08","2025-12-08"],"note":"입사시 헌거지급","retired":false},{"no":276,"name":"조해연","part":"DRY","job":"6조","joinDate":"2023-03-02","size":"","history":["2025-02-07"],"note":"입사시 헌거지급","retired":false},{"no":277,"name":"임상선","part":"WET","job":"출하팀(22)","joinDate":"2023-03-15","size":"","history":["2024-07-05"],"note":"입사시 헌거지급","retired":false},{"no":278,"name":"임보람","part":"WET","job":"출하팀(22)","joinDate":"2023-03-15","size":"","history":[],"note":"입사시 헌거지급","retired":false},{"no":279,"name":"송영철1","part":"DRY","job":"3조","joinDate":"2023-03-22","size":"","history":[],"note":"","retired":false},{"no":280,"name":"안창규","part":"DRY","job":"5조","joinDate":"2023-03-22","size":"","history":[],"note":"","retired":false},{"no":281,"name":"김연숙1","part":"WET","job":"소터팀","joinDate":"2023-04-19","size":"","history":["2024-01-02","2024-05-02","2025-12-06","2026-05-29"],"note":"","retired":false},{"no":282,"name":"전한순","part":"WET","job":"소터팀","joinDate":"2023-04-19","size":"","history":["2025-10-01"],"note":"입사시 헌거지급","retired":false},{"no":283,"name":"장주호","part":"WET","job":"소터팀","joinDate":"2023-04-19","size":"","history":["2024-07-05","2024-10-01","2025-01-10","2025-12-06"],"note":"심한 주의","retired":false},{"no":284,"name":"전윤표1","part":"DRY","job":"2조","joinDate":"2023-04-26","size":"","history":[],"note":"입사시 헌거지급","retired":false},{"no":285,"name":"곽주희","part":"DRY","job":"3조","joinDate":"2023-05-03","size":"","history":["2023-10-31"],"note":"입사시 헌거지급","retired":false},{"no":286,"name":"김현옥1","part":"WET","job":"소터팀","joinDate":"2023-05-03","size":"","history":["2023-06-03"],"note":"","retired":false},{"no":287,"name":"김영란1","part":"DRY","job":"DAS","joinDate":"2023-05-11","size":"","history":["2023-12-19"],"note":"입사시 헌거지급","retired":false},{"no":288,"name":"이제용","part":"DRY","job":"5조","joinDate":"2023-06-07","size":"","history":["2023-09-01","2024-03-30","2025-03-31","2026-05-29"],"note":"","retired":false},{"no":289,"name":"박민성1","part":"WET","job":"출하팀(22)","joinDate":"2023-07-26","size":"","history":["2025-01-10","2025-06-01","2025-11-01","2026-04-22"],"note":"입사시 헌거지급","retired":false},{"no":290,"name":"서현","part":"WET","job":"소터팀","joinDate":"2023-08-02","size":"","history":["2024-01-02"],"note":"입사시 헌거지급","retired":false},{"no":291,"name":"신아람","part":"WET","job":"출하팀(22)","joinDate":"2023-08-02","size":"","history":["2024-01-02","2024-06-05","2025-01-10"],"note":"입사시 헌거지급","retired":false},{"no":292,"name":"장선해","part":"WET","job":"출하팀(22)","joinDate":"2023-08-09","size":"","history":[],"note":"입사시 헌거지급","retired":false},{"no":293,"name":"배재현","part":"WET","job":"입하팀","joinDate":"2023-08-16","size":"","history":["2024-10-01","2025-02-08","2025-11-01","2026-04-23"],"note":"심한 주의","retired":false},{"no":294,"name":"김선미","part":"WET","job":"입하팀","joinDate":"2023-08-30","size":"","history":["2024-03-31","2024-07-28","2025-01-10","2025-05-04"],"note":"입사시 헌거지급","retired":false},{"no":295,"name":"배미진","part":"WET","job":"입하팀","joinDate":"2023-09-06","size":"","history":["2024-07-28","2025-01-08","2025-05-06","2025-12-06"],"note":"주의","retired":false},{"no":296,"name":"윤선미","part":"ED","job":"ED(직영)","joinDate":"2023-09-06","size":"","history":["2023-12-13","2024-07-28","2025-02-08","2025-08-01"],"note":"입사시 헌거지급","retired":false},{"no":297,"name":"김종태1","part":"WET","job":"소터팀","joinDate":"2023-09-13","size":"","history":["2024-01-02"],"note":"입사시 헌거지급","retired":false},{"no":298,"name":"황지영","part":"WET","job":"소터팀","joinDate":"2023-10-04","size":"","history":["2024-10-01","2025-02-08","2025-09-03","2026-05-29"],"note":"주의","retired":false},{"no":299,"name":"이말순1","part":"DRY","job":"5조","joinDate":"2023-10-11","size":"","history":[],"note":"입사시 헌거지급","retired":false},{"no":300,"name":"강희창1","part":"WET","job":"운영팀(10)","joinDate":"2023-10-11","size":"","history":["2025-04-01"],"note":"입사시 헌거지급","retired":false},{"no":301,"name":"조경환2","part":"DRY","job":"2조","joinDate":"2023-10-18","size":"","history":[],"note":"신규추가","retired":false},{"no":302,"name":"강대석1","part":"DRY","job":"6조","joinDate":"2023-10-18","size":"","history":[],"note":"신규추가","retired":false},{"no":303,"name":"김정희2","part":"DRY","job":"4조","joinDate":"2023-10-18","size":"","history":[],"note":"신규추가","retired":false},{"no":304,"name":"이상혁","part":"DC","job":"대신(태은)","joinDate":"2023-11-01","size":"","history":["2024-05-01","2026-01-03"],"note":"","retired":false},{"no":305,"name":"전정만","part":"ED","job":"ED(직영)","joinDate":"2023-11-01","size":"","history":["2025-04-30"],"note":"","retired":false},{"no":306,"name":"박영민","part":"WET","job":"출하팀(22)","joinDate":"2023-11-22","size":"","history":["2024-03-01"],"note":"","retired":false},{"no":307,"name":"최현준1","part":"DRY","job":"6조","joinDate":"2023-12-27","size":"","history":[],"note":"신규추가","retired":false},{"no":308,"name":"곽경식","part":"DRY","job":"4조","joinDate":"2024-01-17","size":"","history":["2025-01-04"],"note":"","retired":false},{"no":309,"name":"유철수","part":"DRY","job":"6조","joinDate":"2024-01-17","size":"","history":["2024-02-29","2025-07-04"],"note":"","retired":false},{"no":310,"name":"박민규","part":"WET","job":"입하팀","joinDate":"2024-01-24","size":"","history":[],"note":"신규추가","retired":false},{"no":311,"name":"김영구","part":"DC","job":"리콘다","joinDate":"2024-03-13","size":"","history":["2025-09-03"],"note":"","retired":false},{"no":312,"name":"김정화","part":"ED","job":"ED(B2B)","joinDate":"2024-03-13","size":"","history":["2024-07-28","2025-05-30"],"note":"","retired":false},{"no":313,"name":"김일영","part":"WET","job":"출하팀(22)","joinDate":"2024-03-13","size":"","history":[],"note":"신규추가","retired":false},{"no":314,"name":"황민섭","part":"DRY","job":"2조","joinDate":"2024-05-16","size":"","history":["2024-10-01"],"note":"","retired":false},{"no":315,"name":"김봉규","part":"WET","job":"입하팀","joinDate":"2024-05-16","size":"","history":["2025-03-31"],"note":"","retired":false},{"no":316,"name":"최성부","part":"WET","job":"출하팀(22)","joinDate":"2024-05-16","size":"","history":["2024-10-29","2025-08-01"],"note":"","retired":false},{"no":317,"name":"김승규","part":"DRY","job":"2조","joinDate":"2024-05-29","size":"","history":["2024-10-01","2025-03-31"],"note":"","retired":false},{"no":318,"name":"송상윤","part":"DRY","job":"2조","joinDate":"2024-06-19","size":"","history":[],"note":"신규추가","retired":false},{"no":319,"name":"이진희","part":"DRY","job":"3조","joinDate":"2024-07-03","size":"","history":["2024-10-29"],"note":"","retired":false},{"no":320,"name":"김석태","part":"WET","job":"입하팀","joinDate":"2024-07-17","size":"","history":["2024-10-29","2025-03-31","2026-04-22"],"note":"","retired":false},{"no":321,"name":"김진욱","part":"WET","job":"입하팀","joinDate":"2024-07-17","size":"","history":["2025-12-06"],"note":"","retired":false},{"no":322,"name":"김은정","part":"ED","job":"ED(직영)","joinDate":"2024-08-07","size":"","history":["2024-10-31","2025-04-29","2026-02-28"],"note":"","retired":false},{"no":323,"name":"한경신","part":"WET","job":"입하팀","joinDate":"2024-08-14","size":"","history":["2025-03-06"],"note":"","retired":false},{"no":324,"name":"김태광","part":"WET","job":"소터팀","joinDate":"2024-08-21","size":"","history":["2025-01-09"],"note":"","retired":false},{"no":325,"name":"엄준호","part":"WET","job":"입하팀","joinDate":"2024-08-21","size":"","history":["2025-01-08"],"note":"","retired":false},{"no":326,"name":"고봉석","part":"WET","job":"출하팀(22)","joinDate":"2024-08-21","size":"","history":["2025-08-01"],"note":"","retired":false},{"no":327,"name":"채호언","part":"DC","job":"대신(태은)","joinDate":"2024-09-04","size":"","history":[],"note":"신규추가","retired":false},{"no":328,"name":"정상욱","part":"DC","job":"리콘다","joinDate":"2024-10-11","size":"","history":[],"note":"신규추가","retired":false},{"no":329,"name":"박용환1","part":"WET","job":"출하팀(22)","joinDate":"2024-10-11","size":"","history":[],"note":"신규추가","retired":false},{"no":330,"name":"길상복","part":"WET","job":"출하팀(22)","joinDate":"2024-10-11","size":"","history":[],"note":"신규추가","retired":false},{"no":331,"name":"이지한1","part":"WET","job":"출하팀(22)","joinDate":"2024-10-23","size":"","history":[],"note":"신규추가","retired":false},{"no":332,"name":"황한나","part":"DRY","job":"2조","joinDate":"2024-11-13","size":"","history":["2025-07-04"],"note":"","retired":false},{"no":333,"name":"성유석","part":"WET","job":"출하팀(22)","joinDate":"2024-12-18","size":"","history":[],"note":"신규추가","retired":false},{"no":334,"name":"윤지아","part":"WET","job":"입하팀","joinDate":"2024-12-26","size":"","history":["2025-03-31"],"note":"","retired":false},{"no":335,"name":"이상석1","part":"DC","job":"대신(태은)","joinDate":"2025-03-05","size":"","history":[],"note":"신규추가","retired":false},{"no":336,"name":"박경숙1","part":"DRY","job":"4조","joinDate":"2025-03-05","size":"","history":[],"note":"신규추가","retired":false},{"no":337,"name":"정상우1","part":"DRY","job":"6조","joinDate":"2025-03-05","size":"","history":[],"note":"신규추가","retired":false},{"no":338,"name":"김병호2","part":"WET","job":"입하팀","joinDate":"2025-03-05","size":"","history":[],"note":"신규추가","retired":false},{"no":339,"name":"이지수","part":"DRY","job":"4조","joinDate":"2025-03-05","size":"","history":[],"note":"신규추가","retired":false},{"no":340,"name":"이춘화1","part":"DRY","job":"4조","joinDate":"2025-03-12","size":"","history":[],"note":"신규추가","retired":false},{"no":341,"name":"왕샤오웨이(왕효미)","part":"DRY","job":"3조","joinDate":"2025-03-12","size":"","history":[],"note":"신규추가","retired":false},{"no":342,"name":"서진아","part":"ED","job":"ED(직영)","joinDate":"2025-03-19","size":"","history":["2026-02-28"],"note":"","retired":false},{"no":343,"name":"김진영","part":"DRY","job":"1조","joinDate":"2025-05-07","size":"","history":[],"note":"신규추가","retired":false},{"no":344,"name":"최다인","part":"WET","job":"입하팀","joinDate":"2025-05-07","size":"","history":["2025-10-01","2026-01-30"],"note":"","retired":false},{"no":345,"name":"엄정하","part":"WET","job":"입하팀","joinDate":"2025-05-07","size":"","history":[],"note":"신규추가","retired":false},{"no":346,"name":"김지혜","part":"WET","job":"소터팀","joinDate":"2025-05-07","size":"","history":["2025-08-01"],"note":"","retired":false},{"no":347,"name":"장소연","part":"WET","job":"소터팀","joinDate":"2025-05-07","size":"","history":["2025-05-09","2026-01-05"],"note":"","retired":false},{"no":348,"name":"이도현","part":"DRY","job":"5조","joinDate":"2025-05-14","size":"","history":["2025-08-01"],"note":"","retired":false},{"no":349,"name":"장선흥1","part":"DRY","job":"6조","joinDate":"2025-05-14","size":"","history":[],"note":"신규추가","retired":false},{"no":350,"name":"이경희1","part":"DRY","job":"4조","joinDate":"2025-05-28","size":"","history":[],"note":"신규추가","retired":false},{"no":351,"name":"신상일1","part":"WET","job":"입하팀","joinDate":"2025-05-28","size":"","history":[],"note":"신규추가","retired":false},{"no":352,"name":"장대규3","part":"DRY","job":"3조","joinDate":"2025-06-11","size":"","history":[],"note":"신규추가","retired":false},{"no":353,"name":"정병광","part":"WET","job":"출하팀(22)","joinDate":"2025-06-11","size":"","history":[],"note":"신규추가","retired":false},{"no":354,"name":"신준섭","part":"ED","job":"ED(DPS)","joinDate":"2025-06-18","size":"","history":[],"note":"신규추가","retired":false},{"no":355,"name":"윤태규","part":"DRY","job":"4조","joinDate":"2025-06-18","size":"","history":[],"note":"신규추가","retired":false},{"no":356,"name":"강영주","part":"DRY","job":"4조","joinDate":"2025-07-02","size":"","history":[],"note":"신규추가","retired":false},{"no":357,"name":"위대식","part":"WET","job":"출하팀(22)","joinDate":"2025-07-02","size":"","history":[],"note":"신규추가","retired":false},{"no":358,"name":"공성혁","part":"WET","job":"운영팀(10)","joinDate":"2025-07-09","size":"","history":["2025-09-03"],"note":"","retired":false},{"no":359,"name":"송정욱","part":"WET","job":"입하팀","joinDate":"2025-08-06","size":"","history":["2026-01-05"],"note":"","retired":false},{"no":360,"name":"최성범","part":"WET","job":"소터팀","joinDate":"2025-08-06","size":"","history":["2025-10-01"],"note":"","retired":false},{"no":361,"name":"이지영","part":"DRY","job":"5조","joinDate":"2025-08-13","size":"","history":["2026-04-21"],"note":"","retired":false},{"no":362,"name":"임미자","part":"DRY","job":"6조","joinDate":"2025-08-20","size":"","history":[],"note":"신규추가","retired":false},{"no":363,"name":"허민정","part":"DRY","job":"6조","joinDate":"2025-08-20","size":"","history":["2025-11-01"],"note":"","retired":false},{"no":364,"name":"정귀섭1","part":"DRY","job":"6조","joinDate":"2025-08-27","size":"","history":[],"note":"신규추가","retired":false},{"no":365,"name":"박진영","part":"DRY","job":"상품관리","joinDate":"2025-09-03","size":"","history":["2026-02-28"],"note":"","retired":false},{"no":366,"name":"김재민","part":"DRY","job":"2조","joinDate":"2025-09-11","size":"","history":["2025-12-08"],"note":"","retired":false},{"no":367,"name":"김범기","part":"WET","job":"소터팀","joinDate":"2025-09-11","size":"","history":["2025-12-06"],"note":"","retired":false},{"no":368,"name":"송상현","part":"WET","job":"출하팀(22)","joinDate":"2025-09-11","size":"","history":["2026-05-12"],"note":"","retired":false},{"no":369,"name":"고희현","part":"ED","job":"ED(B2B)","joinDate":"2025-10-15","size":"","history":[],"note":"신규추가","retired":false},{"no":370,"name":"곽명관","part":"DRY","job":"1조","joinDate":"2025-10-15","size":"","history":["2026-05-29"],"note":"","retired":false},{"no":371,"name":"정한서","part":"WET","job":"출하팀(22)","joinDate":"2025-10-15","size":"","history":[],"note":"신규추가","retired":false},{"no":372,"name":"박정락","part":"WET","job":"출하팀(22)","joinDate":"2025-10-15","size":"","history":[],"note":"신규추가","retired":false},{"no":373,"name":"최영자","part":"ED","job":"ED(DPS)","joinDate":"2025-10-29","size":"","history":["2025-11-25"],"note":"","retired":false},{"no":374,"name":"김세아1","part":"ED","job":"ED(DPS)","joinDate":"2025-10-29","size":"","history":[],"note":"신규추가","retired":false},{"no":375,"name":"오세광","part":"ED","job":"ED(DPS)","joinDate":"2025-10-29","size":"","history":["2025-11-07","2026-05-12"],"note":"","retired":false},{"no":376,"name":"변성만","part":"ED","job":"ED(DPS)","joinDate":"2025-10-29","size":"","history":[],"note":"신규추가","retired":false},{"no":377,"name":"이광미1","part":"ED","job":"ED(DPS)","joinDate":"2025-10-29","size":"","history":[],"note":"신규추가","retired":false},{"no":378,"name":"윤범진","part":"WET","job":"소터팀","joinDate":"2025-10-29","size":"","history":[],"note":"신규추가","retired":false},{"no":379,"name":"조승범","part":"ED","job":"ED(B2B)","joinDate":"2025-11-05","size":"","history":[],"note":"신규추가","retired":false},{"no":380,"name":"김정남","part":"ED","job":"ED(B2B)","joinDate":"2025-11-05","size":"","history":["2026-02-28"],"note":"","retired":false},{"no":381,"name":"정종훈","part":"ED","job":"ED(B2B)","joinDate":"2025-11-05","size":"","history":[],"note":"신규추가","retired":false},{"no":382,"name":"김우종","part":"DRY","job":"DAS","joinDate":"2025-11-05","size":"","history":["2026-02-28"],"note":"","retired":false},{"no":383,"name":"조인순1","part":"DRY","job":"DAS","joinDate":"2025-11-05","size":"","history":[],"note":"신규추가","retired":false},{"no":384,"name":"구본주","part":"DRY","job":"DAS","joinDate":"2025-11-05","size":"","history":[],"note":"신규추가","retired":false},{"no":385,"name":"이종우1","part":"ED","job":"ED(직영)","joinDate":"2025-11-05","size":"","history":[],"note":"신규추가","retired":false},{"no":386,"name":"김현정","part":"DRY","job":"1조","joinDate":"2025-11-05","size":"","history":["2025-11-07"],"note":"","retired":false},{"no":387,"name":"전창빈","part":"ED","job":"ED(직영)","joinDate":"2025-11-05","size":"","history":["2026-02-28"],"note":"","retired":false},{"no":388,"name":"민아신1","part":"ED","job":"ED(직영)","joinDate":"2025-11-05","size":"","history":[],"note":"신규추가","retired":false},{"no":389,"name":"이세준","part":"ED","job":"ED(DPS)","joinDate":"2025-11-05","size":"","history":[],"note":"신규추가","retired":false},{"no":390,"name":"배종두","part":"ED","job":"ED(DPS)","joinDate":"2025-11-05","size":"","history":["2025-11-07"],"note":"","retired":false},{"no":391,"name":"이수진","part":"ED","job":"ED(DPS)","joinDate":"2025-11-05","size":"","history":["2025-11-07"],"note":"","retired":false},{"no":392,"name":"원수연","part":"DRY","job":"DAS","joinDate":"2025-11-12","size":"","history":["2026-02-28"],"note":"","retired":false},{"no":393,"name":"조용인","part":"DRY","job":"1조","joinDate":"2025-11-12","size":"","history":["2026-05-29"],"note":"","retired":false},{"no":394,"name":"고은비","part":"DRY","job":"1조","joinDate":"2025-11-12","size":"","history":[],"note":"신규추가","retired":false},{"no":395,"name":"박주선","part":"DRY","job":"3조","joinDate":"2025-11-12","size":"","history":[],"note":"신규추가","retired":false},{"no":396,"name":"정남숙","part":"ED","job":"ED(DPS)","joinDate":"2025-11-12","size":"","history":["2025-11-25"],"note":"","retired":false},{"no":397,"name":"이현미","part":"ED","job":"ED(DPS)","joinDate":"2025-11-12","size":"","history":["2025-11-25"],"note":"","retired":false},{"no":398,"name":"문명숙","part":"ED","job":"ED(직영)","joinDate":"2025-11-19","size":"","history":["2026-02-28"],"note":"","retired":false},{"no":399,"name":"박서영","part":"ED","job":"ED(DPS)","joinDate":"2025-11-19","size":"","history":["2026-01-05"],"note":"","retired":false},{"no":400,"name":"송선경","part":"ED","job":"ED(직영)","joinDate":"2025-12-03","size":"","history":["2026-02-28"],"note":"","retired":false},{"no":401,"name":"노종범","part":"ED","job":"ED(직영)","joinDate":"2025-12-03","size":"","history":[],"note":"신규추가","retired":false},{"no":402,"name":"김용덕1","part":"DC","job":"리콘다","joinDate":"2025-12-11","size":"","history":[],"note":"신규추가","retired":false},{"no":403,"name":"이치형","part":"DRY","job":"2조","joinDate":"2025-12-11","size":"","history":[],"note":"신규추가","retired":false},{"no":404,"name":"이소영","part":"WET","job":"입하팀","joinDate":"2025-12-11","size":"","history":["2026-04-22"],"note":"","retired":false},{"no":405,"name":"배재현94","part":"WET","job":"입하팀","joinDate":"2025-12-17","size":"","history":["2026-05-29"],"note":"","retired":false},{"no":406,"name":"김양수2","part":"WET","job":"운영팀(10)","joinDate":"2025-12-17","size":"","history":[],"note":"신규추가","retired":false},{"no":407,"name":"김명찬","part":"DC","job":"대신(태은)","joinDate":"2025-12-24","size":"","history":["2026-04-23"],"note":"","retired":false},{"no":408,"name":"조윤희","part":"ED","job":"ED(직영)","joinDate":"2025-12-24","size":"","history":["2026-02-28"],"note":"","retired":false},{"no":409,"name":"이수영","part":"WET","job":"입하팀","joinDate":"2025-12-24","size":"","history":["2026-04-22"],"note":"","retired":false},{"no":410,"name":"김민호","part":"DC","job":"리콘다","joinDate":"2025-12-31","size":"","history":[],"note":"신규추가","retired":false},{"no":411,"name":"이영균","part":"DC","job":"대신(태은)","joinDate":"2025-12-31","size":"","history":[],"note":"신규추가","retired":false},{"no":412,"name":"이슬","part":"ED","job":"ED(직영)","joinDate":"2025-12-31","size":"","history":["2026-02-28"],"note":"","retired":false},{"no":413,"name":"송하용","part":"WET","job":"입하팀","joinDate":"2025-12-31","size":"","history":["2026-04-22"],"note":"","retired":false},{"no":414,"name":"김기순1","part":"DC","job":"수출","joinDate":"2026-01-07","size":"","history":[],"note":"신규추가","retired":false},{"no":415,"name":"이현우1","part":"ED","job":"ED(B2B)","joinDate":"2026-01-14","size":"","history":[],"note":"신규추가","retired":false},{"no":416,"name":"김선각","part":"DC","job":"리콘다","joinDate":"2026-01-14","size":"","history":[],"note":"신규추가","retired":false},{"no":417,"name":"김기동","part":"ED-15시","job":"ED(DPS)-15시","joinDate":"2026-01-28","size":"","history":["2026-05-29"],"note":"","retired":false},{"no":418,"name":"안종선","part":"DRY","job":"2조","joinDate":"2026-02-04","size":"","history":[],"note":"신규추가","retired":false},{"no":419,"name":"김민성1","part":"ED-15시","job":"ED(DPS)-15시","joinDate":"2026-02-04","size":"","history":[],"note":"신규추가","retired":false},{"no":420,"name":"황종일","part":"DRY","job":"2조","joinDate":"2026-02-11","size":"","history":["2022-06-29","2023-05-09"],"note":"입사시 헌거지급","retired":false},{"no":421,"name":"임종민","part":"ED-15시","job":"ED(DPS)-15시","joinDate":"2026-02-25","size":"","history":["2026-05-12"],"note":"","retired":false},{"no":422,"name":"조한결","part":"DRY","job":"3조","joinDate":"2026-03-04","size":"","history":[],"note":"신규추가","retired":false},{"no":423,"name":"김민규1","part":"WET","job":"출하팀(22)","joinDate":"2026-03-04","size":"","history":[],"note":"신규추가","retired":false},{"no":424,"name":"이지영1","part":"DRY","job":"5조","joinDate":"2026-03-11","size":"","history":[],"note":"신규추가","retired":false},{"no":425,"name":"최종만","part":"DRY","job":"5조","joinDate":"2026-03-11","size":"","history":[],"note":"신규추가","retired":false},{"no":426,"name":"민정환","part":"WET","job":"입하팀","joinDate":"2026-03-11","size":"","history":[],"note":"신규추가","retired":false},{"no":427,"name":"이민수","part":"WET","job":"입하팀","joinDate":"2026-03-11","size":"","history":["2026-05-29"],"note":"","retired":false},{"no":428,"name":"박기철","part":"WET","job":"출하팀(22)","joinDate":"2026-03-18","size":"","history":[],"note":"신규추가","retired":false},{"no":429,"name":"민준기1","part":"DRY","job":"4조","joinDate":"2026-03-25","size":"","history":[],"note":"신규추가","retired":false},{"no":430,"name":"이대규","part":"ED","job":"ED(DPS)","joinDate":"2026-03-25","size":"","history":["2021-05-31","2022-05-09","2023-05-08"],"note":"","retired":false},{"no":431,"name":"신유진","part":"ED","job":"ED(DPS)","joinDate":"2026-04-01","size":"","history":[],"note":"신규추가","retired":false},{"no":432,"name":"안성복1","part":"DRY","job":"6조","joinDate":"2026-04-08","size":"","history":[],"note":"신규추가","retired":false},{"no":433,"name":"송우영1","part":"DC","job":"리콘다","joinDate":"2026-04-15","size":"","history":[],"note":"신규추가","retired":false},{"no":434,"name":"최석찬","part":"DRY","job":"5조","joinDate":"2026-04-15","size":"","history":[],"note":"신규추가","retired":false},{"no":435,"name":"이상호","part":"ED","job":"ED(DPS)","joinDate":"2026-04-22","size":"","history":[],"note":"신규추가","retired":false},{"no":436,"name":"신경희","part":"ED","job":"ED(DPS)","joinDate":"2026-04-22","size":"","history":[],"note":"신규추가","retired":false},{"no":437,"name":"전태현","part":"DRY","job":"3조","joinDate":"2026-04-29","size":"","history":[],"note":"신규추가","retired":false},{"no":438,"name":"강민수1","part":"DRY","job":"2조","joinDate":"2026-04-29","size":"","history":[],"note":"신규추가","retired":false},{"no":439,"name":"김성일","part":"WET","job":"출하팀(22)","joinDate":"2020-09-02","size":"","history":["2022-01-05","2024-07-05"],"note":"","retired":false},{"no":440,"name":"엄우섭","part":"지원","job":"총괄팀장","joinDate":"2024-06-11","size":"","history":["2022-02-08","2024-10-29","2025-05-30"],"note":"","retired":false},{"no":441,"name":"남기다","part":"지원","job":"씨제이","joinDate":"2015-03-26","size":"","history":[],"note":"신규추가","retired":false}];
+
+window.onload=async()=>{
+  await initDB();
+  allData=await dbGetAll();
+  if(!allData.length){
+    for(const r of INITIAL_DATA) await dbPut(r);
+    allData=await dbGetAll();
+  }
+  renderKPI();
+  renderTab();
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>이앤원 여주물류센터 · 일정·할일 관리</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --orange:#ff6b35;
+  --orange-light:#fff4ef;
+  --orange-mid:#ffe0cc;
+  --bg:#f0f4f9;
+  --white:#fff;
+  --border:#e2e8f4;
+  --text:#1e293b;
+  --muted:#7a8aaa;
+  --green:#16a34a;
+  --green-bg:#dcfce7;
+  --red:#dc2626;
+  --red-bg:#fee2e2;
+  --blue:#2563eb;
+  --blue-bg:#dbeafe;
+  --purple:#7c3aed;
+  --purple-bg:#ede9fe;
+}
+body{font-family:'Malgun Gothic','맑은 고딕',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* 헤더 */
+.header{background:var(--white);border-bottom:1px solid var(--border);padding:0 24px;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,0.06);}
+.header-left{display:flex;align-items:center;gap:12px;}
+.logo{background:var(--orange);color:white;font-size:12px;font-weight:800;padding:5px 10px;border-radius:8px;}
+.header-title{font-size:15px;font-weight:700;color:#1a2744;}
+.header-sub{font-size:11px;color:var(--muted);}
+.header-right{display:flex;align-items:center;gap:10px;}
+.back-btn{display:flex;align-items:center;gap:6px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;text-decoration:none;transition:all .15s;}
+.back-btn:hover{border-color:var(--orange);color:var(--orange);}
+.hdate{font-size:12px;color:var(--muted);font-weight:500;}
+
+/* 레이아웃 */
+.wrap{display:grid;grid-template-columns:400px 1fr;gap:18px;padding:18px 24px;max-width:1400px;margin:0 auto;}
+
+/* 캘린더 카드 */
+.cal-card{background:var(--white);border:1px solid var(--border);border-radius:16px;overflow:hidden;height:fit-content;position:sticky;top:72px;}
+.cal-head{padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+.cal-month{font-size:15px;font-weight:700;color:#1a2744;}
+.cal-navs{display:flex;gap:4px;}
+.cal-nav{background:none;border:1px solid var(--border);border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:15px;color:var(--muted);display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.cal-nav:hover{border-color:var(--orange);color:var(--orange);}
+.cal-today-btn{background:var(--orange-light);border:1px solid var(--orange-mid);border-radius:8px;padding:4px 12px;font-size:11px;font-weight:700;color:var(--orange);cursor:pointer;}
+.cal-today-btn:hover{background:var(--orange);color:white;}
+
+.cal-grid{padding:12px 16px 4px;}
+.cal-days{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:4px;}
+.cal-dlabel{text-align:center;font-size:10px;font-weight:600;color:#94a3b8;padding:4px 0;}
+.cal-dlabel.sun{color:#ef4444;}.cal-dlabel.sat{color:#3b82f6;}
+.cal-cells{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.cal-cell{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:10px;cursor:pointer;transition:all .15s;position:relative;padding:2px;}
+.cal-cell:hover:not(.today){background:#f8fafc;}
+.cal-cell.today{background:var(--orange);}
+.cal-cell.today .cn{color:white;font-weight:700;}
+.cal-cell.selected:not(.today){background:var(--orange-light);outline:2px solid var(--orange);}
+.cal-cell.other-month .cn{color:#cbd5e1;}
+.cal-cell.is-sun .cn,.cal-cell.is-holiday .cn{color:#ef4444;}
+.cal-cell.is-sat .cn{color:#3b82f6;}
+.cal-cell.today .cn.holiday{color:rgba(255,255,255,0.9);}
+.cn{font-size:12px;font-weight:500;line-height:1;}
+.hname{font-size:6px;color:#ef4444;text-align:center;white-space:nowrap;overflow:hidden;max-width:36px;}
+.cal-cell.today .hname{color:rgba(255,255,255,0.85);}
+.cdots{display:flex;gap:1px;margin-top:2px;}
+.cdot{width:4px;height:4px;border-radius:50%;}
+.cdot.done{background:#16a34a;}.cdot.pending{background:var(--orange);}
+.cal-cell.today .cdot{background:rgba(255,255,255,0.85);}
+
+.cal-summary{padding:12px 16px;border-top:1px solid var(--border);}
+.cs-date{font-size:12px;font-weight:700;color:#1a2744;margin-bottom:8px;}
+.cs-empty{font-size:11px;color:var(--muted);text-align:center;padding:8px 0;}
+.cs-item{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #f8fafc;}
+.cs-item:last-child{border-bottom:none;}
+.cs-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.cs-text{font-size:12px;flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+.cs-text.done{text-decoration:line-through;color:var(--muted);}
+.cs-tag{font-size:9px;font-weight:700;padding:1px 6px;border-radius:4px;flex-shrink:0;}
+
+/* 오른쪽 패널 */
+.right-panel{display:flex;flex-direction:column;gap:14px;}
+
+/* 검색바 */
+.search-card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:16px 20px;}
+.search-row{display:flex;gap:8px;margin-bottom:10px;}
+.search-box{flex:1;position:relative;}
+.search-box input{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:8px 14px 8px 36px;font-size:13px;font-family:inherit;outline:none;color:var(--text);transition:border-color .15s;}
+.search-box input:focus{border-color:var(--orange);}
+.search-box .si{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:15px;}
+.add-btn{background:var(--orange);color:white;border:none;border-radius:10px;padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .15s;}
+.add-btn:hover{background:#e85d28;}
+.filter-row{display:flex;gap:6px;flex-wrap:wrap;}
+.fchip{background:var(--bg);border:1.5px solid var(--border);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s;}
+.fchip.active{background:var(--orange-light);border-color:var(--orange);color:var(--orange);}
+.fchip:hover:not(.active){border-color:var(--orange);color:var(--orange);}
+
+/* 통계 */
+.stats-row{display:flex;gap:10px;}
+.stat-box{flex:1;background:var(--white);border:1px solid var(--border);border-radius:12px;padding:12px 16px;text-align:center;}
+.stat-num{font-size:22px;font-weight:800;color:#1a2744;}
+.stat-label{font-size:10px;color:var(--muted);margin-top:2px;}
+
+/* 할일 리스트 */
+.todo-card{background:var(--white);border:1px solid var(--border);border-radius:16px;overflow:hidden;}
+.todo-card-head{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+.todo-card-title{font-size:13px;font-weight:700;color:#1a2744;}
+.sort-sel{border:1px solid var(--border);border-radius:8px;padding:4px 8px;font-size:11px;font-family:inherit;color:var(--text);outline:none;cursor:pointer;}
+.sort-sel:focus{border-color:var(--orange);}
+.todo-list{min-height:100px;}
+.todo-empty{padding:40px;text-align:center;color:var(--muted);font-size:13px;}
+.todo-item{padding:11px 20px;display:flex;align-items:flex-start;gap:10px;border-bottom:1px solid #f8fafc;transition:background .1s;}
+.todo-item:last-child{border-bottom:none;}
+.todo-item:hover{background:#fafbff;}
+.chk{width:20px;height:20px;border-radius:6px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .1s;flex-shrink:0;margin-top:1px;}
+.chk.done{background:var(--green);border-color:var(--green);color:white;font-size:12px;}
+.todo-body{flex:1;min-width:0;}
+.todo-text{font-size:13px;font-weight:600;color:var(--text);word-break:break-all;}
+.todo-text.done{text-decoration:line-through;color:var(--muted);font-weight:400;}
+.todo-meta{display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap;}
+.todo-date{font-size:10px;color:var(--muted);display:flex;align-items:center;gap:3px;}
+.todo-date.today-date{color:var(--orange);font-weight:700;}
+.todo-date.overdue{color:var(--red);}
+.tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;}
+.todo-actions{display:flex;gap:4px;flex-shrink:0;}
+.t-btn{background:none;border:none;cursor:pointer;padding:3px 5px;border-radius:6px;font-size:13px;transition:background .1s;}
+.t-btn:hover{background:var(--bg);}
+.t-btn.del:hover{background:var(--red-bg);color:var(--red);}
+
+/* 모달 */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:200;align-items:center;justify-content:center;}
+.modal-bg.open{display:flex;}
+.modal{background:var(--white);border-radius:18px;padding:28px;width:460px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,0.15);}
+.modal-title{font-size:15px;font-weight:800;color:#1a2744;margin-bottom:20px;}
+.form-group{margin-bottom:14px;}
+.form-label{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:5px;display:block;text-transform:uppercase;letter-spacing:0.5px;}
+.form-input{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:9px 13px;font-size:13px;font-family:inherit;outline:none;color:var(--text);transition:border-color .15s;}
+.form-input:focus{border-color:var(--orange);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.tag-picker{display:flex;gap:6px;flex-wrap:wrap;}
+.tag-opt{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;border:2px solid transparent;transition:all .15s;opacity:.7;}
+.tag-opt.sel{border-color:currentColor;opacity:1;}
+.modal-btns{display:flex;gap:8px;margin-top:20px;}
+.mbtn{flex:1;padding:10px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;border:none;transition:background .15s;}
+.mbtn.cancel{background:var(--bg);color:var(--muted);}
+.mbtn.cancel:hover{background:var(--border);}
+.mbtn.save{background:var(--orange);color:white;}
+.mbtn.save:hover{background:#e85d28;}
+
+/* 우선순위 배지 */
+.pri{font-size:10px;font-weight:700;padding:1px 7px;border-radius:4px;}
+.pri.high{background:#fee2e2;color:#dc2626;}
+.pri.mid{background:#fef3c7;color:#d97706;}
+.pri.low{background:#dcfce7;color:#16a34a;}
+
+@media(max-width:900px){
+  .wrap{grid-template-columns:1fr;}
+  .cal-card{position:static;}
+  .stats-row{flex-wrap:wrap;}
+  .stat-box{min-width:calc(50% - 5px);}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo">E&ONE</div>
+    <div>
+      <div class="header-title">일정 · 할일 관리</div>
+      <div class="header-sub">이앤원 여주물류센터 · 안전관리자 이현수</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <a class="back-btn" href="index.html">← 홈으로</a>
+    <div class="hdate" id="hDate"></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- 달력 -->
+  <div class="cal-card">
+    <div class="cal-head">
+      <div class="cal-navs">
+        <button class="cal-nav" onclick="calMove(-1)">‹</button>
+        <button class="cal-nav" onclick="calMove(1)">›</button>
+      </div>
+      <span class="cal-month" id="calTitle"></span>
+      <button class="cal-today-btn" onclick="calGoToday()">오늘</button>
+    </div>
+    <div class="cal-grid">
+      <div class="cal-days">
+        <div class="cal-dlabel sun">일</div>
+        <div class="cal-dlabel">월</div>
+        <div class="cal-dlabel">화</div>
+        <div class="cal-dlabel">수</div>
+        <div class="cal-dlabel">목</div>
+        <div class="cal-dlabel">금</div>
+        <div class="cal-dlabel sat">토</div>
+      </div>
+      <div class="cal-cells" id="calCells"></div>
+    </div>
+    <div class="cal-summary" id="calSummary"></div>
+  </div>
+
+  <!-- 오른쪽 -->
+  <div class="right-panel">
+
+    <!-- 통계 -->
+    <div class="stats-row" id="statsRow"></div>
+
+    <!-- 검색 + 필터 -->
+    <div class="search-card">
+      <div class="search-row">
+        <div class="search-box">
+          <span class="si">🔍</span>
+          <input id="searchInput" placeholder="할 일 검색..." oninput="render()" />
+        </div>
+        <button class="add-btn" onclick="openModal()">+ 추가</button>
+      </div>
+      <div class="filter-row" id="filterRow"></div>
+    </div>
+
+    <!-- 할일 리스트 -->
+    <div class="todo-card">
+      <div class="todo-card-head">
+        <span class="todo-card-title" id="listTitle">전체 할일</span>
+        <select class="sort-sel" id="sortSel" onchange="render()">
+          <option value="date">날짜순</option>
+          <option value="created">등록순</option>
+          <option value="priority">우선순위순</option>
+          <option value="name">이름순</option>
+        </select>
+      </div>
+      <div class="todo-list" id="todoList"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 모달 -->
+<div class="modal-bg" id="modalBg" onclick="closeModalBg(event)">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">할일 추가</div>
+    <div class="form-group">
+      <label class="form-label">내용 *</label>
+      <input class="form-input" id="fText" placeholder="할 일을 입력하세요" />
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">날짜</label>
+        <input class="form-input" id="fDate" type="date" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">우선순위</label>
+        <select class="form-input" id="fPri">
+          <option value="mid">보통</option>
+          <option value="high">높음</option>
+          <option value="low">낮음</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">분류 태그</label>
+      <div class="tag-picker" id="tagPicker"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">메모</label>
+      <input class="form-input" id="fMemo" placeholder="추가 메모 (선택)" />
+    </div>
+    <div class="modal-btns">
+      <button class="mbtn cancel" onclick="closeModal()">취소</button>
+      <button class="mbtn save" onclick="saveTodo()">저장</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const TAG_DEFS = [
+  {id:'check', label:'점검', bg:'#dcfce7', color:'#16a34a'},
+  {id:'eval',  label:'평가', bg:'#fff3ee', color:'#ff6b35'},
+  {id:'edu',   label:'교육', bg:'#ede9fe', color:'#7c3aed'},
+  {id:'report',label:'보고', bg:'#fee2e2', color:'#dc2626'},
+  {id:'meeting',label:'회의', bg:'#dbeafe', color:'#2563eb'},
+  {id:'other', label:'기타', bg:'#f1f5f9', color:'#64748b'},
+];
+const PRI_LABELS = {high:'높음', mid:'보통', low:'낮음'};
+const HOLIDAYS = {
+  '2026-01-01':'신정','2026-03-01':'삼일절','2026-05-05':'어린이날',
+  '2026-06-06':'현충일','2026-08-15':'광복절','2026-10-03':'개천절',
+  '2026-10-09':'한글날','2026-12-25':'크리스마스',
+  '2025-01-01':'신정','2025-03-01':'삼일절','2025-05-05':'어린이날',
+  '2025-06-06':'현충일','2025-08-15':'광복절','2025-10-03':'개천절',
+  '2025-10-09':'한글날','2025-12-25':'크리스마스',
+};
+
+const FILTERS = [
+  {id:'all',   label:'전체'},
+  {id:'today', label:'오늘'},
+  {id:'week',  label:'이번 주'},
+  {id:'pending',label:'미완료'},
+  {id:'done',  label:'완료'},
+  {id:'overdue',label:'기한 초과'},
+];
+
+let todos = JSON.parse(localStorage.getItem('enone_cal_todos') || '[]');
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+let selectedDate = null;
+let activeFilter = 'all';
+let editId = null;
+let selectedTag = 'other';
+
+function save() { localStorage.setItem('enone_cal_todos', JSON.stringify(todos)); }
+
+function todayStr() {
+  const n = new Date();
+  return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+}
+
+// 날짜 헤더
+(function(){
+  const n = new Date();
+  const days = ['일','월','화','수','목','금','토'];
+  document.getElementById('hDate').textContent =
+    `${n.getFullYear()}.${String(n.getMonth()+1).padStart(2,'0')}.${String(n.getDate()).padStart(2,'0')} (${days[n.getDay()]})`;
+})();
+
+// ===== 캘린더 =====
+function calRender() {
+  const months = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  document.getElementById('calTitle').textContent = `${calYear}년 ${months[calMonth]}`;
+  const today = new Date();
+  const first = new Date(calYear, calMonth, 1);
+  const last  = new Date(calYear, calMonth+1, 0);
+  const prevLast = new Date(calYear, calMonth, 0).getDate();
+
+  // 날짜별 할일 집계
+  const dayMap = {};
+  todos.forEach(t => {
+    if (!t.date) return;
+    if (!dayMap[t.date]) dayMap[t.date] = {done:0, pending:0};
+    t.done ? dayMap[t.date].done++ : dayMap[t.date].pending++;
+  });
+
+  let cells = '';
+  // 이전달 칸
+  for (let i = first.getDay()-1; i >= 0; i--) {
+    cells += `<div class="cal-cell other-month"><span class="cn">${prevLast-i}</span></div>`;
+  }
+  // 이번달
+  for (let d = 1; d <= last.getDate(); d++) {
+    const dow = new Date(calYear, calMonth, d).getDay();
+    const ds = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday = d === today.getDate() && calMonth === today.getMonth() && calYear === today.getFullYear();
+    const isSel  = selectedDate === ds;
+    const hol = HOLIDAYS[ds];
+    let cls = 'cal-cell';
+    if (dow === 0 || hol) cls += ' is-sun is-holiday';
+    else if (dow === 6) cls += ' is-sat';
+    if (isToday) cls += ' today';
+    if (isSel && !isToday) cls += ' selected';
+    const dm = dayMap[ds];
+    let dots = '';
+    if (dm) {
+      if (dm.done)    dots += `<div class="cdot done"></div>`.repeat(Math.min(dm.done,2));
+      if (dm.pending) dots += `<div class="cdot pending"></div>`.repeat(Math.min(dm.pending,2));
+    }
+    const holTag = hol ? `<div class="hname">${hol.slice(0,3)}</div>` : '';
+    cells += `<div class="${cls}" onclick="calSelectDate('${ds}')">
+      <span class="cn${hol?' holiday':''}">${d}</span>
+      ${holTag}
+      ${dots ? `<div class="cdots">${dots}</div>` : ''}
+    </div>`;
+  }
+  // 다음달 칸
+  const rem = 42 - first.getDay() - last.getDate();
+  for (let d = 1; d <= Math.min(rem, 7); d++) {
+    cells += `<div class="cal-cell other-month"><span class="cn">${d}</span></div>`;
+  }
+  document.getElementById('calCells').innerHTML = cells;
+
+  // 요약
+  const selDiv = document.getElementById('calSummary');
+  if (selectedDate) {
+    const dayTodos = todos.filter(t => t.date === selectedDate);
+    const [sy, sm, sd] = selectedDate.split('-');
+    selDiv.innerHTML = `<div class="cs-date">${parseInt(sm)}월 ${parseInt(sd)}일 할일 (${dayTodos.length}건)</div>` +
+      (dayTodos.length ? dayTodos.map(t => {
+        const tag = TAG_DEFS.find(tg => tg.id === t.tag) || TAG_DEFS[5];
+        return `<div class="cs-item">
+          <div class="cs-dot" style="background:${t.done?'#16a34a':'#ff6b35'}"></div>
+          <span class="cs-text ${t.done?'done':''}">${esc(t.text)}</span>
+          <span class="cs-tag" style="background:${tag.bg};color:${tag.color}">${tag.label}</span>
+        </div>`;
+      }).join('') : '<div class="cs-empty">이 날 등록된 할일이 없어요.</div>') +
+      `<button style="margin-top:8px;width:100%;background:var(--orange-light);border:1.5px solid var(--orange-mid);border-radius:8px;padding:6px;font-size:11px;font-weight:700;color:var(--orange);cursor:pointer;" onclick="openModal('${selectedDate}')">+ 이 날 할일 추가</button>`;
+  } else {
+    selDiv.innerHTML = '<div class="cs-empty" style="padding:12px 0;">날짜를 클릭하면 할일을 볼 수 있어요.</div>';
+  }
+}
+function calSelectDate(ds) {
+  selectedDate = selectedDate === ds ? null : ds;
+  calRender();
+  if (selectedDate) {
+    activeFilter = 'all';
+    renderFilters();
+    render();
+  }
+}
+function calMove(dir) {
+  calMonth += dir;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  if (calMonth < 0)  { calMonth = 11; calYear--; }
+  calRender();
+}
+function calGoToday() {
+  const n = new Date();
+  calYear = n.getFullYear(); calMonth = n.getMonth();
+  selectedDate = todayStr();
+  calRender();
+  activeFilter = 'today';
+  renderFilters();
+  render();
+}
+
+// ===== 필터 =====
+function renderFilters() {
+  document.getElementById('filterRow').innerHTML = FILTERS.map(f =>
+    `<div class="fchip ${activeFilter===f.id?'active':''}" onclick="setFilter('${f.id}')">${f.label}</div>`
+  ).join('');
+}
+function setFilter(id) {
+  activeFilter = id;
+  selectedDate = null;
+  calRender();
+  renderFilters();
+  render();
+}
+
+// ===== 통계 =====
+function renderStats() {
+  const td = todayStr();
+  const total   = todos.length;
+  const done    = todos.filter(t => t.done).length;
+  const todayN  = todos.filter(t => t.date === td && !t.done).length;
+  const overdue = todos.filter(t => t.date && t.date < td && !t.done).length;
+  document.getElementById('statsRow').innerHTML = [
+    {n:total,   l:'전체 할일',   c:'#1a2744'},
+    {n:done,    l:'완료',        c:var2hex('--green')},
+    {n:todayN,  l:'오늘 남은',   c:'#ff6b35'},
+    {n:overdue, l:'기한 초과',   c:'#dc2626'},
+  ].map(s => `<div class="stat-box"><div class="stat-num" style="color:${s.c}">${s.n}</div><div class="stat-label">${s.l}</div></div>`).join('');
+}
+function var2hex(v) { return getComputedStyle(document.documentElement).getPropertyValue(v).trim() || '#000'; }
+
+// ===== 렌더 =====
+function render() {
+  renderStats();
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  const sort = document.getElementById('sortSel').value;
+  const td = todayStr();
+  const wStart = getWeekStart();
+  const wEnd   = getWeekEnd();
+
+  let list = [...todos];
+
+  // 날짜 클릭 필터
+  if (selectedDate) {
+    list = list.filter(t => t.date === selectedDate);
+    const [sy, sm, sd] = selectedDate.split('-');
+    document.getElementById('listTitle').textContent = `${parseInt(sm)}월 ${parseInt(sd)}일 할일`;
+  } else {
+    // 상태 필터
+    if (activeFilter === 'today')   list = list.filter(t => t.date === td);
+    else if (activeFilter === 'week')   list = list.filter(t => t.date >= wStart && t.date <= wEnd);
+    else if (activeFilter === 'pending') list = list.filter(t => !t.done);
+    else if (activeFilter === 'done')    list = list.filter(t => t.done);
+    else if (activeFilter === 'overdue') list = list.filter(t => t.date && t.date < td && !t.done);
+    document.getElementById('listTitle').textContent = FILTERS.find(f=>f.id===activeFilter)?.label + ' 할일' || '전체 할일';
+  }
+
+  // 검색
+  if (q) list = list.filter(t => t.text.toLowerCase().includes(q) || (t.memo||'').toLowerCase().includes(q));
+
+  // 정렬
+  list.sort((a,b)=>{
+    if (sort === 'date') {
+      if (!a.date && !b.date) return b.id - a.id;
+      if (!a.date) return 1; if (!b.date) return -1;
+      return a.date.localeCompare(b.date);
+    }
+    if (sort === 'priority') {
+      const po = {high:0,mid:1,low:2};
+      return (po[a.pri]||1) - (po[b.pri]||1);
+    }
+    if (sort === 'name') return a.text.localeCompare(b.text);
+    return b.id - a.id; // created
+  });
+
+  const listEl = document.getElementById('todoList');
+  if (!list.length) {
+    listEl.innerHTML = `<div class="todo-empty">${q ? '검색 결과가 없어요.' : '할일이 없어요. 추가해보세요!'}</div>`;
+    return;
+  }
+
+  listEl.innerHTML = list.map(t => {
+    const tag = TAG_DEFS.find(tg => tg.id === t.tag) || TAG_DEFS[5];
+    const isOverdue = t.date && t.date < td && !t.done;
+    const isToday   = t.date === td;
+    let dateCls = 'todo-date';
+    if (isOverdue) dateCls += ' overdue';
+    else if (isToday) dateCls += ' today-date';
+    return `<div class="todo-item" id="ti-${t.id}">
+      <div class="chk ${t.done?'done':''}" onclick="toggle(${t.id})">${t.done?'✓':''}</div>
+      <div class="todo-body">
+        <div class="todo-text ${t.done?'done':''}">${highlight(esc(t.text), q)}</div>
+        <div class="todo-meta">
+          ${t.date ? `<span class="${dateCls}">📅 ${fmtDate(t.date)}${isOverdue?' · 기한초과':''}</span>` : ''}
+          <span class="tag" style="background:${tag.bg};color:${tag.color}">${tag.label}</span>
+          <span class="pri ${t.pri||'mid'}">${PRI_LABELS[t.pri||'mid']}</span>
+          ${t.memo ? `<span style="font-size:10px;color:var(--muted)">💬 ${esc(t.memo)}</span>` : ''}
+        </div>
+      </div>
+      <div class="todo-actions">
+        <button class="t-btn" onclick="editTodo(${t.id})" title="수정">✏️</button>
+        <button class="t-btn del" onclick="deleteTodo(${t.id})" title="삭제">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggle(id) {
+  todos = todos.map(t => t.id === id ? {...t, done: !t.done} : t);
+  save(); calRender(); render();
+}
+function deleteTodo(id) {
+  if (!confirm('삭제할까요?')) return;
+  todos = todos.filter(t => t.id !== id);
+  save(); calRender(); render();
+}
+
+// ===== 모달 =====
+function openModal(dateStr) {
+  editId = null;
+  document.getElementById('modalTitle').textContent = '할일 추가';
+  document.getElementById('fText').value = '';
+  document.getElementById('fDate').value = dateStr || todayStr();
+  document.getElementById('fPri').value = 'mid';
+  document.getElementById('fMemo').value = '';
+  selectedTag = 'other';
+  renderTagPicker();
+  document.getElementById('modalBg').classList.add('open');
+  document.getElementById('fText').focus();
+}
+function editTodo(id) {
+  const t = todos.find(t => t.id === id);
+  if (!t) return;
+  editId = id;
+  document.getElementById('modalTitle').textContent = '할일 수정';
+  document.getElementById('fText').value = t.text;
+  document.getElementById('fDate').value = t.date || '';
+  document.getElementById('fPri').value = t.pri || 'mid';
+  document.getElementById('fMemo').value = t.memo || '';
+  selectedTag = t.tag || 'other';
+  renderTagPicker();
+  document.getElementById('modalBg').classList.add('open');
+  document.getElementById('fText').focus();
+}
+function closeModal() { document.getElementById('modalBg').classList.remove('open'); }
+function closeModalBg(e) { if (e.target.id === 'modalBg') closeModal(); }
+function saveTodo() {
+  const text = document.getElementById('fText').value.trim();
+  if (!text) { document.getElementById('fText').focus(); return; }
+  const data = {
+    text,
+    date: document.getElementById('fDate').value || null,
+    pri:  document.getElementById('fPri').value,
+    tag:  selectedTag,
+    memo: document.getElementById('fMemo').value.trim() || null,
+    done: false,
+  };
+  if (editId) {
+    todos = todos.map(t => t.id === editId ? {...t, ...data} : t);
+  } else {
+    todos.push({id: Date.now(), ...data});
+  }
+  save(); closeModal(); calRender(); render();
+}
+function renderTagPicker() {
+  document.getElementById('tagPicker').innerHTML = TAG_DEFS.map(tg =>
+    `<span class="tag-opt ${selectedTag===tg.id?'sel':''}" style="background:${tg.bg};color:${tg.color}" onclick="pickTag('${tg.id}')">${tg.label}</span>`
+  ).join('');
+}
+function pickTag(id) { selectedTag = id; renderTagPicker(); }
+
+// ===== 유틸 =====
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function highlight(s, q) {
+  if (!q) return s;
+  const re = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
+  return s.replace(re, '<mark style="background:#fff3cd;border-radius:2px">$1</mark>');
+}
+function fmtDate(ds) {
+  if (!ds) return '';
+  const [y,m,d] = ds.split('-');
+  const days=['일','월','화','수','목','금','토'];
+  const dow = new Date(Number(y),Number(m)-1,Number(d)).getDay();
+  return `${parseInt(m)}/${parseInt(d)} (${days[dow]})`;
+}
+function getWeekStart() {
+  const n = new Date(); n.setDate(n.getDate() - n.getDay());
+  return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+}
+function getWeekEnd() {
+  const n = new Date(); n.setDate(n.getDate() + (6 - n.getDay()));
+  return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+}
+
+// 엔터키
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+  if (e.key === 'Enter' && document.getElementById('modalBg').classList.contains('open')) {
+    if (e.target.tagName !== 'SELECT') saveTodo();
+  }
+});
+
+// 초기 샘플 데이터
+if (!todos.length) {
+  const td = todayStr();
+  const [y,m] = td.split('-');
+  todos = [
+    {id:1, text:'오전 순회점검', date:td, tag:'check', pri:'high', done:false, memo:'1층~3층 전 구역'},
+    {id:2, text:'일일 상시 위험성평가 작성', date:td, tag:'eval', pri:'high', done:false, memo:null},
+    {id:3, text:'교육일지 작성 (신규입사자)', date:td, tag:'edu', pri:'mid', done:true, memo:null},
+    {id:4, text:'보호구 재고 확인', date:`${y}-${m}-${String(parseInt(td.split('-')[2])+1).padStart(2,'0')}`, tag:'check', pri:'low', done:false, memo:'안전모·안전화 수량 체크'},
+  ];
+  save();
+}
+
+// 초기화
+selectedDate = todayStr();
+calRender();
+renderFilters();
+render();
+</script>
+</body>
+</html>

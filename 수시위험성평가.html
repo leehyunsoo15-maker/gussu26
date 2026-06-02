@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>수시 위험성평가</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --orange:#ff6b35;--orange-light:#fff4ef;--orange-mid:#ffe0cc;
+  --navy:#1a2744;--bg:#f0f4f9;--white:#fff;
+  --border:#e2e8f4;--text:#1e293b;--muted:#7a8aaa;
+  --red:#dc2626;--red-light:#fee2e2;
+  --green:#16a34a;--green-light:#dcfce7;
+  --amber:#d97706;--amber-light:#fef3c7;
+}
+body{font-family:'Malgun Gothic','맑은 고딕',sans-serif;background:var(--bg);color:var(--text);}
+.header{background:var(--navy);color:white;padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between;}
+.logo{background:var(--orange);color:white;font-size:11px;font-weight:800;padding:4px 8px;border-radius:6px;}
+.header-left{display:flex;align-items:center;gap:10px;}
+.header-title{font-size:14px;font-weight:600;}
+.header-sub{font-size:10px;color:rgba(255,255,255,0.5);margin-top:1px;}
+.header-right{display:flex;align-items:center;gap:8px;}
+.hbtn{background:rgba(255,255,255,0.15);color:white;border:none;border-radius:6px;padding:5px 12px;font-size:11px;cursor:pointer;font-family:inherit;}
+.back-btn{color:rgba(255,255,255,0.7);text-decoration:none;font-size:12px;}
+
+.app{max-width:960px;margin:0 auto;padding:16px;}
+
+.api-box{background:var(--orange-light);border:1.5px solid var(--orange-mid);border-radius:10px;padding:12px;margin-bottom:12px;}
+.api-row{display:flex;gap:8px;margin-top:6px;}
+.api-input{flex:1;border:1px solid var(--orange-mid);border-radius:6px;padding:7px 10px;font-size:12px;font-family:inherit;}
+.api-save{background:var(--orange);color:white;border:none;border-radius:6px;padding:7px 14px;font-size:12px;cursor:pointer;font-weight:700;font-family:inherit;}
+
+.card{background:var(--white);border-radius:10px;border:1px solid var(--border);margin-bottom:10px;overflow:hidden;}
+.card-header{padding:8px 14px;border-bottom:1px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-size:11px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:6px;}
+.card-body{padding:12px 14px;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.form-grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.field{display:flex;flex-direction:column;gap:3px;}
+label{font-size:10px;font-weight:600;color:var(--muted);}
+input,select,textarea{border:1px solid var(--border);border-radius:6px;padding:7px 9px;font-size:12px;font-family:inherit;color:var(--text);background:white;width:100%;}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--orange);}
+input[readonly]{background:var(--bg);color:var(--muted);}
+textarea{resize:vertical;min-height:60px;line-height:1.6;}
+
+/* 사유 체크박스 */
+.reason-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:8px;}
+.reason-btn{border:1.5px solid var(--border);border-radius:7px;padding:7px 10px;display:flex;align-items:center;gap:7px;cursor:pointer;background:white;transition:all .15s;text-align:left;}
+.reason-btn.sel{border-color:var(--orange);background:var(--orange-light);}
+.reason-chk{width:16px;height:16px;border-radius:3px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px;transition:all .15s;}
+.reason-btn.sel .reason-chk{background:var(--orange);border-color:var(--orange);color:white;}
+.reason-label{font-size:11px;color:var(--muted);}
+.reason-btn.sel .reason-label{color:#993c1d;font-weight:600;}
+
+/* 위험요인 카드 */
+.risk-item{border:1px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden;}
+.risk-item-header{padding:8px 12px;background:var(--bg);display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+.risk-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:5px;}
+.risk-badge.high{background:var(--red-light);color:var(--red);}
+.risk-badge.mid{background:var(--amber-light);color:var(--amber);}
+.risk-badge.low{background:var(--green-light);color:var(--green);}
+.risk-badge.none{background:var(--bg);color:var(--muted);}
+.risk-del{background:none;border:1px solid var(--border);border-radius:5px;padding:3px 8px;font-size:10px;cursor:pointer;color:var(--muted);font-family:inherit;}
+.risk-del:hover{border-color:var(--red);color:var(--red);}
+.risk-body{padding:12px;}
+
+/* 위험성 매트릭스 */
+.matrix-wrap{background:var(--bg);border-radius:8px;padding:10px;margin:10px 0;}
+.matrix-title{font-size:10px;font-weight:700;color:var(--navy);margin-bottom:8px;}
+.matrix-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;align-items:start;}
+.matrix-label{font-size:10px;color:var(--muted);margin-bottom:4px;}
+.score-btns{display:flex;flex-direction:column;gap:3px;}
+.score-btn{border:1px solid var(--border);border-radius:5px;padding:5px 8px;font-size:10px;cursor:pointer;background:white;text-align:left;transition:all .15s;font-family:inherit;}
+.score-btn:hover{border-color:var(--orange);}
+.score-btn.sel-freq{border-color:var(--orange);background:var(--orange-light);color:#993c1d;font-weight:600;}
+.score-btn.sel-sev{border-color:var(--red);background:var(--red-light);color:#791f1f;font-weight:600;}
+.result-box{border-radius:8px;padding:14px 8px;text-align:center;border:2px solid;}
+.result-box.high{background:var(--red-light);border-color:var(--red);}
+.result-box.mid{background:var(--amber-light);border-color:var(--amber);}
+.result-box.low{background:var(--green-light);border-color:var(--green);}
+.result-box.none{background:var(--bg);border-color:var(--border);}
+.result-num{font-size:24px;font-weight:700;}
+.result-box.high .result-num{color:#791f1f;}
+.result-box.mid .result-num{color:#92400e;}
+.result-box.low .result-num{color:#166534;}
+.result-box.none .result-num{color:var(--muted);}
+.result-label{font-size:10px;margin-top:2px;}
+.result-box.high .result-label{color:#a32d2d;}
+.result-box.mid .result-label{color:#92400e;}
+.result-box.low .result-label{color:#166534;}
+.matrix-guide{margin-top:6px;font-size:9px;color:var(--muted);text-align:center;line-height:1.5;}
+
+/* 사진 */
+.photo-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.photo-box{border:2px dashed var(--border);border-radius:8px;height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden;background:var(--bg);transition:all .15s;}
+.photo-box:hover{border-color:var(--orange);background:var(--orange-light);}
+.photo-box.has-img{border-style:solid;border-color:var(--orange);}
+.photo-box img{width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;}
+.photo-box .overlay{position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.5);padding:3px;text-align:center;font-size:10px;color:white;}
+input[type="file"]{display:none;}
+.after-risk{border-radius:8px;padding:10px;text-align:center;border:2px solid;}
+.after-risk.high{background:var(--red-light);border-color:var(--red);}
+.after-risk.mid{background:var(--amber-light);border-color:var(--amber);}
+.after-risk.low{background:var(--green-light);border-color:var(--green);}
+.after-risk.none{background:var(--bg);border-color:var(--border);}
+
+/* 서명란 */
+.sign-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.sign-box{border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;}
+.sign-role{font-size:10px;font-weight:700;color:var(--muted);margin-bottom:8px;}
+.sign-name{font-size:14px;font-weight:700;color:var(--navy);}
+.sign-stamp{display:inline-block;border:2px solid var(--red);border-radius:50%;width:28px;height:28px;line-height:24px;font-size:10px;font-weight:700;color:var(--red);margin-left:4px;vertical-align:middle;}
+
+/* AI 버튼 */
+.btn-ai{width:100%;padding:12px;border:none;border-radius:8px;background:var(--navy);color:white;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px;}
+.btn-ai:hover{background:#0f172a;}
+.btn-ai:disabled{background:var(--muted);cursor:not-allowed;}
+.preview-box{background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:12px;font-size:12px;line-height:1.8;white-space:pre-wrap;}
+
+/* 하단 버튼 */
+.bottom-btns{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-top:10px;}
+.btn{padding:10px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--border);font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:3px;background:white;color:var(--text);transition:all .15s;}
+.btn:hover{border-color:var(--orange);color:var(--orange);}
+.btn-icon{font-size:16px;}
+.btn-save{border-color:var(--orange);color:var(--orange);}
+.btn-docx{background:#1d6f42;color:white;border-color:#1d6f42;}
+.btn-docx:hover{background:#155233;color:white;}
+.btn-add{width:100%;padding:10px;border:2px dashed var(--border);border-radius:8px;background:white;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit;margin-bottom:10px;transition:all .15s;}
+.btn-add:hover{border-color:var(--orange);color:var(--orange);}
+
+/* 토스트 */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--navy);color:white;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;opacity:0;transition:opacity .3s;z-index:999;pointer-events:none;}
+.toast.show{opacity:1;}
+
+/* 목록 모달 */
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:100;overflow-y:auto;}
+.modal-overlay.show{display:block;}
+.modal{background:white;border-radius:16px;max-width:960px;margin:40px auto;padding:20px;}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.modal-title{font-size:15px;font-weight:700;color:var(--navy);}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);}
+.list-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
+.stat-card{background:var(--bg);border-radius:8px;padding:10px;text-align:center;}
+.stat-num{font-size:20px;font-weight:700;color:var(--navy);}
+.stat-label{font-size:10px;color:var(--muted);margin-top:2px;}
+.list-item{border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:all .15s;}
+.list-item:hover{border-color:var(--orange);background:var(--orange-light);}
+.list-detail{margin-top:8px;padding-top:8px;border-top:1px solid var(--border);display:none;}
+.list-detail.show{display:block;}
+.detail-label{font-size:10px;font-weight:700;color:var(--muted);margin-bottom:2px;}
+.detail-val{font-size:12px;color:var(--text);margin-bottom:6px;line-height:1.6;}
+.export-btns{display:flex;gap:8px;margin-bottom:14px;}
+.export-btn{padding:7px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--border);font-family:inherit;background:white;}
+.export-btn.orange{background:var(--orange);color:white;border-color:var(--orange);}
+
+@media print{
+  .header,.api-box,.btn-ai,.bottom-btns,.btn-add,.toast,.modal-overlay,#aiResultCard{display:none!important;}
+  body{background:white;}
+  .app{padding:0;max-width:100%;}
+  .card,.risk-item{border:1px solid #ccc;margin-bottom:6px;break-inside:avoid;}
+  .card-header{background:#f5f5f5!important;}
+  @page{size:A4 portrait;margin:10mm 12mm;}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo">E&ONE</div>
+    <div>
+      <div class="header-title">⚠️ 수시 위험성평가</div>
+      <div class="header-sub">산업안전보건법 제36조</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <button class="hbtn" onclick="openList()">📋 목록</button>
+    <a class="back-btn" href="index.html">← 메인</a>
+  </div>
+</div>
+
+<div class="app">
+
+  <!-- API 키 -->
+  <div class="api-box" id="apiBox">
+    <div style="font-size:11px;font-weight:700;color:var(--orange);">🔑 Claude API 키 설정 (최초 1회)</div>
+    <div class="api-row">
+      <input class="api-input" type="password" id="apiKeyInput" placeholder="sk-ant-...">
+      <button class="api-save" onclick="saveApiKey()">저장</button>
+    </div>
+  </div>
+
+  <!-- 기본정보 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">📌 기본 정보</span>
+    </div>
+    <div class="card-body">
+      <div class="form-grid" style="margin-bottom:8px;">
+        <div class="field"><label>문서번호</label><input type="text" id="docNo" readonly></div>
+        <div class="field"><label>평가일</label><input type="date" id="docDate"></div>
+        <div class="field"><label>평가자</label><input type="text" value="이현수" readonly></div>
+        <div class="field"><label>사업장</label><input type="text" value="이마트 여주물류센터" readonly></div>
+        <div class="field"><label>평가구역</label><input type="text" id="area" placeholder="예) DRY 1구역, 도크장"></div>
+        <div class="field"><label>작업인원</label><input type="text" id="workers" placeholder="예) 5명"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 평가 실시 사유 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">📋 평가 실시 사유 <span style="font-size:10px;font-weight:400;color:var(--muted);">복수 선택 가능</span></span>
+    </div>
+    <div class="card-body">
+      <div class="reason-grid">
+        <div class="reason-btn" onclick="toggleReason(this,'작업방법 변경')">
+          <div class="reason-chk"></div>
+          <span class="reason-label">작업방법 변경</span>
+        </div>
+        <div class="reason-btn" onclick="toggleReason(this,'기계·설비 신규 도입')">
+          <div class="reason-chk"></div>
+          <span class="reason-label">기계·설비 신규 도입</span>
+        </div>
+        <div class="reason-btn" onclick="toggleReason(this,'원재료·물질 변경')">
+          <div class="reason-chk"></div>
+          <span class="reason-label">원재료·물질 변경</span>
+        </div>
+        <div class="reason-btn" onclick="toggleReason(this,'건설물·설비 변경')">
+          <div class="reason-chk"></div>
+          <span class="reason-label">건설물·설비 변경</span>
+        </div>
+        <div class="reason-btn" onclick="toggleReason(this,'사고·아차사고 발생')">
+          <div class="reason-chk"></div>
+          <span class="reason-label">사고·아차사고 발생</span>
+        </div>
+        <div class="reason-btn" onclick="toggleReason(this,'기타 위험요인 발견')">
+          <div class="reason-chk"></div>
+          <span class="reason-label">기타 위험요인 발견</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>상세 사유</label>
+        <textarea id="reasonDetail" placeholder="예) EPT 경로에 대형 대차 추가 투입으로 통로 폭이 변경됨"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- 위험요인 목록 -->
+  <div id="riskList"></div>
+
+  <!-- 위험요인 추가 버튼 -->
+  <button class="btn-add" onclick="addRiskItem()">＋ 위험요인 추가</button>
+
+  <!-- AI 분석 버튼 -->
+  <button class="btn-ai" id="aiBtn" onclick="generateAI()">✨ AI 위험요인 분석 및 개선대책 생성</button>
+
+  <!-- AI 결과 -->
+  <div class="card" id="aiResultCard" style="display:none;margin-bottom:10px;">
+    <div class="card-header"><span class="card-title">📄 AI 분석 결과</span></div>
+    <div class="card-body"><div class="preview-box" id="aiResult"></div></div>
+  </div>
+
+  <!-- 서명란 -->
+  <div class="card">
+    <div class="card-header"><span class="card-title">✍️ 서명</span></div>
+    <div class="card-body">
+      <div class="sign-grid">
+        <div class="sign-box"><div class="sign-role">작성자</div><div class="sign-name">이현수 <span class="sign-stamp">인</span></div></div>
+        <div class="sign-box"><div class="sign-role">검토자</div><div class="sign-name">엄우섭 <span class="sign-stamp">인</span></div></div>
+        <div class="sign-box"><div class="sign-role">승인자</div><div class="sign-name">이길명 <span class="sign-stamp">인</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 하단 버튼 -->
+  <div class="bottom-btns">
+    <button class="btn btn-save" onclick="saveRecord()"><span class="btn-icon">💾</span>저장</button>
+    <button class="btn" onclick="openList()"><span class="btn-icon">📋</span>목록</button>
+    <button class="btn" onclick="window.print()"><span class="btn-icon">🖨️</span>인쇄</button>
+    <button class="btn btn-docx" id="docxBtn" onclick="downloadDocx()"><span class="btn-icon">⬇️</span>docx</button>
+  </div>
+
+</div>
+
+<!-- 목록 모달 -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeList()">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">⚠️ 수시 위험성평가 관리대장</span>
+      <button class="modal-close" onclick="closeList()">✕</button>
+    </div>
+    <div class="list-stats" id="listStats"></div>
+    <div class="export-btns">
+      <button class="export-btn orange" onclick="exportJSON()">📦 JSON 백업</button>
+      <button class="export-btn" onclick="exportCSV()">📊 CSV 내보내기</button>
+    </div>
+    <div id="listBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
+<script>
+const DB_NAME='enone_safety', STORE='suisi_risk';
+let db, isDirty=false, aiText='';
+let apiKey=localStorage.getItem('enone_claude_key')||'';
+let riskItems=[];
+let selectedReasons=[];
+
+// IndexedDB
+function initDB(){
+  return new Promise((res,rej)=>{
+    const req=indexedDB.open(DB_NAME,3);
+    req.onupgradeneeded=e=>{
+      const d=e.target.result;
+      if(!d.objectStoreNames.contains(STORE)) d.createObjectStore(STORE,{keyPath:'id',autoIncrement:true});
+    };
+    req.onsuccess=e=>{db=e.target.result;res();};
+    req.onerror=()=>rej(req.error);
+  });
+}
+function dbAdd(data){return new Promise((res,rej)=>{const tx=db.transaction(STORE,'readwrite');const req=tx.objectStore(STORE).add(data);req.onsuccess=()=>res(req.result);req.onerror=()=>rej(req.error);});}
+function dbGetAll(){return new Promise((res,rej)=>{const tx=db.transaction(STORE,'readonly');const req=tx.objectStore(STORE).getAll();req.onsuccess=()=>res(req.result);req.onerror=()=>rej(req.error);});}
+function dbDelete(id){return new Promise((res,rej)=>{const tx=db.transaction(STORE,'readwrite');const req=tx.objectStore(STORE).delete(id);req.onsuccess=()=>res();req.onerror=()=>rej(req.error);});}
+
+window.onload=async()=>{
+  await initDB();
+  document.getElementById('docDate').value=new Date().toISOString().split('T')[0];
+  autoDocNo();
+  if(apiKey) document.getElementById('apiBox').style.display='none';
+  addRiskItem();
+  document.querySelectorAll('input,textarea,select').forEach(el=>{
+    el.addEventListener('input',()=>{isDirty=true;});
+  });
+};
+
+window.addEventListener('beforeunload',e=>{
+  if(isDirty){e.preventDefault();e.returnValue='작성 중인 내용이 있습니다. 저장하지 않고 나가시겠습니까?';return e.returnValue;}
+});
+
+async function autoDocNo(){
+  const all=await dbGetAll();
+  const n=String(all.length+1).padStart(3,'0');
+  document.getElementById('docNo').value=`ENO-${new Date().getFullYear()}-RR-${n}`;
+}
+
+function saveApiKey(){
+  const key=document.getElementById('apiKeyInput').value.trim();
+  if(!key.startsWith('sk-ant-')){alert('올바른 API 키를 입력하세요.');return;}
+  apiKey=key; localStorage.setItem('enone_claude_key',key);
+  document.getElementById('apiBox').style.display='none';
+  showToast('✅ API 키 저장 완료!');
+}
+
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+
+function toggleReason(el,val){
+  el.classList.toggle('sel');
+  el.querySelector('.reason-chk').textContent=el.classList.contains('sel')?'✓':'';
+  if(el.classList.contains('sel')) selectedReasons.push(val);
+  else selectedReasons=selectedReasons.filter(r=>r!==val);
+  isDirty=true;
+}
+
+// 위험요인 관리
+let riskCount=0;
+let photoData={};
+
+function addRiskItem(){
+  riskCount++;
+  const id=riskCount;
+  riskItems.push({id, freq:0, sev:0, afterFreq:0, afterSev:0});
+  renderRiskItems();
+  isDirty=true;
+}
+
+function delRiskItem(id){
+  if(riskItems.length<=1){showToast('위험요인은 최소 1개 이상 필요합니다.');return;}
+  riskItems=riskItems.filter(r=>r.id!==id);
+  delete photoData[`before_${id}`];
+  delete photoData[`after_${id}`];
+  renderRiskItems();
+  isDirty=true;
+}
+
+function getRiskLevel(score){
+  if(score===0) return {cls:'none',label:'-',desc:''};
+  if(score>=10) return {cls:'high',label:'높음',desc:'즉시 개선'};
+  if(score>=5) return {cls:'mid',label:'보통',desc:'개선 필요'};
+  return {cls:'low',label:'낮음',desc:'허용 가능'};
+}
+
+function setFreq(itemId,val){
+  const item=riskItems.find(r=>r.id===itemId);
+  if(item){item.freq=val;renderRiskItems();}
+  isDirty=true;
+}
+function setSev(itemId,val){
+  const item=riskItems.find(r=>r.id===itemId);
+  if(item){item.sev=val;renderRiskItems();}
+  isDirty=true;
+}
+function setAfterFreq(itemId,val){
+  const item=riskItems.find(r=>r.id===itemId);
+  if(item){item.afterFreq=val;renderRiskItems();}
+  isDirty=true;
+}
+function setAfterSev(itemId,val){
+  const item=riskItems.find(r=>r.id===itemId);
+  if(item){item.afterSev=val;renderRiskItems();}
+  isDirty=true;
+}
+
+function handlePhoto(id,type,input){
+  const file=input.files[0]; if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    photoData[`${type}_${id}`]=e.target.result;
+    const box=document.getElementById(`photo-box-${type}-${id}`);
+    if(box){
+      box.innerHTML=`<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;"><div class="overlay">✓</div>`;
+      box.classList.add('has-img');
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function renderRiskItems(){
+  const freqLabels=['','매우 낮음','낮음','보통','높음'];
+  const sevLabels=['','경미','중간','심각','치명'];
+  document.getElementById('riskList').innerHTML=riskItems.map((item,idx)=>{
+    const score=item.freq*item.sev;
+    const afterScore=item.afterFreq*item.afterSev;
+    const lv=getRiskLevel(score);
+    const afterLv=getRiskLevel(afterScore);
+    const workVal=document.getElementById(`work_${item.id}`)?.value||'';
+    const hazardVal=document.getElementById(`hazard_${item.id}`)?.value||'';
+    const measureVal=document.getElementById(`measure_${item.id}`)?.value||'';
+    const actionVal=document.getElementById(`action_${item.id}`)?.value||'';
+    const lawVal=document.getElementById(`law_${item.id}`)?.value||'';
+    return `
+    <div class="risk-item" id="risk-item-${item.id}">
+      <div class="risk-item-header">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:12px;font-weight:700;color:var(--navy);">위험요인 ${idx+1}</span>
+          ${score>0?`<span class="risk-badge ${lv.cls}">${lv.label}</span>`:''}
+        </div>
+        <div style="display:flex;gap:6px;">
+          ${riskItems.length>1?`<button class="risk-del" onclick="delRiskItem(${item.id})">삭제</button>`:''}
+        </div>
+      </div>
+      <div class="risk-body">
+        <div class="form-grid2" style="margin-bottom:8px;">
+          <div class="field"><label>작업명</label><input type="text" id="work_${item.id}" value="${workVal}" placeholder="예) EPT 롤테이너 견인 작업" oninput="isDirty=true"></div>
+          <div class="field"><label>유해·위험요인</label><input type="text" id="hazard_${item.id}" value="${hazardVal}" placeholder="예) 협소통로 EPT 충돌 위험" oninput="isDirty=true"></div>
+        </div>
+        <div class="field" style="margin-bottom:10px;">
+          <label>현재 안전보건조치</label>
+          <textarea id="measure_${item.id}" placeholder="예) 안전통로 미구분, 서행구간 미지정" oninput="isDirty=true">${measureVal}</textarea>
+        </div>
+
+        <!-- 위험성 결정 -->
+        <div class="matrix-wrap">
+          <div class="matrix-title">위험성 결정 (가능성 × 중대성)</div>
+          <div class="matrix-grid">
+            <div>
+              <div class="matrix-label">가능성</div>
+              <div class="score-btns">
+                ${[1,2,3,4].map(v=>`<button class="score-btn${item.freq===v?' sel-freq':''}" onclick="setFreq(${item.id},${v})">${v} - ${freqLabels[v]}</button>`).join('')}
+              </div>
+            </div>
+            <div>
+              <div class="matrix-label">중대성</div>
+              <div class="score-btns">
+                ${[1,2,3,4].map(v=>`<button class="score-btn${item.sev===v?' sel-sev':''}" onclick="setSev(${item.id},${v})">${v} - ${sevLabels[v]}</button>`).join('')}
+              </div>
+            </div>
+            <div>
+              <div class="matrix-label">위험성</div>
+              <div class="result-box ${lv.cls}">
+                <div class="result-num">${score||'-'}</div>
+                <div class="result-label">${lv.label} ${lv.desc?'· '+lv.desc:''}</div>
+              </div>
+              <div class="matrix-guide">1~4 낮음 · 5~9 보통 · 10~16 높음</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-grid2" style="margin-bottom:10px;">
+          <div class="field">
+            <label>개선대책</label>
+            <textarea id="action_${item.id}" placeholder="예) 통로 폭 확보 및 구분선 설치, EPT 서행구간 지정" oninput="isDirty=true">${actionVal}</textarea>
+          </div>
+          <div class="field">
+            <label>관련 법령</label>
+            <textarea id="law_${item.id}" placeholder="예) 산업안전보건기준에 관한 규칙 제39조" oninput="isDirty=true">${lawVal}</textarea>
+          </div>
+        </div>
+
+        <!-- 사진 + 개선 후 위험성 -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+          <div>
+            <label style="display:block;margin-bottom:4px;">개선 전 사진</label>
+            <input type="file" id="before-input-${item.id}" accept="image/*" onchange="handlePhoto(${item.id},'before',this)">
+            <div class="photo-box" id="photo-box-before-${item.id}" onclick="document.getElementById('before-input-${item.id}').click()">
+              ${photoData[`before_${item.id}`]?`<img src="${photoData[`before_${item.id}`]}" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;"><div class="overlay">✓</div>`:`<div style="font-size:22px;">📷</div><div style="font-size:10px;color:var(--muted);margin-top:3px;">개선 전</div>`}
+            </div>
+          </div>
+          <div>
+            <label style="display:block;margin-bottom:4px;">개선 후 사진</label>
+            <input type="file" id="after-input-${item.id}" accept="image/*" onchange="handlePhoto(${item.id},'after',this)">
+            <div class="photo-box" id="photo-box-after-${item.id}" onclick="document.getElementById('after-input-${item.id}').click()">
+              ${photoData[`after_${item.id}`]?`<img src="${photoData[`after_${item.id}`]}" style="width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;"><div class="overlay">✓</div>`:`<div style="font-size:22px;">📷</div><div style="font-size:10px;color:var(--muted);margin-top:3px;">개선 후</div>`}
+            </div>
+          </div>
+          <div>
+            <label style="display:block;margin-bottom:4px;">개선 후 위험성</label>
+            <div style="background:var(--bg);border-radius:8px;padding:8px;">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:6px;">
+                <div>
+                  <div style="font-size:9px;color:var(--muted);margin-bottom:3px;">가능성</div>
+                  <div style="display:flex;flex-direction:column;gap:2px;">
+                    ${[1,2,3,4].map(v=>`<button style="border:1px solid var(--border);border-radius:4px;padding:3px 4px;font-size:9px;cursor:pointer;background:${item.afterFreq===v?'var(--orange-light)':'white'};border-color:${item.afterFreq===v?'var(--orange)':'var(--border)'};color:${item.afterFreq===v?'#993c1d':'var(--muted)'};font-family:inherit;" onclick="setAfterFreq(${item.id},${v})">${v}</button>`).join('')}
+                  </div>
+                </div>
+                <div>
+                  <div style="font-size:9px;color:var(--muted);margin-bottom:3px;">중대성</div>
+                  <div style="display:flex;flex-direction:column;gap:2px;">
+                    ${[1,2,3,4].map(v=>`<button style="border:1px solid var(--border);border-radius:4px;padding:3px 4px;font-size:9px;cursor:pointer;background:${item.afterSev===v?'var(--green-light)':'white'};border-color:${item.afterSev===v?'var(--green)':'var(--border)'};color:${item.afterSev===v?'#166534':'var(--muted)'};font-family:inherit;" onclick="setAfterSev(${item.id},${v})">${v}</button>`).join('')}
+                  </div>
+                </div>
+              </div>
+              <div class="after-risk ${afterLv.cls}" style="padding:8px;text-align:center;">
+                <div style="font-size:18px;font-weight:700;${afterLv.cls==='high'?'color:#791f1f':afterLv.cls==='mid'?'color:#92400e':afterLv.cls==='low'?'color:#166534':'color:var(--muted)'}">${afterScore||'-'}</div>
+                <div style="font-size:9px;${afterLv.cls==='high'?'color:#a32d2d':afterLv.cls==='mid'?'color:#92400e':afterLv.cls==='low'?'color:#166534':'color:var(--muted)'}">${afterLv.label} ${afterLv.desc?'· '+afterLv.desc:''}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function generateAI(){
+  const area=document.getElementById('area').value;
+  const reasons=selectedReasons.join(', ')||'기타';
+  const reasonDetail=document.getElementById('reasonDetail').value;
+  const hazards=riskItems.map((item,i)=>{
+    const w=document.getElementById(`work_${item.id}`)?.value||'';
+    const h=document.getElementById(`hazard_${item.id}`)?.value||'';
+    return `위험요인${i+1}: ${w} - ${h}`;
+  }).filter(h=>h.includes('-')).join('\n');
+
+  if(!hazards){alert('위험요인을 먼저 입력해주세요.');return;}
+  if(!apiKey){alert('API 키를 먼저 입력하세요.');document.getElementById('apiBox').style.display='block';return;}
+
+  const btn=document.getElementById('aiBtn');
+  btn.disabled=true; btn.textContent='⏳ AI 분석 중...';
+
+  const prompt=`당신은 물류센터 산업안전 전문가입니다. 아래 수시 위험성평가 정보를 바탕으로 전문적인 분석을 해주세요.
+
+[평가 정보]
+- 사업장: 이마트 여주물류센터 (지게차·EPT·컨베이어 작업 환경)
+- 평가구역: ${area||'미입력'}
+- 평가 실시 사유: ${reasons}
+- 사유 상세: ${reasonDetail||'미입력'}
+
+[위험요인]
+${hazards}
+
+[요청사항]
+각 위험요인별로:
+1. 위험요인 원인 분석 (1~2줄)
+2. 구체적 개선대책 3가지 (번호로)
+3. 관련 법령 1개 (산업안전보건법 또는 기준규칙)
+
+마지막에 종합 안전관리 의견 2줄 추가.
+전문적이고 실무적으로 작성.`;
+
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,messages:[{role:'user',content:prompt}]})
+    });
+    const data=await res.json();
+    aiText=data.content?.map(c=>c.text||'').join('')||'분석 실패';
+    document.getElementById('aiResult').textContent=aiText;
+    document.getElementById('aiResultCard').style.display='block';
+    document.getElementById('aiResultCard').scrollIntoView({behavior:'smooth'});
+    showToast('✅ AI 분석 완료!');
+  }catch(e){
+    document.getElementById('aiResult').textContent='오류: '+e.message;
+    document.getElementById('aiResultCard').style.display='block';
+  }
+  btn.disabled=false; btn.textContent='✨ AI 위험요인 분석 및 개선대책 생성';
+}
+
+async function saveRecord(){
+  const docNo=document.getElementById('docNo').value;
+  const area=document.getElementById('area').value.trim();
+  if(!area){alert('평가구역을 입력해주세요.');return;}
+
+  const items=riskItems.map(item=>({
+    id:item.id,
+    work:document.getElementById(`work_${item.id}`)?.value||'',
+    hazard:document.getElementById(`hazard_${item.id}`)?.value||'',
+    measure:document.getElementById(`measure_${item.id}`)?.value||'',
+    action:document.getElementById(`action_${item.id}`)?.value||'',
+    law:document.getElementById(`law_${item.id}`)?.value||'',
+    freq:item.freq, sev:item.sev,
+    afterFreq:item.afterFreq, afterSev:item.afterSev,
+    score:item.freq*item.sev,
+    afterScore:item.afterFreq*item.afterSev,
+  }));
+
+  const record={
+    docNo,
+    date:document.getElementById('docDate').value,
+    area, workers:document.getElementById('workers').value,
+    reasons:selectedReasons.join(', '),
+    reasonDetail:document.getElementById('reasonDetail').value,
+    items, aiResult:aiText,
+    savedAt:new Date().toISOString()
+  };
+
+  try{
+    await dbAdd(record);
+    isDirty=false;
+    showToast('✅ 저장 완료! docx 다운로드됩니다.');
+    setTimeout(()=>downloadDocx(),500);
+  }catch(e){alert('저장 오류: '+e.message);}
+}
+
+async function downloadDocx(){
+  const btn=document.getElementById('docxBtn');
+  btn.disabled=true;
+  try{
+    const {Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,AlignmentType,BorderStyle,WidthType,ShadingType,VerticalAlign}=docx;
+    const docNo=document.getElementById('docNo').value;
+    const W=9026,lW=1600,vW=W/2-lW;
+    const tB={style:BorderStyle.SINGLE,size:4,color:'CCCCCC'};
+    const aB={top:tB,bottom:tB,left:tB,right:tB};
+    const lvLabel={0:'-',1:'낮음(1~4)',2:'낮음(1~4)',3:'낮음(1~4)',4:'낮음(1~4)',5:'보통(5~9)',6:'보통(5~9)',7:'보통(5~9)',8:'보통(5~9)',9:'보통(5~9)',10:'높음(10~16)',11:'높음',12:'높음',13:'높음',14:'높음',15:'높음',16:'높음'};
+
+    function hCell(t,w,span=1){return new TableCell({width:{size:w,type:WidthType.DXA},borders:aB,shading:{fill:'1a2744',type:ShadingType.CLEAR},margins:{top:80,bottom:80,left:120,right:120},verticalAlign:VerticalAlign.CENTER,columnSpan:span,children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:t,bold:true,color:'FFFFFF',size:20,font:'맑은 고딕'})]})]});}
+    function lCell(t,w){return new TableCell({width:{size:w,type:WidthType.DXA},borders:aB,shading:{fill:'EBF1F8',type:ShadingType.CLEAR},margins:{top:70,bottom:70,left:120,right:120},verticalAlign:VerticalAlign.CENTER,children:[new Paragraph({children:[new TextRun({text:t,bold:true,size:17,font:'맑은 고딕'})]})]});}
+    function vCell(t,w,span=1){return new TableCell({width:{size:w,type:WidthType.DXA},borders:aB,margins:{top:70,bottom:70,left:120,right:120},verticalAlign:VerticalAlign.CENTER,columnSpan:span,children:[new Paragraph({children:[new TextRun({text:t||'',size:17,font:'맑은 고딕'})]})]});}
+    function secCell(t,w){return new TableCell({width:{size:w,type:WidthType.DXA},borders:aB,shading:{fill:'D6E4F0',type:ShadingType.CLEAR},margins:{top:70,bottom:70,left:120,right:120},children:[new Paragraph({children:[new TextRun({text:t,bold:true,size:18,font:'맑은 고딕',color:'1a2744'})]})]});}
+    function conCell(t,w,span=1){return new TableCell({width:{size:w,type:WidthType.DXA},borders:aB,margins:{top:80,bottom:80,left:140,right:140},columnSpan:span,children:(t||'').split('\n').map(l=>new Paragraph({children:[new TextRun({text:l,size:17,font:'맑은 고딕'})],spacing:{after:40}}))});}
+
+    const reasons=selectedReasons.join(', ')||'기타';
+    const itemRows=riskItems.map((item,i)=>{
+      const w=document.getElementById(`work_${item.id}`)?.value||'';
+      const h=document.getElementById(`hazard_${item.id}`)?.value||'';
+      const m=document.getElementById(`measure_${item.id}`)?.value||'';
+      const a=document.getElementById(`action_${item.id}`)?.value||'';
+      const l=document.getElementById(`law_${item.id}`)?.value||'';
+      const score=item.freq*item.sev;
+      const afterScore=item.afterFreq*item.afterSev;
+      return [
+        new TableRow({children:[
+          lCell(`위험요인 ${i+1}`,lW),
+          vCell(w,vW),
+          lCell('유해위험요인',lW),
+          vCell(h,vW),
+        ]}),
+        new TableRow({children:[
+          lCell('현재 조치',lW),
+          vCell(m,vW*2+lW,3),
+        ]}),
+        new TableRow({children:[
+          lCell('위험성',lW),
+          vCell(`가능성:${item.freq} × 중대성:${item.sev} = ${score} (${lvLabel[score]||'-'})`,vW),
+          lCell('개선 후',lW),
+          vCell(`가능성:${item.afterFreq} × 중대성:${item.afterSev} = ${afterScore} (${lvLabel[afterScore]||'-'})`,vW),
+        ]}),
+        new TableRow({children:[
+          lCell('개선대책',lW),
+          vCell(a,vW*2+lW,3),
+        ]}),
+        new TableRow({children:[
+          lCell('관련법령',lW),
+          vCell(l,vW*2+lW,3),
+        ]}),
+      ];
+    }).flat();
+
+    const children=[
+      new Table({width:{size:W,type:WidthType.DXA},columnWidths:[W],rows:[new TableRow({children:[hCell('수  시  위  험  성  평  가  표',W)]})]}),
+      new Paragraph({spacing:{after:60}}),
+      new Table({width:{size:W,type:WidthType.DXA},columnWidths:[W],rows:[new TableRow({children:[new TableCell({width:{size:W,type:WidthType.DXA},borders:aB,shading:{fill:'F0F4FA',type:ShadingType.CLEAR},margins:{top:50,bottom:50,left:120,right:120},children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:`이앤원(주) 여주물류센터  │  ${docNo}  │  산업안전보건법 제36조`,size:16,font:'맑은 고딕',color:'555555'})]})]})]})]}),
+      new Paragraph({spacing:{after:100}}),
+      new Table({width:{size:W,type:WidthType.DXA},columnWidths:[lW,vW,lW,vW],rows:[
+        new TableRow({children:[lCell('평  가  일',lW),vCell(document.getElementById('docDate').value,vW),lCell('평  가  자',lW),vCell('이현수',vW)]}),
+        new TableRow({children:[lCell('사  업  장',lW),vCell('이마트 여주물류센터',vW),lCell('평가구역',lW),vCell(document.getElementById('area').value,vW)]}),
+        new TableRow({children:[lCell('작업인원',lW),vCell(document.getElementById('workers').value,vW),lCell('실시사유',lW),vCell(reasons,vW)]}),
+        new TableRow({children:[lCell('상세사유',lW),vCell(document.getElementById('reasonDetail').value,vW*2+lW,3)]}),
+      ]}),
+      new Paragraph({spacing:{after:100}}),
+      new Table({width:{size:W,type:WidthType.DXA},columnWidths:[W],rows:[new TableRow({children:[secCell('▶  위험요인 파악 및 개선대책',W)]})]}),
+      new Table({width:{size:W,type:WidthType.DXA},columnWidths:[lW,vW,lW,vW],rows:itemRows}),
+      new Paragraph({spacing:{after:100}}),
+      ...(aiText?[
+        new Table({width:{size:W,type:WidthType.DXA},columnWidths:[W],rows:[new TableRow({children:[secCell('▶  AI 분석 결과',W)]})]}),
+        new Table({width:{size:W,type:WidthType.DXA},columnWidths:[W],rows:[new TableRow({children:[conCell(aiText,W)]})]}),
+        new Paragraph({spacing:{after:80}}),
+      ]:[]),
+      // 서명란
+      new Table({width:{size:W,type:WidthType.DXA},columnWidths:[W/3,W/3,W/3],rows:[
+        new TableRow({children:[
+          new TableCell({width:{size:W/3,type:WidthType.DXA},borders:aB,shading:{fill:'EBF1F8',type:ShadingType.CLEAR},margins:{top:80,bottom:80,left:120,right:120},children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:'작 성 자',bold:true,size:18,font:'맑은 고딕'})]})] }),
+          new TableCell({width:{size:W/3,type:WidthType.DXA},borders:aB,shading:{fill:'EBF1F8',type:ShadingType.CLEAR},margins:{top:80,bottom:80,left:120,right:120},children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:'검 토 자',bold:true,size:18,font:'맑은 고딕'})]})] }),
+          new TableCell({width:{size:W/3,type:WidthType.DXA},borders:aB,shading:{fill:'EBF1F8',type:ShadingType.CLEAR},margins:{top:80,bottom:80,left:120,right:120},children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:'승 인 자',bold:true,size:18,font:'맑은 고딕'})]})] }),
+        ]}),
+        new TableRow({height:{value:900,rule:'exact'},children:[
+          new TableCell({width:{size:W/3,type:WidthType.DXA},borders:aB,margins:{top:80,bottom:80,left:120,right:120},children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:'이 현 수  (인)',size:20,font:'맑은 고딕'})]})] }),
+          new TableCell({width:{size:W/3,type:WidthType.DXA},borders:aB,margins:{top:80,bottom:80,left:120,right:120},children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:'엄 우 섭  (인)',size:20,font:'맑은 고딕'})]})] }),
+          new TableCell({width:{size:W/3,type:WidthType.DXA},borders:aB,margins:{top:80,bottom:80,left:120,right:120},children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:'이 길 명  (인)',size:20,font:'맑은 고딕'})]})] }),
+        ]}),
+      ]}),
+      new Paragraph({spacing:{after:120}}),
+      new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:'㈜이앤원  |  경기도 여주시 웅골로 161(가업동)  |  Tel: 031-887-5061',size:15,font:'맑은 고딕',color:'888888'})]}),
+    ];
+
+    const doc=new Document({sections:[{properties:{page:{size:{width:11906,height:16838},margin:{top:600,right:600,bottom:600,left:600}}},children}]});
+    const blob=await Packer.toBlob(doc);
+    const url=URL.createObjectURL(blob);
+    const link=window.document.createElement('a');
+    link.href=url; link.download=`${docNo}_수시위험성평가.docx`; link.click();
+    URL.revokeObjectURL(url);
+    showToast('✅ docx 다운로드 완료!');
+  }catch(e){alert('docx 오류: '+e.message);}
+  btn.disabled=false;
+}
+
+async function openList(){
+  const all=await dbGetAll();
+  document.getElementById('modalOverlay').classList.add('show');
+  const total=all.length;
+  const highCount=all.filter(r=>r.items?.some(i=>i.score>=10)).length;
+  document.getElementById('listStats').innerHTML=`
+    <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-label">전체</div></div>
+    <div class="stat-card" style="background:#fee2e2"><div class="stat-num" style="color:#dc2626">${highCount}</div><div class="stat-label">높음 포함</div></div>
+    <div class="stat-card" style="background:#fef3c7"><div class="stat-num" style="color:#d97706">${all.filter(r=>r.date>=new Date().getFullYear()+'-01-01').length}</div><div class="stat-label">올해</div></div>
+    <div class="stat-card" style="background:#dcfce7"><div class="stat-num" style="color:#16a34a">${all.filter(r=>r.date>=(new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,'0'))).length}</div><div class="stat-label">이달</div></div>
+  `;
+  if(!all.length){document.getElementById('listBody').innerHTML='<div style="text-align:center;padding:30px;color:var(--muted);">작성된 수시위험성평가가 없습니다.</div>';return;}
+  document.getElementById('listBody').innerHTML=[...all].reverse().map(r=>`
+    <div class="list-item" onclick="toggleDetail(${r.id})">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="background:var(--amber-light);color:var(--amber);font-size:10px;font-weight:700;padding:3px 8px;border-radius:5px;">수시</span>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12px;font-weight:700;">${r.docNo} · ${r.area||'구역미입력'}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:1px;">${r.date} · ${r.reasons||''} · 위험요인 ${r.items?.length||0}개</div>
+        </div>
+      </div>
+      <div class="list-detail" id="detail-${r.id}">
+        <div class="detail-label">실시사유</div><div class="detail-val">${r.reasons||'-'}</div>
+        <div class="detail-label">위험요인</div>
+        <div class="detail-val">${(r.items||[]).map((i,idx)=>`${idx+1}. ${i.work} - ${i.hazard} (위험성: ${i.score})`).join('\n')}</div>
+        <button onclick="event.stopPropagation();delRecord(${r.id})" style="padding:4px 10px;border:1px solid #fca5a5;border-radius:5px;background:#fee2e2;color:#dc2626;font-size:11px;cursor:pointer;font-family:inherit;margin-top:4px;">삭제</button>
+      </div>
+    </div>`).join('');
+}
+
+function toggleDetail(id){document.getElementById('detail-'+id)?.classList.toggle('show');}
+async function delRecord(id){if(!confirm('삭제하시겠습니까?'))return;await dbDelete(id);showToast('삭제 완료');openList();}
+function closeList(){document.getElementById('modalOverlay').classList.remove('show');}
+
+async function exportJSON(){
+  const all=await dbGetAll();
+  const blob=new Blob([JSON.stringify(all,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const link=document.createElement('a');
+  link.href=url; link.download=`수시위험성평가_백업_${new Date().getFullYear()}${String(new Date().getMonth()+1).padStart(2,'0')}.json`;
+  link.click(); URL.revokeObjectURL(url); showToast('✅ JSON 백업 완료!');
+}
+
+async function exportCSV(){
+  const all=await dbGetAll();
+  const headers=['문서번호','평가일','평가구역','작업인원','실시사유','위험요인수','저장일시'];
+  const rows=all.map(r=>[r.docNo,r.date,r.area,r.workers,r.reasons,r.items?.length||0,r.savedAt].map(v=>`"${(String(v)||'').replace(/"/g,'""')}"`).join(','));
+  const csv='\uFEFF'+[headers.join(','),...rows].join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const link=document.createElement('a');
+  link.href=url; link.download='수시위험성평가_관리대장.csv'; link.click();
+  URL.revokeObjectURL(url); showToast('✅ CSV 내보내기 완료!');
+}
+</script>
+</body>
+</html>

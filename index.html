@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>이앤원 여주물류센터 안전관리시스템</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --orange:#ff6b35;
+  --orange-light:#fff4ef;
+  --orange-mid:#ffe0cc;
+  --blue:#4a90e2;
+  --blue-light:#e8f3ff;
+  --bg:#f0f4f9;
+  --white:#fff;
+  --border:#e2e8f4;
+  --text:#1e293b;
+  --muted:#7a8aaa;
+  --sidebar-w:80px;
+  --right-w:320px;
+}
+body{font-family:'Malgun Gothic','맑은 고딕',sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+
+/* 헤더 */
+.header{background:var(--white);border-bottom:1px solid var(--border);padding:0 20px 0 16px;height:54px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.header-left{display:flex;align-items:center;gap:12px;}
+.logo{background:var(--orange);color:white;font-size:12px;font-weight:800;padding:5px 10px;border-radius:8px;letter-spacing:0.3px;}
+.header-title{font-size:15px;font-weight:700;color:#1a2744;}
+.header-sub{font-size:11px;color:var(--muted);margin-top:1px;}
+.header-right{display:flex;align-items:center;gap:16px;}
+.header-date{font-size:13px;color:var(--muted);font-weight:500;}
+.status-badge{display:flex;align-items:center;gap:5px;font-size:11px;color:#16a34a;background:#dcfce7;padding:4px 10px;border-radius:20px;font-weight:600;}
+.dot{width:6px;height:6px;border-radius:50%;background:#16a34a;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* 레이아웃 */
+.layout{display:flex;flex:1;overflow:hidden;}
+
+/* 사이드바 - 흰 배경 + 오렌지 포인트 */
+.sidebar{
+  width:var(--sidebar-w);
+  background:var(--white);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;align-items:center;
+  padding:12px 0;gap:2px;flex-shrink:0;overflow-y:auto;
+}
+.nav-item{
+  width:64px;padding:8px 4px 7px;border-radius:12px;
+  cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;
+  transition:all 0.15s;border:none;background:transparent;text-decoration:none;
+}
+.nav-item:hover{background:var(--orange-light);}
+.nav-item.active{background:var(--orange-light);border:1.5px solid var(--orange-mid);}
+.nav-icon-wrap{
+  width:40px;height:40px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--bg);font-size:20px;transition:all 0.15s;
+}
+.nav-item.active .nav-icon-wrap{background:var(--orange);box-shadow:0 4px 12px rgba(255,107,53,0.3);}
+.nav-item:hover:not(.active) .nav-icon-wrap{background:var(--orange-light);}
+.nav-label{font-size:9px;color:var(--muted);text-align:center;line-height:1.2;word-break:keep-all;}
+.nav-item.active .nav-label{color:var(--orange);font-weight:700;}
+.nav-item:hover:not(.active) .nav-label{color:var(--orange);}
+.nav-div{width:44px;height:1px;background:var(--border);margin:4px 0;}
+
+/* 메인 */
+.main{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:14px;}
+.sec-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;}
+
+/* 빠른 실행 */
+.quick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.quick-btn{background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:14px 12px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all 0.15s;text-decoration:none;color:var(--text);}
+.quick-btn:hover{border-color:var(--orange);box-shadow:0 4px 16px rgba(255,107,53,0.1);transform:translateY(-1px);}
+.quick-icon{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.quick-name{font-size:13px;font-weight:700;color:var(--text);}
+.quick-desc{font-size:10px;color:var(--muted);margin-top:2px;}
+
+/* 중간 그리드 */
+.mid-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.card{background:var(--white);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.card-head{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+.card-title{font-size:12px;font-weight:700;color:#1a2744;}
+.card-body{padding:4px 0;}
+
+/* 할일 */
+.todo-list-wrap{height:185px;overflow-y:auto;flex-shrink:0;}
+.todo-item{padding:8px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #f8fafc;}
+.todo-item:last-child{border-bottom:none;}
+.chk{width:18px;height:18px;border-radius:5px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.1s;flex-shrink:0;}
+.chk.done{background:var(--orange);border-color:var(--orange);color:white;font-size:11px;}
+.todo-text{font-size:12px;flex:1;}
+.todo-text.done{text-decoration:line-through;color:var(--muted);}
+.tag{font-size:10px;padding:2px 7px;border-radius:5px;font-weight:600;flex-shrink:0;}
+.todo-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:0 2px;flex-shrink:0;}
+.todo-del:hover{color:#dc2626;}
+.todo-add{padding:8px 14px;display:flex;gap:8px;border-top:1px solid var(--border);flex-shrink:0;}
+.todo-add input{flex:1;border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:12px;font-family:inherit;outline:none;color:var(--text);}
+.todo-add input:focus{border-color:var(--orange);}
+.todo-add button{background:var(--orange);color:white;border:none;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;font-weight:600;}
+
+/* 최근문서 */
+.doc-item{padding:9px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #f8fafc;cursor:pointer;transition:background .1s;}
+.doc-item:last-child{border-bottom:none;}
+.doc-item:hover{background:var(--orange-light);}
+.doc-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;flex-shrink:0;}
+.doc-name{font-size:12px;font-weight:600;flex:1;}
+.doc-date{font-size:10px;color:var(--muted);}
+
+/* 전체 도구 */
+.app-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.app-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:14px 8px 10px;text-align:center;cursor:pointer;transition:all 0.15s;text-decoration:none;display:block;}
+.app-card:hover{border-color:var(--orange);transform:translateY(-2px);box-shadow:0 6px 20px rgba(255,107,53,0.1);}
+.app-icon{width:46px;height:46px;border-radius:13px;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;}
+.app-name{font-size:11px;font-weight:700;color:var(--text);}
+.app-sub{font-size:9px;color:var(--muted);margin-top:2px;}
+
+/* 오른쪽 패널 */
+.right-panel{width:var(--right-w);background:var(--white);border-left:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;}
+.panel-head{padding:12px 16px;font-size:12px;font-weight:700;color:#1a2744;border-bottom:1px solid var(--border);flex-shrink:0;}
+
+/* 캘린더 - 월간뷰 */
+.mini-cal{flex:1;overflow:hidden;min-height:0;border-bottom:1px solid var(--border);display:flex;flex-direction:column;padding:10px 12px;}
+.mc-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.mc-nav{background:none;border:none;cursor:pointer;font-size:16px;color:var(--muted);padding:2px 6px;border-radius:5px;}
+.mc-nav:hover{background:var(--bg);}
+.mc-title{font-size:12px;font-weight:700;color:#1a2744;}
+.mc-days{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:2px;}
+.mc-day-label{text-align:center;font-size:9px;font-weight:600;color:#94a3b8;padding:2px 0;}
+.mc-day-label.sun{color:#ef4444;}.mc-day-label.sat{color:#3b82f6;}
+.mc-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;flex:1;}
+.mc-cell{display:flex;flex-direction:column;align-items:center;padding-top:2px;border-radius:5px;cursor:pointer;transition:background .1s;}
+.mc-cell:hover:not(.mc-today){background:#f8fafc;}
+.mc-cell.mc-today{background:var(--orange);}
+.mc-cell.mc-today .mc-num{color:white;font-weight:700;}
+.mc-cell.mc-selected:not(.mc-today){background:#fff3ee;outline:1.5px solid var(--orange);}
+.mc-cell.mc-sun .mc-num,.mc-cell.mc-holiday .mc-num{color:#ef4444;}
+.mc-cell.mc-sat .mc-num{color:#3b82f6;}
+.mc-cell.mc-other .mc-num{color:#cbd5e1;}
+.mc-num{font-size:10px;font-weight:500;line-height:1;}
+.mc-hname{font-size:6px;color:#ef4444;text-align:center;max-width:34px;overflow:hidden;white-space:nowrap;}
+.mc-cell.mc-today .mc-hname{color:rgba(255,255,255,0.85);}
+.mc-dots{display:flex;gap:1px;margin-top:1px;}
+.mc-dot{width:3px;height:3px;border-radius:50%;background:var(--orange);}
+.mc-ev-box{border-top:1px solid var(--border);padding:5px 0 0;margin-top:3px;}
+.mc-ev-title{font-size:10px;font-weight:700;color:var(--muted);margin-bottom:3px;}
+.mc-ev-item{display:flex;align-items:center;gap:5px;padding:2px 0;border-bottom:1px solid #f8fafc;}
+.mc-ev-item:last-child{border-bottom:none;}
+.mc-ev-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.mc-ev-name{font-size:10px;color:var(--text);font-weight:500;flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+.mc-ev-time{font-size:9px;color:var(--muted);}
+.mc-gcal{display:block;text-align:center;margin-top:4px;font-size:10px;color:var(--orange);text-decoration:none;font-weight:600;}
+.mc-status{font-size:9px;color:var(--muted);text-align:center;margin-top:2px;}
+
+/* 날씨 - 크게 */
+.wx{flex:1;overflow:hidden;display:flex;flex-direction:column;}
+.wx-bg{
+  flex:1;padding:14px 16px;display:flex;flex-direction:column;justify-content:space-between;
+  position:relative;overflow:hidden;
+  background:linear-gradient(160deg,#e8f4fd 0%,#c9e6f7 100%);
+}
+.blank-section{flex:1;border-top:1px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:center;}
+.blank-inner{text-align:center;color:var(--border);}
+.blank-inner div{font-size:24px;margin-bottom:6px;}
+.blank-inner span{font-size:11px;color:var(--muted);}
+.wx-bg.rain{background:linear-gradient(160deg,#8eafc2 0%,#5c7d96 100%);}
+.wx-bg.snow{background:linear-gradient(160deg,#d4e8f5 0%,#a8cfe8 100%);}
+.wx-bg.cloudy{background:linear-gradient(160deg,#b8c9d8 0%,#8fa5b8 100%);}
+.wx-bg.sunny{background:linear-gradient(160deg,#fffbea 0%,#fde68a 100%);}
+
+/* 빗방울 애니메이션 */
+.drop{position:absolute;width:2px;border-radius:1px;background:rgba(255,255,255,0.5);animation:fall linear infinite;}
+@keyframes fall{0%{transform:translateY(-20px);opacity:0}10%{opacity:1}100%{transform:translateY(300px);opacity:0}}
+/* 눈 애니메이션 */
+.flake{position:absolute;border-radius:50%;background:rgba(255,255,255,0.8);animation:snow linear infinite;}
+@keyframes snow{0%{transform:translateY(-10px) rotate(0);opacity:0}10%{opacity:1}100%{transform:translateY(300px) rotate(360deg);opacity:0}}
+
+.wx-top{position:relative;z-index:1;}
+.wx-loc{font-size:11px;color:rgba(30,41,59,0.6);margin-bottom:4px;font-weight:500;}
+.wx-row{display:flex;align-items:center;gap:12px;}
+.wx-icon{font-size:42px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.1));}
+.wx-info{}
+.wx-temp{font-size:36px;font-weight:800;color:#1a2744;line-height:1;}
+.wx-unit{font-size:16px;color:#64748b;}
+.wx-desc{font-size:12px;color:#475569;margin-top:4px;}
+.wx-bottom{position:relative;z-index:1;}
+.wx-chips{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.wx-chip{background:rgba(255,255,255,0.7);backdrop-filter:blur(4px);border-radius:10px;padding:8px 6px;text-align:center;}
+.wx-chip strong{display:block;font-size:13px;font-weight:700;color:#1a2744;}
+.wx-chip span{font-size:10px;color:#64748b;}
+.wx-badge{margin-top:8px;display:inline-block;padding:5px 14px;border-radius:20px;font-size:11px;font-weight:700;width:100%;text-align:center;background:rgba(255,255,255,0.8);}
+</style>
+</head>
+<body>
+
+<!-- 헤더 -->
+<div class="header">
+  <div class="header-left">
+    <div class="logo">E&ONE</div>
+    <div>
+      <div class="header-title">이앤원 여주물류센터 안전관리시스템</div>
+      <div class="header-sub">이마트 여주물류센터 · 안전관리자 이현수</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="status-badge"><span class="dot"></span>정상 운영 중</div>
+    <div class="header-date" id="hDate"></div>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- 사이드바 (흰 배경 + 오렌지 포인트) -->
+  <div class="sidebar">
+    <a class="nav-item active" href="index.html">
+      <div class="nav-icon-wrap">🏠</div>
+      <div class="nav-label">홈</div>
+    </a>
+    <div class="nav-div"></div>
+    <a class="nav-item" id="nav-risk" onclick="toggleRiskMenu()" style="cursor:pointer;">
+      <div class="nav-icon-wrap">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="9" y1="15" x2="12" y2="15"/></svg>
+      </div>
+      <div class="nav-label">위험성평가</div>
+    </a>
+    <div id="riskSubMenu" style="display:none;width:100%;background:rgba(255,107,53,0.08);border-radius:8px;margin:2px 0;padding:4px 0;">
+      <a href="위험성평가_정기.html" target="_blank" style="display:block;text-align:center;padding:5px 4px;font-size:9px;color:rgba(255,255,255,0.7);text-decoration:none;border-radius:6px;margin:1px 4px;">📅 정기</a>
+      <a href="수시위험성평가.html" target="_blank" style="display:block;text-align:center;padding:5px 4px;font-size:9px;color:rgba(255,255,255,0.7);text-decoration:none;border-radius:6px;margin:1px 4px;">⚠️ 수시</a>
+      <a href="일일위험성평가.html" target="_blank" style="display:block;text-align:center;padding:5px 4px;font-size:9px;color:rgba(255,255,255,0.7);text-decoration:none;border-radius:6px;margin:1px 4px;">📋 상시</a>
+    </div>
+
+    <a class="nav-item" href="안전점검.html" target="_blank">
+      <div class="nav-icon-wrap">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      </div>
+      <div class="nav-label">안전점검</div>
+    </a>
+    <a class="nav-item" href="재해대장.html" target="_blank">
+      <div class="nav-icon-wrap">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <div class="nav-label">재해대장</div>
+    </a>
+    <a class="nav-item" href="중대재해.html" target="_blank">
+      <div class="nav-icon-wrap">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <div class="nav-label">중대재해</div>
+    </a>
+    <a class="nav-item" href="법령검색.html" target="_blank">
+      <div class="nav-icon-wrap">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+      </div>
+      <div class="nav-label">법령검색</div>
+    </a>
+
+    <div class="nav-div"></div>
+    <a class="nav-item" href="사고보고서.html" target="_blank">
+      <div class="nav-icon-wrap">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <div class="nav-label">사고보고서</div>
+    </a>
+    <a class="nav-item" href="사고DB.html" target="_blank">
+      <div class="nav-icon-wrap">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+      </div>
+      <div class="nav-label">사고 DB</div>
+    </a>
+    <a class="nav-item" href="보호구관리대장.html" target="_blank">
+      <div class="nav-icon-wrap">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <div class="nav-label">보호구</div>
+    </a>
+  </div>
+
+  <!-- 메인 -->
+  <div class="main">
+
+    <!-- 빠른 실행 -->
+    <div>
+      <div class="sec-title">빠른 실행</div>
+      <div class="quick-grid">
+        <a class="quick-btn" href="일일위험성평가.html" target="_blank">
+          <div class="quick-icon" style="background:#fff3ee;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff6b35" stroke-width="2" stroke-linecap="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="9" y1="15" x2="12" y2="15"/></svg>
+          </div>
+          <div><div class="quick-name">상시 위험성평가</div><div class="quick-desc">오늘 작성하기 →</div></div>
+        </a>
+        <a class="quick-btn" href="안전점검.html" target="_blank">
+          <div class="quick-icon" style="background:#dcfce7;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+          </div>
+          <div><div class="quick-name">업무·점검일지</div><div class="quick-desc">오늘 순회 기록 →</div></div>
+        </a>
+        <a class="quick-btn" href="사고보고서.html" target="_blank">
+          <div class="quick-icon" style="background:#fee2e2;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <div><div class="quick-name">사고보고서</div><div class="quick-desc">사고 발생 시 →</div></div>
+        </a>
+      </div>
+    </div>
+
+    <!-- 할일 + 최근문서 -->
+    <div class="mid-grid">
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">📌 오늘 할 일</span>
+          <span style="font-size:11px;color:var(--muted)" id="tCount">0/0</span>
+        </div>
+        <div class="todo-list-wrap"><div class="card-body" id="tList"></div></div>
+        <div class="todo-add">
+          <input id="tInput" placeholder="할 일 추가..." onkeydown="if(event.key==='Enter')addTodo()">
+          <button onclick="addTodo()">추가</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">🕐 최근 작성 문서</span>
+        </div>
+        <div class="card-body" id="recentDocs">
+          <div style="padding:20px;text-align:center;color:var(--muted);font-size:12px;">
+            아직 작성된 문서가 없어요.<br>빠른 실행으로 첫 문서를 작성해보세요!
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 전체 도구 -->
+    <div>
+      <div class="sec-title">전체 도구</div>
+      <div class="app-grid">
+        <a class="app-card" href="일일위험성평가.html" target="_blank">
+          <div class="app-icon" style="background:#fff3ee;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ff6b35" stroke-width="1.8" stroke-linecap="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="9" y1="15" x2="12" y2="15"/></svg></div>
+          <div class="app-name">상시위험성평가</div><div class="app-sub">매일 작성</div>
+        </a>
+        <a class="app-card" href="수시위험성평가.html" target="_blank">
+          <div class="app-icon" style="background:#fef3c7;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="1.8" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+          <div class="app-name">수시위험성평가</div><div class="app-sub">변경·사고 후</div>
+        </a>
+        <a class="app-card" href="사고보고서.html" target="_blank">
+          <div class="app-icon" style="background:#fee2e2;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+          <div class="app-name">사고보고서</div><div class="app-sub">사고 발생 시</div>
+        </a>
+        <a class="app-card" href="사고DB.html" target="_blank">
+          <div class="app-icon" style="background:#fce7f3;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#be185d" stroke-width="1.8" stroke-linecap="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></div>
+          <div class="app-name">사고 DB</div><div class="app-sub">사고 종합 기록</div>
+        </a>
+        <a class="app-card" href="보호구관리대장.html" target="_blank">
+          <div class="app-icon" style="background:#ecfdf5;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="1.8" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+          <div class="app-name">보호구 관리대장</div><div class="app-sub">보호구 현황</div>
+        </a>
+        <a class="app-card" href="안전점검.html" target="_blank">
+          <div class="app-icon" style="background:#dcfce7;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="1.8" stroke-linecap="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+          <div class="app-name">안전점검·업무일지</div><div class="app-sub">순회 기록</div>
+        </a>
+        <a class="app-card" href="교육일지.html" target="_blank">
+          <div class="app-icon" style="background:#ede9fe;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="1.8" stroke-linecap="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg></div>
+          <div class="app-name">교육일지</div><div class="app-sub">정기·특별·TBM</div>
+        </a>
+        <a class="app-card" href="재해대장.html" target="_blank">
+          <div class="app-icon" style="background:#fee2e2;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="1.8" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+          <div class="app-name">재해대장</div><div class="app-sub">사고·산재</div>
+        </a>
+        <a class="app-card" href="중대재해.html" target="_blank">
+          <div class="app-icon" style="background:#e0e7ff;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4338ca" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+          <div class="app-name">중대재해</div><div class="app-sub">반기점검·훈련</div>
+        </a>
+        <a class="app-card" href="법령검색.html" target="_blank">
+          <div class="app-icon" style="background:#dbeafe;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" stroke-width="1.8" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="13" y2="11"/></svg></div>
+          <div class="app-name">법령검색</div><div class="app-sub">산안법·중처법</div>
+        </a>
+        <a class="app-card" href="온열질환.html" target="_blank">
+          <div class="app-icon" style="background:#ffedd5;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="1.8" stroke-linecap="round"><path d="M14 14.76V3.5a2.5 2.5 0 00-5 0v11.26a4.5 4.5 0 105 0z"/></svg></div>
+          <div class="app-name">온열질환·체감온도</div><div class="app-sub">기온 관리</div>
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 오른쪽 패널 -->
+  <div class="right-panel">
+    <div class="panel-head">📅 일정</div>
+    <div class="mini-cal" id="miniCal">
+      <div style="text-align:center;padding:20px;color:var(--muted);font-size:11px;">📅 불러오는 중...</div>
+    </div>
+    <div class="wx">
+      <div class="wx-bg" id="wxBg">
+        <div id="wxParticles"></div>
+        <div class="wx-top">
+          <div class="wx-loc">📍 여주시 · 실시간</div>
+          <div class="wx-row">
+            <div class="wx-icon" id="wxIcon">⏳</div>
+            <div class="wx-info">
+              <div style="display:flex;align-items:baseline;gap:2px;">
+                <span class="wx-temp" id="wxTemp">--</span>
+                <span class="wx-unit">°C</span>
+              </div>
+              <div class="wx-desc" id="wxDesc">불러오는 중...</div>
+            </div>
+          </div>
+        </div>
+        <div class="wx-bottom">
+          <div class="wx-chips">
+            <div class="wx-chip"><strong id="wxH">--</strong><span>습도%</span></div>
+            <div class="wx-chip"><strong id="wxW">--</strong><span>풍속m/s</span></div>
+            <div class="wx-chip"><strong id="wxF">--°</strong><span>체감</span></div>
+          </div>
+          <div id="wxBadge"></div>
+        </div>
+      </div>
+    </div>
+    <div class="blank-section">
+      <div class="blank-inner">
+        <div>📋</div>
+        <span>추후 기능 추가 예정</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// 위험성평가 서브메뉴 토글
+function toggleRiskMenu() {
+  const menu = document.getElementById('riskSubMenu');
+  const nav = document.getElementById('nav-risk');
+  if (menu.style.display === 'none') {
+    menu.style.display = 'block';
+    nav.classList.add('active');
+  } else {
+    menu.style.display = 'none';
+    nav.classList.remove('active');
+  }
+}
+
+// 날짜
+const now=new Date();
+const days=['일','월','화','수','목','금','토'];
+document.getElementById('hDate').textContent=
+  `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} (${days[now.getDay()]})`;
+
+// 할일
+let todos=JSON.parse(localStorage.getItem('enone_todos')||'[]');
+if(!todos.length)todos=[
+  {id:1,text:'오전 순회점검',done:false,tag:'점검',tc:'#dcfce7',tx:'#16a34a'},
+  {id:2,text:'일일 위험성평가 작성',done:false,tag:'평가',tc:'#fff3ee',tx:'#ff6b35'},
+  {id:3,text:'교육일지 작성',done:false,tag:'교육',tc:'#ede9fe',tx:'#7c3aed'},
+];
+function sv(){localStorage.setItem('enone_todos',JSON.stringify(todos));}
+function rt(){
+  const done=todos.filter(t=>t.done).length;
+  document.getElementById('tCount').textContent=`${done}/${todos.length}/5`;
+  document.getElementById('tList').innerHTML=todos.map(t=>`
+    <div class="todo-item">
+      <div class="chk ${t.done?'done':''}" onclick="tg(${t.id})">${t.done?'✓':''}</div>
+      <span class="todo-text ${t.done?'done':''}">${t.text}</span>
+      <span class="tag" style="background:${t.tc||'#f1f5f9'};color:${t.tx||'#64748b'}">${t.tag||'기타'}</span>
+      <button class="todo-del" onclick="delTodo(${t.id})" title="삭제">✕</button>
+    </div>`).join('');
+}
+function tg(id){todos=todos.map(t=>t.id===id?{...t,done:!t.done}:t);sv();rt();}
+function delTodo(id){todos=todos.filter(t=>t.id!==id);sv();rt();}
+function addTodo(){
+  const inp=document.getElementById('tInput');
+  const tx=inp.value.trim();if(!tx)return;
+  if(todos.length>=5){alert('할 일은 최대 5개까지 입력할 수 있어요.');return;}
+  todos.push({id:Date.now(),text:tx,done:false,tag:'기타',tc:'#f1f5f9',tx:'#64748b'});
+  sv();rt();inp.value='';
+}
+rt();
+
+// 날씨 - 여주 고정
+async function wx(){
+  try{
+    const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=37.2982&longitude=127.6375&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=Asia%2FSeoul');
+    const d=await r.json();const c=d.current;
+    const ic={0:'☀️',1:'🌤',2:'⛅',3:'☁️',45:'🌫',48:'🌫',51:'🌦',53:'🌦',55:'🌧',61:'🌧',63:'🌧',65:'🌧',71:'🌨',73:'🌨',75:'🌨',80:'🌦',81:'🌧',82:'⛈',95:'⛈'};
+    const ds={0:'맑음',1:'대체로 맑음',2:'구름 조금',3:'흐림',45:'안개',51:'이슬비',53:'이슬비',55:'이슬비',61:'비',63:'비',65:'강한 비',71:'눈',73:'눈',75:'강한 눈',80:'소나기',81:'강한 소나기',95:'뇌우'};
+    const code=c.weather_code;
+    document.getElementById('wxIcon').textContent=ic[code]||'🌤';
+    document.getElementById('wxTemp').textContent=Math.round(c.temperature_2m);
+    document.getElementById('wxDesc').textContent=ds[code]||'날씨 정보';
+    document.getElementById('wxH').textContent=c.relative_humidity_2m;
+    document.getElementById('wxW').textContent=c.wind_speed_10m;
+    document.getElementById('wxF').textContent=Math.round(c.apparent_temperature)+'°';
+
+    // 날씨별 배경 + 파티클
+    const bg=document.getElementById('wxBg');
+    const particles=document.getElementById('wxParticles');
+    particles.innerHTML='';
+    if([51,53,55,61,63,65,80,81,82,95].includes(code)){
+      bg.className='wx-bg rain';
+      for(let i=0;i<18;i++){
+        const el=document.createElement('div');
+        el.className='drop';
+        el.style.cssText=`left:${Math.random()*100}%;height:${10+Math.random()*14}px;animation-duration:${0.5+Math.random()*0.5}s;animation-delay:${Math.random()*1}s;`;
+        particles.appendChild(el);
+      }
+    } else if([71,73,75].includes(code)){
+      bg.className='wx-bg snow';
+      for(let i=0;i<14;i++){
+        const el=document.createElement('div');
+        el.className='flake';
+        const sz=3+Math.random()*5;
+        el.style.cssText=`left:${Math.random()*100}%;width:${sz}px;height:${sz}px;animation-duration:${1.5+Math.random()*1.5}s;animation-delay:${Math.random()*2}s;`;
+        particles.appendChild(el);
+      }
+    } else if(code===0||code===1){
+      bg.className='wx-bg sunny';
+    } else if(code===3||code===45||code===48){
+      bg.className='wx-bg cloudy';
+    } else {
+      bg.className='wx-bg';
+    }
+
+    const f=c.apparent_temperature;
+    const b=f>=35?['🔴 온열질환 위험','rgba(254,226,226,0.9)','#991b1b']:
+             f>=28?['🟠 온열질환 주의','rgba(255,237,213,0.9)','#9a3412']:
+             f>=23?['🟡 온열질환 관심','rgba(254,249,195,0.9)','#854d0e']:
+                   ['🟢 온열질환 안전','rgba(220,252,231,0.9)','#166534'];
+    document.getElementById('wxBadge').innerHTML=`<div class="wx-badge" style="background:${b[1]};color:${b[2]}">${b[0]}</div>`;
+  }catch(e){document.getElementById('wxDesc').textContent='날씨 불러오기 실패';}
+}
+wx();
+</script>
+</body>
+</html>
+<script>
+// ===== 미니 캘린더 =====
+const MC_API_KEY = 'AIzaSyAOjN5kbbxsOsiFZp4TJHempgNB7O437KU';
+const MC_CAL_ID = 'leehyunsoo15@gmail.com';
+const MC_HOL_ID = 'ko.south_korea#holiday@group.v.calendar.google.com';
+const MC_HOLIDAYS = {
+  '2026-0-1':'신정','2026-0-28':'설날연휴','2026-0-29':'설날','2026-0-30':'설날연휴',
+  '2026-2-1':'삼일절','2026-4-5':'어린이날','2026-4-25':'석가탄신일',
+  '2026-5-6':'현충일','2026-7-15':'광복절',
+  '2026-9-3':'추석연휴','2026-9-4':'추석','2026-9-5':'추석연휴',
+  '2026-9-3':'개천절','2026-9-9':'한글날','2026-11-25':'크리스마스',
+  '2025-0-1':'신정','2025-2-1':'삼일절','2025-4-5':'어린이날',
+  '2025-5-6':'현충일','2025-7-15':'광복절','2025-9-3':'개천절',
+  '2025-9-9':'한글날','2025-11-25':'크리스마스',
+};
+let mcYear=new Date().getFullYear(), mcMonth=new Date().getMonth();
+let mcEvents=[], mcHolidays={}, mcSelected=null;
+
+async function mcFetch(calId, tMin, tMax) {
+  const url=`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calId)}/events?key=${MC_API_KEY}&timeMin=${tMin}&timeMax=${tMax}&singleEvents=true&orderBy=startTime&maxResults=50`;
+  const r=await fetch(url); if(!r.ok) throw new Error(r.status);
+  return (await r.json()).items||[];
+}
+function mcParseDate(s){
+  if(!s)return null;
+  if(s.includes('T'))return new Date(s);
+  const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);
+}
+function mcFmtTime(item){
+  if(item.start?.date)return '종일';
+  if(item.start?.dateTime){const d=new Date(item.start.dateTime);return`${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
+  return '';
+}
+async function mcLoad(){
+  const tMin=new Date(mcYear,mcMonth,1).toISOString();
+  const tMax=new Date(mcYear,mcMonth+1,1).toISOString();
+  try{
+    const items=await mcFetch(MC_CAL_ID,tMin,tMax);
+    mcEvents=items.map(e=>({date:mcParseDate(e.start?.date||e.start?.dateTime?.split('T')[0]),summary:e.summary||'(제목없음)',time:mcFmtTime(e)})).filter(e=>e.date);
+  }catch(e){mcEvents=[];}
+  try{
+    const hItems=await mcFetch(MC_HOL_ID,tMin,tMax);
+    mcHolidays={};
+    if(hItems.length>0){hItems.forEach(e=>{const d=mcParseDate(e.start?.date);if(d){const k=`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;mcHolidays[k]=e.summary;}});}
+    else throw new Error('empty');
+  }catch(e){mcHolidays={...MC_HOLIDAYS};}
+  mcRender();
+}
+function mcRender(){
+  const today=new Date();
+  const first=new Date(mcYear,mcMonth,1);
+  const last=new Date(mcYear,mcMonth+1,0);
+  const months=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  const evMap={};
+  mcEvents.forEach(e=>{const k=e.date.getDate();if(!evMap[k])evMap[k]=[];evMap[k].push(e);});
+  let cells='';
+  const prevLast=new Date(mcYear,mcMonth,0).getDate();
+  for(let i=first.getDay()-1;i>=0;i--)cells+=`<div class="mc-cell mc-other"><span class="mc-num">${prevLast-i}</span></div>`;
+  for(let d=1;d<=last.getDate();d++){
+    const dow=new Date(mcYear,mcMonth,d).getDay();
+    const isToday=d===today.getDate()&&mcMonth===today.getMonth()&&mcYear===today.getFullYear();
+    const isSel=mcSelected&&mcSelected.getDate()===d&&mcSelected.getMonth()===mcMonth&&mcSelected.getFullYear()===mcYear;
+    const hKey=`${mcYear}-${mcMonth}-${d}`;
+    const hName=mcHolidays[hKey];
+    let cls='mc-cell';
+    if(dow===0||hName)cls+=' mc-sun mc-holiday';
+    else if(dow===6)cls+=' mc-sat';
+    if(isToday)cls+=' mc-today';
+    if(isSel&&!isToday)cls+=' mc-selected';
+    const dots=(evMap[d]||[]).slice(0,3).map(()=>`<div class="mc-dot"></div>`).join('');
+    const hTag=hName?`<div class="mc-hname">${hName.replace('대한민국 ','').slice(0,4)}</div>`:'';
+    cells+=`<div class="${cls}" onclick="mcSel(${mcYear},${mcMonth},${d})"><span class="mc-num">${d}</span>${hTag}${dots?`<div class="mc-dots">${dots}</div>`:''}</div>`;
+  }
+  const rem=42-first.getDay()-last.getDate();
+  for(let d=1;d<=Math.min(rem,7);d++)cells+=`<div class="mc-cell mc-other"><span class="mc-num">${d}</span></div>`;
+  let evHtml='';
+  if(mcSelected){
+    const sEvs=mcEvents.filter(e=>e.date.getFullYear()===mcSelected.getFullYear()&&e.date.getMonth()===mcSelected.getMonth()&&e.date.getDate()===mcSelected.getDate());
+    const hKey2=`${mcSelected.getFullYear()}-${mcSelected.getMonth()}-${mcSelected.getDate()}`;
+    const hol=mcHolidays[hKey2];
+    let items='';
+    if(hol)items+=`<div class="mc-ev-item"><div class="mc-ev-dot" style="background:#ef4444"></div><span class="mc-ev-name">${hol}</span><span class="mc-ev-time">공휴일</span></div>`;
+    sEvs.forEach(e=>{items+=`<div class="mc-ev-item"><div class="mc-ev-dot" style="background:var(--orange)"></div><span class="mc-ev-name">${e.summary}</span><span class="mc-ev-time">${e.time}</span></div>`;});
+    if(items)evHtml=`<div class="mc-ev-box"><div class="mc-ev-title">${mcSelected.getMonth()+1}/${mcSelected.getDate()} 일정</div>${items}</div>`;
+  }
+  document.getElementById('miniCal').innerHTML=`
+    <div class="mc-head">
+      <button class="mc-nav" onclick="mcMove(-1)">‹</button>
+      <span class="mc-title">${mcYear}년 ${months[mcMonth]}</span>
+      <button class="mc-nav" onclick="mcMove(1)">›</button>
+    </div>
+    <div class="mc-days">${['일','월','화','수','목','금','토'].map((d,i)=>`<div class="mc-day-label ${i===0?'sun':i===6?'sat':''}">${d}</div>`).join('')}</div>
+    <div class="mc-grid">${cells}</div>
+    ${evHtml}
+    <a class="mc-gcal" href="https://calendar.google.com" target="_blank">구글 캘린더 →</a>
+  `;
+}
+function mcMove(dir){mcMonth+=dir;if(mcMonth>11){mcMonth=0;mcYear++;}if(mcMonth<0){mcMonth=11;mcYear--;}mcSelected=null;document.getElementById('miniCal').innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);font-size:11px;">📅 불러오는 중...</div>';mcLoad();}
+function mcSel(y,m,d){mcSelected=new Date(y,m,d);mcRender();}
+mcLoad();
+</script>

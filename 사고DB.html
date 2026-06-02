@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>사고 DB — 이앤원 여주물류센터</title>
+<script src="https://unpkg.com/docx@9.0.2/build/index.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --orange:#ff6b35;--ol:#fff4ef;--od:#cc4a1a;
+  --bg:#f5f5f3;--card:#fff;--border:#e8e8e3;--text:#1a1a1a;--muted:#999;
+  --radius:8px;--radius-lg:14px;
+}
+body{font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;font-size:14px;color:var(--text);background:var(--bg)}
+.app{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+
+/* 사이드바 */
+.sidebar{background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow:hidden}
+.logo{padding:22px 18px 14px;border-bottom:1px solid var(--border)}
+.logo h1{font-size:15px;font-weight:800;color:var(--orange);letter-spacing:-.3px}
+.logo p{font-size:11px;color:var(--muted);margin-top:3px}
+.sidebar-nav{padding:10px 8px;flex:1;overflow-y:auto}
+.menu-btn{width:100%;display:flex;align-items:center;gap:9px;padding:9px 12px;border:none;background:none;cursor:pointer;border-radius:var(--radius);color:var(--text);font-size:13px;text-align:left;transition:.15s;font-family:inherit;font-weight:500}
+.menu-btn:hover{background:#f4f4f2}
+.menu-btn.active{background:var(--ol);color:var(--od);font-weight:700}
+.sidebar-stats{padding:14px 16px;border-top:1px solid var(--border);background:#fafafa}
+.stat-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:4px 0}
+.stat-row .sl{color:var(--muted)}
+.stat-row .sv{font-weight:700;color:var(--orange)}
+.stat-row .sv.red{color:#dc2626}
+
+/* 메인 */
+.main{padding:28px 36px;overflow-x:hidden}
+.page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+.page-title{font-size:20px;font-weight:800;letter-spacing:-.4px}
+.page-title small{font-size:13px;font-weight:400;color:var(--muted);margin-left:8px}
+.btn-grp{display:flex;gap:8px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius);font-size:13px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:.15s;font-family:inherit}
+.btn-primary{background:var(--orange);color:#fff;border-color:var(--orange)}
+.btn-primary:hover{background:var(--od)}
+.btn-secondary{background:var(--card);color:var(--text);border-color:var(--border)}
+.btn-secondary:hover{background:#f4f4f2}
+.btn-secondary:disabled{opacity:.4;cursor:default}
+.btn-danger{background:#fee2e2;color:#991b1b;border-color:#fecaca}
+
+/* 필터바 */
+.filter-bar{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 18px;margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.filter-bar input,.filter-bar select{font-size:13px;padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text);height:34px;font-family:inherit}
+.filter-bar input{flex:1;min-width:200px}
+.filter-bar select{min-width:110px}
+
+/* 테이블 */
+.table-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+table{width:100%;border-collapse:collapse}
+th{background:#fafaf8;padding:9px 6px 9px 8px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap;text-transform:uppercase;letter-spacing:.04em}
+td{padding:12px 14px;border-bottom:1px solid #f0f0ec;font-size:13px;vertical-align:top}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafaf8;cursor:pointer}
+.content-cell{font-size:12px;color:#444;line-height:1.6;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;white-space:normal;word-break:keep-all}
+.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
+.b-orange{background:var(--ol);color:var(--od)}
+.b-red{background:#fee2e2;color:#991b1b}
+.b-blue{background:#eff6ff;color:#1e40af}
+.b-green{background:#f0fdf4;color:#166534}
+.b-gray{background:#f4f4f2;color:#666}
+.b-yellow{background:#fefce8;color:#854d0e}
+.b-purple{background:#f5f3ff;color:#6d28d9}
+.empty{text-align:center;padding:56px;color:var(--muted)}
+
+/* 페이지네이션 */
+.pager{display:flex;align-items:center;justify-content:center;gap:5px;padding:14px;border-top:1px solid var(--border);flex-wrap:wrap}
+
+/* 폼 */
+.section-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:14px;overflow:hidden}
+.sec-hd{padding:11px 18px;background:#fafaf8;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.fields{padding:18px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.f2{grid-template-columns:repeat(2,1fr)}
+.f-full{grid-column:1/-1}
+.f-label{display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
+.req{color:#e24b4a}
+.f-input{width:100%;padding:8px 11px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;background:var(--card);color:var(--text);font-family:inherit;transition:.15s}
+.f-input:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(255,107,53,.1)}
+.f-input[readonly]{background:#fafaf8;color:var(--muted)}
+textarea.f-input{resize:vertical;min-height:80px}
+
+/* 라디오 */
+.radio-grp{display:flex;flex-wrap:wrap;gap:6px}
+.r-btn{display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border:1px solid var(--border);border-radius:20px;cursor:pointer;font-size:12px;font-weight:600;background:var(--card);color:var(--text);transition:.15s;user-select:none;font-family:inherit}
+.r-btn:hover{background:#f4f4f2}
+.r-btn.active{border-color:var(--orange);background:var(--ol);color:var(--od)}
+.r-btn input[type=radio]{display:none}
+
+/* 배지 선택 */
+.badge-grp{display:flex;flex-wrap:wrap;gap:6px}
+.b-sel{padding:5px 12px;border:1px solid var(--border);border-radius:20px;font-size:12px;cursor:pointer;background:var(--card);color:var(--muted);transition:.15s;user-select:none;font-weight:500}
+.b-sel:hover{background:#f4f4f2;color:var(--text)}
+.b-sel.on-type{border-color:var(--orange);background:var(--ol);color:var(--od);font-weight:700}
+.b-sel.on-agent{border-color:#1d4ed8;background:#eff6ff;color:#1e40af;font-weight:700}
+.b-sel.on-injury{border-color:#15803d;background:#f0fdf4;color:#166534;font-weight:700}
+
+/* 조건부 */
+.cond{display:none;margin-top:8px}
+.cond.show{display:block}
+
+/* 통계 */
+.stat-cards-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px 20px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.stat-card.c-orange::before{background:var(--orange)}
+.stat-card.c-blue::before{background:#3b82f6}
+.stat-card.c-red::before{background:#ef4444}
+.stat-card.c-green::before{background:#22c55e}
+.stat-card.c-purple::before{background:#a855f7}
+.stat-card .sc-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+.stat-card .sc-val{font-size:30px;font-weight:800;letter-spacing:-1px}
+.stat-card.c-orange .sc-val{color:var(--orange)}
+.stat-card.c-blue .sc-val{color:#3b82f6}
+.stat-card.c-red .sc-val{color:#ef4444}
+.stat-card.c-green .sc-val{color:#22c55e}
+.stat-card.c-purple .sc-val{color:#a855f7}
+.stat-tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.chart-box{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px}
+.chart-box h3{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:16px}
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.bar-label{font-size:12px;color:var(--text);width:90px;flex-shrink:0;font-weight:500;text-align:right}
+.bar-track{flex:1;height:22px;background:#f0f0ec;border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width .5s ease;display:flex;align-items:center;justify-content:flex-end;padding-right:7px}
+.bar-fill span{font-size:11px;font-weight:700;color:#fff}
+.donut-wrap{display:flex;align-items:center;gap:20px}
+.donut-legend{flex:1}
+.legend-item{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:12px}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.year-drill{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.year-chip{padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--muted);transition:.15s}
+.year-chip:hover{background:#f4f4f2;color:var(--text)}
+.year-chip.active{border-color:var(--orange);background:var(--ol);color:var(--od)}
+
+/* 토스트 */
+.toast{position:fixed;bottom:24px;right:24px;background:#1a1a1a;color:#fff;padding:12px 20px;border-radius:var(--radius);font-size:13px;opacity:0;transform:translateY(8px);transition:.3s;z-index:999;pointer-events:none;max-width:320px}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.err{background:#991b1b}
+
+/* 모달 */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;align-items:center;justify-content:center}
+.modal-bg.show{display:flex}
+.modal{background:var(--card);border-radius:var(--radius-lg);padding:28px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal h3{font-size:16px;font-weight:700;margin-bottom:8px}
+.modal p{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6}
+.info-box{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--radius);padding:14px;margin-bottom:14px;font-size:13px;line-height:2}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ─── 사이드바 ─── -->
+<aside class="sidebar">
+  <div class="logo">
+    <h1>⚠ 사고 DB</h1>
+    <p>이앤원(주) 여주물류센터</p>
+  </div>
+  <nav class="sidebar-nav">
+    <button class="menu-btn active" onclick="showView('list')">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+      사고 목록
+    </button>
+    <button class="menu-btn" onclick="showView('new')">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+      새 사고 등록
+    </button>
+    <button class="menu-btn" onclick="showView('stats')">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      통계 현황판
+    </button>
+    <button class="menu-btn" onclick="showView('import')">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1M16 10l-4 4m0 0l-4-4m4 4V4"/></svg>
+      데이터 임포트
+    </button>
+  </nav>
+  <div class="sidebar-stats">
+    <div class="stat-row"><span class="sl">전체</span><span class="sv" id="st-total">0</span></div>
+    <div class="stat-row"><span class="sl">산재</span><span class="sv red" id="st-sanjai">0</span></div>
+    <div class="stat-row"><span class="sl">공상</span><span class="sv" id="st-gongsang">0</span></div>
+    <div class="stat-row"><span class="sl">조사표 누락</span><span class="sv red" id="st-missing">0</span></div>
+    <div class="stat-row"><span class="sl">올해</span><span class="sv" id="st-thisyear">0</span></div>
+  </div>
+</aside>
+
+<!-- ─── 메인 ─── -->
+<main class="main">
+
+<!-- ① 목록 -->
+<div id="view-list">
+  <div class="page-header">
+    <div class="page-title">사고 목록 <small id="list-count">0건</small></div>
+    <div class="btn-grp">
+      <button class="btn btn-secondary" onclick="exportBackup()">📦 JSON 백업</button>
+      <button class="btn btn-primary" onclick="showView('new')">+ 새 등록</button>
+    </div>
+  </div>
+  <div class="filter-bar">
+    <input type="text" id="flt-q" placeholder="사고번호, 이름, 내용 검색..." oninput="renderList(true)">
+    <select id="flt-year" onchange="renderList(true)"><option value="">연도 전체</option></select>
+    <select id="flt-site" onchange="renderList(true)">
+      <option value="">영업점 전체</option>
+      <option>여주</option><option>대신</option><option>백암</option><option>리콘타</option><option>중계</option><option>태은</option><option>대화</option><option>다인</option>
+    </select>
+    <select id="flt-proc" onchange="renderList(true)">
+      <option value="">처리 전체</option>
+      <option>공상</option><option>산재</option><option>건보</option><option>자보</option><option>보험</option><option>배상</option><option>일용직</option><option>없음</option><option>미확인</option>
+    </select>
+    <select id="flt-report" onchange="renderList(true)">
+      <option value="">조사표 전체</option>
+      <option value="missing">❌ 누락</option>
+      <option value="date">✅ 날짜있음</option>
+      <option value="2day">✅ 2일이하</option>
+      <option value="etc">기타</option>
+    </select>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th style="width:28px">#</th>
+        <th style="width:120px">사고번호 / 일시</th>
+        <th style="width:56px">영업점·부서</th>
+        <th style="width:62px">유형·기인물</th>
+        <th style="width:52px">상해</th>
+        <th>사고내용</th>
+        <th style="width:100px">처리·조사표</th>
+        <th style="width:44px">휴업일</th>
+        <th style="width:44px">작업</th>
+      </tr></thead>
+      <tbody id="list-body"></tbody>
+    </table>
+    <div class="empty" id="list-empty" style="display:none">
+      <p style="font-size:15px;margin-bottom:6px">등록된 사고가 없습니다</p>
+      <small>새 사고 등록 또는 데이터 임포트를 사용하세요</small>
+    </div>
+    <div class="pager" id="pagination"></div>
+  </div>
+</div>
+
+<!-- ② 등록/수정 폼 -->
+<div id="view-form" style="display:none">
+  <div class="page-header">
+    <div class="page-title" id="form-title">새 사고 등록</div>
+    <div class="btn-grp">
+      <button class="btn btn-secondary" onclick="showView('list')">← 목록</button>
+      <button class="btn btn-primary" onclick="saveRecord()">💾 저장 + docx</button>
+    </div>
+  </div>
+  <div class="section-card">
+    <div class="sec-hd">기본 정보</div>
+    <div class="fields">
+      <div><label class="f-label">사고번호 <span class="req">*</span></label><input class="f-input" id="f-id" type="text" placeholder="ENO-2026-A-01"></div>
+      <div><label class="f-label">사고일시 <span class="req">*</span></label><input class="f-input" id="f-date" type="date" onchange="calcPeriod()"></div>
+      <div><label class="f-label">이름</label><input class="f-input" id="f-name" type="text" placeholder="홍길동"></div>
+      <div><label class="f-label">영업점 <span class="req">*</span></label>
+        <select class="f-input" id="f-site"><option value="">선택</option><option>여주</option><option>대신</option><option>백암</option><option>리콘타</option><option>중계</option><option>태은</option><option>대화</option><option>다인</option></select>
+      </div>
+      <div><label class="f-label">부서</label><input class="f-input" id="f-dept" type="text" placeholder="WET출하 / DRY / DAS"></div>
+      <div><label class="f-label">이마트 여부</label>
+        <div class="radio-grp" id="rg-imart">
+          <label class="r-btn" onclick="setRadio('imart','Y',this)"><input type="radio" name="imart">Y</label>
+          <label class="r-btn" onclick="setRadio('imart','-',this)"><input type="radio" name="imart">-</label>
+          <label class="r-btn" onclick="setRadio('imart','E',this)"><input type="radio" name="imart">E</label>
+        </div>
+      </div>
+      <div><label class="f-label">입사일</label><input class="f-input" id="f-joindate" type="date" onchange="calcPeriod()"></div>
+      <div><label class="f-label">근무기간</label><input class="f-input" id="f-period" type="text" readonly></div>
+      <div><label class="f-label">사고횟수(누적)</label><input class="f-input" id="f-cnt" type="number" min="1" value="1" style="width:80px"></div>
+    </div>
+  </div>
+  <div class="section-card">
+    <div class="sec-hd">사고 분류</div>
+    <div class="fields">
+      <div class="f-full"><label class="f-label">사고유형 <span class="req">*</span></label>
+        <div class="badge-grp" id="bg-type">
+          <span class="b-sel" onclick="selBadge('type',this,'부딪힘')">부딪힘</span><span class="b-sel" onclick="selBadge('type',this,'끼임')">끼임</span><span class="b-sel" onclick="selBadge('type',this,'전도·넘어짐')">전도·넘어짐</span><span class="b-sel" onclick="selBadge('type',this,'낙하')">낙하</span><span class="b-sel" onclick="selBadge('type',this,'추락')">추락</span><span class="b-sel" onclick="selBadge('type',this,'충돌')">충돌</span><span class="b-sel" onclick="selBadge('type',this,'창상')">창상</span><span class="b-sel" onclick="selBadge('type',this,'근골격')">근골격</span><span class="b-sel" onclick="selBadge('type',this,'보건·질환')">보건·질환</span><span class="b-sel" onclick="selBadge('type',this,'파손(대물)')">파손(대물)</span><span class="b-sel" onclick="selBadge('type',this,'기타')">기타</span>
+        </div>
+        <div class="cond" id="cond-type-other"><input class="f-input" id="f-type-other" type="text" placeholder="직접 입력"></div>
+      </div>
+      <div class="f-full"><label class="f-label">기인물·가해물 <span class="req">*</span></label>
+        <div class="badge-grp" id="bg-agent">
+          <span class="b-sel" onclick="selBadge('agent',this,'EPT')">EPT</span><span class="b-sel" onclick="selBadge('agent',this,'지게차')">지게차</span><span class="b-sel" onclick="selBadge('agent',this,'전동자키')">전동자키</span><span class="b-sel" onclick="selBadge('agent',this,'핸드자키')">핸드자키</span><span class="b-sel" onclick="selBadge('agent',this,'팔레트')">팔레트</span><span class="b-sel" onclick="selBadge('agent',this,'컨베이어')">컨베이어</span><span class="b-sel" onclick="selBadge('agent',this,'롤테이너')">롤테이너</span><span class="b-sel" onclick="selBadge('agent',this,'소터')">소터</span><span class="b-sel" onclick="selBadge('agent',this,'중량물')">중량물</span><span class="b-sel" onclick="selBadge('agent',this,'상품·박스')">상품·박스</span><span class="b-sel" onclick="selBadge('agent',this,'커터칼')">커터칼</span><span class="b-sel" onclick="selBadge('agent',this,'계단·바닥')">계단·바닥</span><span class="b-sel" onclick="selBadge('agent',this,'시설물')">시설물</span><span class="b-sel" onclick="selBadge('agent',this,'자동차')">자동차</span><span class="b-sel" onclick="selBadge('agent',this,'개인(바닥·보행)')">개인(바닥·보행)</span><span class="b-sel" onclick="selBadge('agent',this,'기타')">기타</span>
+        </div>
+        <div class="cond" id="cond-agent-other"><input class="f-input" id="f-agent-other" type="text" placeholder="직접 입력"></div>
+      </div>
+      <div class="f-full"><label class="f-label">상해분류</label>
+        <div class="badge-grp" id="bg-injury">
+          <span class="b-sel" onclick="selBadge('injury',this,'타박상')">타박상</span><span class="b-sel" onclick="selBadge('injury',this,'골절')">골절</span><span class="b-sel" onclick="selBadge('injury',this,'염좌')">염좌</span><span class="b-sel" onclick="selBadge('injury',this,'열상')">열상</span><span class="b-sel" onclick="selBadge('injury',this,'인대파열')">인대파열</span><span class="b-sel" onclick="selBadge('injury',this,'근골격(허리)')">근골격(허리)</span><span class="b-sel" onclick="selBadge('injury',this,'근골격(기타)')">근골격(기타)</span><span class="b-sel" onclick="selBadge('injury',this,'대물(인적피해없음)')">대물(인적피해없음)</span><span class="b-sel" onclick="selBadge('injury',this,'앗차사고')">앗차사고</span><span class="b-sel" onclick="selBadge('injury',this,'기타')">기타</span>
+        </div>
+        <div class="cond" id="cond-injury-other"><input class="f-input" id="f-injury-other" type="text" placeholder="직접 입력"></div>
+      </div>
+      <div><label class="f-label">사고장소</label><input class="f-input" id="f-place" type="text" placeholder="WET출하 32번 도크"></div>
+      <div class="f-full"><label class="f-label">사고내용 <span class="req">*</span></label><textarea class="f-input" id="f-content" rows="4" placeholder="사고 발생 경위를 구체적으로 입력..."></textarea></div>
+    </div>
+  </div>
+  <div class="section-card">
+    <div class="sec-hd">처리 및 산업재해조사표</div>
+    <div class="fields">
+      <div class="f-full"><label class="f-label">처리유형 <span class="req">*</span></label>
+        <div class="radio-grp" id="rg-proc">
+          <label class="r-btn" onclick="setRadio('proc','공상',this)"><input type="radio" name="proc">공상</label><label class="r-btn" onclick="setRadio('proc','산재',this)"><input type="radio" name="proc">산재</label><label class="r-btn" onclick="setRadio('proc','건보',this)"><input type="radio" name="proc">건보</label><label class="r-btn" onclick="setRadio('proc','자보',this)"><input type="radio" name="proc">자보</label><label class="r-btn" onclick="setRadio('proc','보험',this)"><input type="radio" name="proc">보험</label><label class="r-btn" onclick="setRadio('proc','배상',this)"><input type="radio" name="proc">배상</label><label class="r-btn" onclick="setRadio('proc','일용직',this)"><input type="radio" name="proc">일용직</label><label class="r-btn" onclick="setRadio('proc','없음',this)"><input type="radio" name="proc">없음</label><label class="r-btn" onclick="setRadio('proc','미확인',this)"><input type="radio" name="proc">미확인</label>
+        </div>
+      </div>
+      <div class="f-full" style="border-top:1px solid var(--border);padding-top:14px"><label class="f-label">산업재해조사표 <span class="req">*</span> <span style="font-weight:400;color:var(--muted);font-size:11px">(요양3일↑→제출일 / 2일↓→2일이하)</span></label>
+        <div class="radio-grp" id="rg-report">
+          <label class="r-btn" onclick="setRadio('report','2일이하',this);showCond(null)"><input type="radio" name="report">2일이하</label><label class="r-btn" onclick="setRadio('report','날짜',this);showCond('date')"><input type="radio" name="report">제출완료(날짜입력)</label><label class="r-btn" onclick="setRadio('report','출퇴근',this);showCond(null)"><input type="radio" name="report">출퇴근재해</label><label class="r-btn" onclick="setRadio('report','해당없음',this);showCond(null)"><input type="radio" name="report">해당없음</label><label class="r-btn" onclick="setRadio('report','기타',this);showCond('other')"><input type="radio" name="report">기타(설명)</label><label class="r-btn" onclick="setRadio('report','미작성',this);showCond(null)"><input type="radio" name="report">미작성</label>
+        </div>
+        <div class="cond" id="cond-report-date"><input class="f-input" id="f-report-date" type="date" style="width:180px"></div>
+        <div class="cond" id="cond-report-other"><input class="f-input" id="f-report-other" type="text" placeholder="예: 산재미보고 사유서 등"></div>
+      </div>
+      <div><label class="f-label">조치완료일</label><input class="f-input" id="f-done-date" type="date"></div>
+      <div><label class="f-label">조치경과</label><input class="f-input" id="f-done-note" type="text" placeholder="완료 / 진행중"></div>
+      <div><label class="f-label">휴업일수(사고일 제외)</label><input class="f-input" id="f-offdays" type="number" min="0" placeholder="0"></div>
+      <div><label class="f-label">요양급여신청서</label><input class="f-input" id="f-meddate" type="date"></div>
+    </div>
+  </div>
+  <div class="section-card">
+    <div class="sec-hd">비용 및 비고</div>
+    <div class="fields f2">
+      <div><label class="f-label">공상비용(원)</label><input class="f-input" id="f-cost1" type="number" min="0" placeholder="0"></div>
+      <div><label class="f-label">기타비용(원)</label><input class="f-input" id="f-cost2" type="number" min="0" placeholder="0"></div>
+      <div class="f-full"><label class="f-label">비고</label><textarea class="f-input" id="f-note" rows="3" placeholder="특이사항, 자보처리 등"></textarea></div>
+    </div>
+  </div>
+  <div style="display:flex;justify-content:space-between;padding-bottom:36px">
+    <button class="btn btn-danger" id="delete-btn" onclick="deleteRecord()" style="display:none">🗑 삭제</button>
+    <div class="btn-grp" style="margin-left:auto">
+      <button class="btn btn-secondary" onclick="showView('list')">← 목록</button>
+      <button class="btn btn-primary" onclick="saveRecord()">💾 저장 + docx</button>
+    </div>
+  </div>
+</div>
+
+<!-- ③ 통계 현황판 -->
+<div id="view-stats" style="display:none">
+  <div class="page-header">
+    <div class="page-title">통계 현황판</div>
+  </div>
+  <div class="stat-cards-grid" id="stat-cards"></div>
+  <!-- 연도 칩 -->
+  <div style="margin-bottom:14px">
+    <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">연도 선택</div>
+    <div class="year-drill" id="year-chips"></div>
+  </div>
+  <!-- 차트 그리드 -->
+  <div class="chart-grid" id="chart-grid"></div>
+  <!-- 누락 목록 -->
+  <div class="section-card">
+    <div class="sec-hd" style="color:#dc2626">❌ 산업재해조사표 누락 목록 (<span id="missing-count">0</span>건)</div>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr>
+          <th style="padding:9px 14px;background:#fafaf8;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;color:var(--muted);text-align:left">사고번호</th>
+          <th style="padding:9px 14px;background:#fafaf8;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;color:var(--muted);text-align:left">사고일시</th>
+          <th style="padding:9px 14px;background:#fafaf8;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;color:var(--muted);text-align:left">영업점</th>
+          <th style="padding:9px 14px;background:#fafaf8;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;color:var(--muted);text-align:left">처리</th>
+          <th style="padding:9px 14px;background:#fafaf8;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;color:var(--muted);text-align:left">사고내용</th>
+          <th style="padding:9px 14px;background:#fafaf8;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;color:var(--muted)"></th>
+        </tr></thead>
+        <tbody id="stat-missing-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ④ 임포트 -->
+<div id="view-import" style="display:none">
+  <div class="page-header">
+    <div class="page-title">데이터 임포트</div>
+    <button class="btn btn-secondary" onclick="showView('list')">← 목록</button>
+  </div>
+  <div class="section-card">
+    <div class="sec-hd">JSON 파일로 임포트</div>
+    <div class="fields">
+      <div class="f-full">
+        <div class="info-box">
+          <b style="color:#166534">📋 사용 순서</b><br>
+          ① 폴더 안의 <b>사고데이터.json</b> 파일 선택<br>
+          ② <b>미리보기</b> 버튼 → 데이터 확인<br>
+          ③ <b>DB에 임포트</b> 클릭
+        </div>
+        <label class="f-label">사고데이터.json 파일 선택</label>
+        <input type="file" id="json-file" accept=".json" class="f-input" style="padding:6px">
+      </div>
+      <div class="f-full" id="json-preview" style="display:none">
+        <label class="f-label">미리보기 (처음 10건)</label>
+        <div id="json-preview-table" style="overflow-x:auto;max-height:260px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius)"></div>
+      </div>
+      <div class="f-full">
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button class="btn btn-secondary" onclick="previewJson()">🔍 미리보기</button>
+          <button class="btn btn-primary" id="import-json-btn" onclick="doImport()" style="display:none">⬇ DB에 임포트 (<span id="import-count">0</span>건)</button>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" id="import-overwrite"> 같은 사고번호 덮어쓰기</label>
+        </div>
+      </div>
+      <div class="f-full" id="import-result" style="display:none">
+        <div id="import-result-msg" style="font-size:13px;line-height:1.8;padding:12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--radius)"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<!-- 삭제 모달 -->
+<div class="modal-bg" id="del-modal">
+  <div class="modal">
+    <h3>사고 기록 삭제</h3>
+    <p>이 사고 기록을 삭제하면 복구할 수 없습니다. 정말 삭제하시겠습니까?</p>
+    <div class="btn-grp" style="justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="document.getElementById('del-modal').classList.remove('show')">취소</button>
+      <button class="btn btn-danger" onclick="confirmDelete()">삭제</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ══ IndexedDB ══════════════════════════════════════════
+const DB_NAME='accident_db_v2',DB_VER=1,STORE='accidents';
+let db=null,editingId=null;
+const radios={imart:null,proc:null,report:null};
+const badges={type:null,agent:null,injury:null};
+let parsedJsonData=[],currentPage=1,PAGE_SIZE=20,filteredRows=[];
+let selectedYear='all';
+
+function openDB(){return new Promise((res,rej)=>{const req=indexedDB.open(DB_NAME,DB_VER);req.onupgradeneeded=e=>e.target.result.createObjectStore(STORE,{keyPath:'id',autoIncrement:true});req.onsuccess=e=>{db=e.target.result;res()};req.onerror=rej});}
+const txs=(m)=>db.transaction(STORE,m).objectStore(STORE);
+function dbAll(){return new Promise((res,rej)=>{const r=txs('readonly').getAll();r.onsuccess=()=>res(r.result);r.onerror=rej})}
+function dbPut(rec){return new Promise((res,rej)=>{const r=txs('readwrite').put(rec);r.onsuccess=()=>res(r.result);r.onerror=rej})}
+function dbDel(id){return new Promise((res,rej)=>{const r=txs('readwrite').delete(id);r.onsuccess=res;r.onerror=rej})}
+
+// ══ 뷰 전환 ═══════════════════════════════════════════
+function showView(v){
+  ['list','form','stats','import'].forEach(n=>{const el=document.getElementById('view-'+n);if(el)el.style.display='none';});
+  document.getElementById('view-'+(v==='new'?'form':v)).style.display='block';
+  document.querySelectorAll('.menu-btn').forEach((b,i)=>{
+    b.classList.toggle('active',(v==='list'&&i===0)||(v==='new'&&i===1)||(v==='stats'&&i===2)||(v==='import'&&i===3));
+  });
+  if(v==='new'){resetForm();editingId=null;document.getElementById('form-title').textContent='새 사고 등록';document.getElementById('delete-btn').style.display='none';}
+  if(v==='list'){renderList();updateStats();}
+  if(v==='stats'){renderStats();}
+}
+
+// ══ 목록 렌더 ═════════════════════════════════════════
+async function renderList(resetPage){
+  if(resetPage) currentPage=1;
+  const all=await dbAll();
+  const q=(document.getElementById('flt-q').value||'').toLowerCase();
+  const yr=document.getElementById('flt-year').value;
+  const site=document.getElementById('flt-site').value;
+  const proc=document.getElementById('flt-proc').value;
+  const rep=document.getElementById('flt-report').value;
+  const years=[...new Set(all.map(r=>(r.date||'').slice(0,4)).filter(Boolean))].sort((a,b)=>b-a);
+  const yrSel=document.getElementById('flt-year');const curYr=yrSel.value;
+  yrSel.innerHTML='<option value="">연도 전체</option>'+years.map(y=>`<option${y===curYr?' selected':''}>${y}</option>`).join('');
+  filteredRows=all.filter(r=>{
+    if(q&&!JSON.stringify(r).toLowerCase().includes(q)) return false;
+    if(yr&&!(r.date||'').startsWith(yr)) return false;
+    if(site&&r.site!==site) return false;
+    if(proc&&r.proc!==proc) return false;
+    if(rep&&reportStatus(r)!==rep) return false;
+    return true;
+  }).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const total=filteredRows.length;
+  const totalPages=Math.max(1,Math.ceil(total/PAGE_SIZE));
+  if(currentPage>totalPages) currentPage=totalPages;
+  const start=(currentPage-1)*PAGE_SIZE;
+  const pageRows=filteredRows.slice(start,start+PAGE_SIZE);
+  document.getElementById('list-count').textContent=total+'건';
+  const body=document.getElementById('list-body');
+  const empty=document.getElementById('list-empty');
+  if(!total){body.innerHTML='';empty.style.display='block';document.getElementById('pagination').innerHTML='';return;}
+  empty.style.display='none';
+  const injShort={'타박상':'타박상','골절':'골절','염좌':'염좌','열상':'열상','인대파열':'인대파열','근골격(허리)':'근골격↑','근골격(기타)':'근골격','대물(인적피해없음)':'대물','앗차사고':'앗차'};
+  body.innerHTML=pageRows.map((r,i)=>{
+    const inj=r.injury?(injShort[r.injury]||(r.injury==='기타'?r.injuryOther||'기타':r.injury)):'-';
+    const injC={'골절':'#dc2626','인대파열':'#dc2626','열상':'#f59e0b','타박상':'#555'}[r.injury]||'#888';
+    return `<tr onclick="editRecord(${r.id})" style="border-bottom:1px solid #ebebeb;transition:.1s" onmouseover="this.style.background='#fafaf8'" onmouseout="this.style.background=''">
+    <td style="color:#ccc;font-size:11px;vertical-align:top;padding:14px 4px 14px 16px;font-weight:600">${start+i+1}</td>
+    <td style="vertical-align:top;padding:14px 10px 14px 4px;min-width:0">
+      <div style="font-weight:800;font-size:13px;color:var(--od);letter-spacing:-.2px">${r.accId||''}</div>
+      <div style="font-size:12px;color:#999;margin-top:3px">${r.date||''}</div>
+      <div style="font-size:11px;color:#bbb;margin-top:1px">${r.name||''}</div>
+    </td>
+    <td style="vertical-align:top;padding:14px 8px;min-width:0">
+      <div style="font-size:13px;font-weight:700;color:#333">${r.site||''}</div>
+      <div style="font-size:11px;color:#999;margin-top:3px;line-height:1.4">${r.dept||''}</div>
+    </td>
+    <td style="vertical-align:top;padding:14px 8px;min-width:0">
+      <div style="margin-bottom:5px">${typeBadge(r.type)}</div>
+      <div style="font-size:12px;color:#666;line-height:1.4">${r.agent||''}</div>
+    </td>
+    <td style="vertical-align:top;padding:14px 8px;min-width:0">
+      <span style="font-size:12px;font-weight:700;color:${injC}">${inj}</span>
+    </td>
+    <td style="vertical-align:top;padding:14px 14px 14px 8px">
+      <div style="font-size:13px;color:#333;line-height:1.65;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;word-break:keep-all" title="${(r.content||'').replace(/"/g,'&quot;')}">${r.content||''}</div>
+    </td>
+    <td style="vertical-align:top;padding:14px 8px;min-width:0">
+      <div style="margin-bottom:6px">${procBadge(r.proc)}</div>
+      <div>${reportBadge(r)}</div>
+    </td>
+    <td style="vertical-align:top;padding:14px 6px;text-align:center">
+      <div style="font-size:16px;font-weight:900;color:${(r.offdays||0)>=30?'#dc2626':(r.offdays||0)>0?'#f59e0b':'#ddd'}">${r.offdays||0}</div>
+      <div style="font-size:10px;color:#bbb;margin-top:1px">일</div>
+    </td>
+    <td style="vertical-align:top;padding:12px 14px 12px 6px" onclick="event.stopPropagation()">
+      <button class="btn btn-secondary" style="padding:5px 11px;font-size:12px;font-weight:600" onclick="editRecord(${r.id})">편집</button>
+    </td>
+  </tr>`;}).join('');
+  renderPager(totalPages,total,start);
+}
+
+function renderPager(totalPages,total,start){
+  const pg=document.getElementById('pagination');if(!pg) return;
+  if(totalPages<=1){pg.innerHTML='';return;}
+  const end=Math.min(start+PAGE_SIZE,total);
+  let h=`<button class="btn btn-secondary" style="padding:4px 10px;font-size:12px" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>‹ 이전</button>`;
+  let s=Math.max(1,currentPage-3),e=Math.min(totalPages,s+6);if(e-s<6) s=Math.max(1,e-6);
+  if(s>1) h+=`<button class="btn btn-secondary" style="padding:4px 10px;font-size:12px" onclick="goPage(1)">1</button><span style="color:var(--muted);padding:0 2px">…</span>`;
+  for(let p=s;p<=e;p++) h+=`<button class="btn ${p===currentPage?'btn-primary':'btn-secondary'}" style="padding:4px 11px;font-size:12px" onclick="goPage(${p})">${p}</button>`;
+  if(e<totalPages) h+=`<span style="color:var(--muted);padding:0 2px">…</span><button class="btn btn-secondary" style="padding:4px 10px;font-size:12px" onclick="goPage(${totalPages})">${totalPages}</button>`;
+  h+=`<button class="btn btn-secondary" style="padding:4px 10px;font-size:12px" onclick="goPage(${currentPage+1})" ${currentPage===totalPages?'disabled':''}>다음 ›</button>`;
+  h+=`<span style="font-size:12px;color:var(--muted);margin-left:6px">${start+1}–${end} / ${total}건</span>`;
+  pg.innerHTML=h;
+}
+function goPage(p){const tp=Math.ceil(filteredRows.length/PAGE_SIZE);if(p<1||p>tp) return;currentPage=p;renderList();window.scrollTo(0,0);}
+
+// ══ 배지/상태 ════════════════════════════════════════
+function reportStatus(r){const v=r.report||'';if(!v||v==='미작성') return 'missing';if(v==='날짜') return 'date';if(v==='2일이하') return '2day';return 'etc';}
+function typeBadge(t){const m={부딪힘:'b-orange',끼임:'b-red','전도·넘어짐':'b-yellow',낙하:'b-purple',추락:'b-purple',충돌:'b-red'};return t?`<span class="badge ${m[t]||'b-gray'}">${t}</span>`:`<span class="badge b-gray">-</span>`;}
+function procBadge(p){const m={공상:'b-orange',산재:'b-red',건보:'b-blue',자보:'b-green',보험:'b-blue',배상:'b-purple',일용직:'b-yellow'};return p?`<span class="badge ${m[p]||'b-gray'}">${p}</span>`:`<span class="badge b-gray">-</span>`;}
+function reportBadge(r){const v=r.report||'';if(!v||v==='미작성') return '<span class="badge b-red">❌누락</span>';if(v==='2일이하') return '<span class="badge b-blue">2일이하</span>';if(v==='날짜') return `<span class="badge b-green">${r.reportDate||'날짜없음'}</span>`;if(v==='출퇴근') return '<span class="badge b-gray">출퇴근</span>';if(v==='해당없음') return '<span class="badge b-gray">해당없음</span>';return '<span class="badge b-gray">기타</span>';}
+
+// ══ 통계 현황판 ════════════════════════════════════════
+async function renderStats(){
+  const all=await dbAll();
+  const yr=new Date().getFullYear().toString();
+  const years=[...new Set(all.map(r=>(r.date||'').slice(0,4)).filter(Boolean))].sort((a,b)=>b-a);
+  if(!years.includes(selectedYear)&&selectedYear!=='all') selectedYear=yr;
+
+  // 요약 카드
+  const subset=selectedYear==='all'?all:all.filter(r=>(r.date||'').startsWith(selectedYear));
+  const cards=[
+    {label:'전체 사고',val:subset.length,cls:'c-orange'},
+    {label:'산재',val:subset.filter(r=>r.proc==='산재').length,cls:'c-red'},
+    {label:'공상',val:subset.filter(r=>r.proc==='공상').length,cls:'c-blue'},
+    {label:'총 휴업일수',val:subset.reduce((s,r)=>s+(+r.offdays||0),0)+'일',cls:'c-purple'},
+    {label:'조사표 누락',val:subset.filter(r=>reportStatus(r)==='missing').length,cls:'c-red'},
+  ];
+  document.getElementById('stat-cards').innerHTML=cards.map(c=>`
+    <div class="stat-card ${c.cls}">
+      <div class="sc-label">${c.label}</div>
+      <div class="sc-val">${c.val}</div>
+      ${selectedYear!=='all'?`<div style="font-size:11px;color:var(--muted);margin-top:4px">${selectedYear}년</div>`:''}
+    </div>`).join('');
+
+  // 연도 칩
+  document.getElementById('year-chips').innerHTML=
+    `<span class="year-chip${selectedYear==='all'?' active':''}" onclick="selectYear('all')">전체</span>`+
+    years.map(y=>`<span class="year-chip${selectedYear===y?' active':''}" onclick="selectYear('${y}')">${y}년</span>`).join('');
+
+  // 차트 1: 사고유형별 막대
+  const typeData={};
+  subset.forEach(r=>{const t=r.type||'미분류';typeData[t]=(typeData[t]||0)+1;});
+  const typeArr=Object.entries(typeData).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const maxType=typeArr[0]?.[1]||1;
+  const typeColors=['#ff6b35','#ef4444','#f59e0b','#8b5cf6','#3b82f6','#10b981','#ec4899','#6b7280'];
+
+  // 차트 2: 기인물별 막대
+  const agentData={};
+  subset.forEach(r=>{const a=r.agent||'미분류';agentData[a]=(agentData[a]||0)+1;});
+  const agentArr=Object.entries(agentData).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const maxAgent=agentArr[0]?.[1]||1;
+
+  // 차트 3: 처리유형 도넛
+  const procData={공상:0,산재:0,건보:0,자보:0,보험:0,배상:0,일용직:0,미확인:0,기타:0};
+  subset.forEach(r=>{const p=r.proc||'기타';if(procData[p]!==undefined) procData[p]++;else procData['기타']++;});
+  const procArr=Object.entries(procData).filter(e=>e[1]>0).sort((a,b)=>b[1]-a[1]);
+  const procColors=['#ff6b35','#ef4444','#3b82f6','#10b981','#8b5cf6','#f59e0b','#ec4899','#6b7280','#9ca3af'];
+  const procTotal=procArr.reduce((s,e)=>s+e[1],0)||1;
+
+  // 차트 4: 월별 추이 (선택된 연도 or 올해)
+  const trendYear=selectedYear==='all'?yr:selectedYear;
+  const monthData=Array.from({length:12},(_,i)=>{
+    const m=String(i+1).padStart(2,'0');
+    const d=all.filter(r=>(r.date||'').startsWith(trendYear+'-'+m));
+    return{m:i+1,total:d.length,sanjai:d.filter(r=>r.proc==='산재').length,gongsang:d.filter(r=>r.proc==='공상').length};
+  });
+  const maxMonth=Math.max(...monthData.map(d=>d.total),1);
+
+  document.getElementById('chart-grid').innerHTML=`
+    <div class="chart-box">
+      <h3>사고유형별 현황</h3>
+      ${typeArr.map((e,i)=>`
+        <div class="bar-row">
+          <div class="bar-label">${e[0]}</div>
+          <div class="bar-track">
+            <div class="bar-fill" style="width:${Math.round(e[1]/maxType*100)}%;background:${typeColors[i%typeColors.length]}">
+              <span>${e[1]}</span>
+            </div>
+          </div>
+        </div>`).join('')}
+    </div>
+    <div class="chart-box">
+      <h3>기인물별 현황</h3>
+      ${agentArr.map((e,i)=>`
+        <div class="bar-row">
+          <div class="bar-label">${e[0]}</div>
+          <div class="bar-track">
+            <div class="bar-fill" style="width:${Math.round(e[1]/maxAgent*100)}%;background:${typeColors[i%typeColors.length]}">
+              <span>${e[1]}</span>
+            </div>
+          </div>
+        </div>`).join('')}
+    </div>
+    <div class="chart-box">
+      <h3>처리유형 비율</h3>
+      <div class="donut-wrap">
+        <svg width="120" height="120" viewBox="0 0 120 120">
+          ${(()=>{let offset=0;return procArr.map((e,i)=>{const pct=e[1]/procTotal;const dash=pct*283;const gap=283-dash;const r=`<circle cx="60" cy="60" r="45" fill="none" stroke="${procColors[i]}" stroke-width="24" stroke-dasharray="${dash} ${gap}" stroke-dashoffset="${-offset}" transform="rotate(-90 60 60)"/>`;offset+=dash;return r;}).join('');})()}
+          <circle cx="60" cy="60" r="33" fill="white"/>
+          <text x="60" y="64" text-anchor="middle" font-size="14" font-weight="800" fill="#1a1a1a">${procTotal}</text>
+        </svg>
+        <div class="donut-legend">
+          ${procArr.slice(0,6).map((e,i)=>`<div class="legend-item"><div class="legend-dot" style="background:${procColors[i]}"></div><span style="flex:1">${e[0]}</span><span style="font-weight:700">${e[1]}</span></div>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="chart-box">
+      <h3>월별 사고 추이 (${trendYear}년)</h3>
+      <div style="display:flex;align-items:flex-end;gap:4px;height:120px;padding-top:8px">
+        ${monthData.map(d=>`
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;height:100%">
+            <div style="flex:1;display:flex;align-items:flex-end;width:100%">
+              <div style="width:100%;background:#ff6b35;border-radius:3px 3px 0 0;height:${d.total?Math.max(6,Math.round(d.total/maxMonth*100))+'%':'0'};transition:.4s" title="${d.m}월: ${d.total}건"></div>
+            </div>
+            <div style="font-size:10px;color:var(--muted);font-weight:600">${d.m}</div>
+            ${d.total?`<div style="font-size:10px;font-weight:700;color:var(--od)">${d.total}</div>`:'<div style="font-size:10px;color:var(--muted)">-</div>'}
+          </div>`).join('')}
+      </div>
+    </div>`;
+
+  // 누락 목록
+  const missing=subset.filter(r=>reportStatus(r)==='missing').sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  document.getElementById('missing-count').textContent=missing.length;
+  document.getElementById('stat-missing-body').innerHTML=missing.map(r=>`<tr>
+    <td style="padding:9px 14px;border-bottom:1px solid #f0f0ec;font-size:12px;font-weight:700">${r.accId||''}</td>
+    <td style="padding:9px 14px;border-bottom:1px solid #f0f0ec;font-size:12px">${r.date||''}</td>
+    <td style="padding:9px 14px;border-bottom:1px solid #f0f0ec;font-size:12px">${r.site||''}</td>
+    <td style="padding:9px 14px;border-bottom:1px solid #f0f0ec">${procBadge(r.proc)}</td>
+    <td style="padding:9px 14px;border-bottom:1px solid #f0f0ec;font-size:12px;color:#555">${(r.content||'').slice(0,45)}${(r.content||'').length>45?'…':''}</td>
+    <td style="padding:9px 14px;border-bottom:1px solid #f0f0ec"><button class="btn btn-secondary" style="padding:3px 10px;font-size:11px" onclick="editRecord(${r.id})">편집</button></td>
+  </tr>`).join('');
+}
+
+function selectYear(y){selectedYear=y;renderStats();}
+
+// ══ 통계 수 ════════════════════════════════════════════
+async function updateStats(){
+  const all=await dbAll();const yr=new Date().getFullYear().toString();
+  document.getElementById('st-total').textContent=all.length;
+  document.getElementById('st-sanjai').textContent=all.filter(r=>r.proc==='산재').length;
+  document.getElementById('st-gongsang').textContent=all.filter(r=>r.proc==='공상').length;
+  document.getElementById('st-missing').textContent=all.filter(r=>reportStatus(r)==='missing').length;
+  document.getElementById('st-thisyear').textContent=all.filter(r=>(r.date||'').startsWith(yr)).length;
+}
+
+// ══ 폼 유틸 ══════════════════════════════════════════════
+function setRadio(name,val,el){radios[name]=val;document.querySelectorAll(`#rg-${name} .r-btn`).forEach(b=>b.classList.remove('active'));el.classList.add('active');}
+function selBadge(cat,el,val){const cls={type:'on-type',agent:'on-agent',injury:'on-injury'}[cat];document.querySelectorAll(`#bg-${cat} .b-sel`).forEach(b=>b.classList.remove(cls));el.classList.add(cls);badges[cat]=val;document.getElementById(`cond-${cat}-other`).classList.toggle('show',val==='기타');}
+function showCond(which){['date','other'].forEach(k=>document.getElementById(`cond-report-${k}`).classList.toggle('show',k===which));}
+function calcPeriod(){const j=document.getElementById('f-joindate').value,d=document.getElementById('f-date').value;if(!j||!d){document.getElementById('f-period').value='';return;}let y=new Date(d).getFullYear()-new Date(j).getFullYear(),m=new Date(d).getMonth()-new Date(j).getMonth();if(m<0){y--;m+=12;}document.getElementById('f-period').value=`${y}년${m}개월`;}
+function resetForm(){
+  ['f-id','f-name','f-dept','f-place','f-content','f-done-note','f-note','f-period','f-type-other','f-agent-other','f-injury-other','f-report-other'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  ['f-date','f-joindate','f-done-date','f-meddate','f-report-date'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  ['f-offdays','f-cost1','f-cost2'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  document.getElementById('f-cnt').value=1;document.getElementById('f-site').value='';
+  Object.keys(radios).forEach(k=>radios[k]=null);Object.keys(badges).forEach(k=>badges[k]=null);
+  document.querySelectorAll('.r-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.b-sel').forEach(b=>b.classList.remove('on-type','on-agent','on-injury'));
+  document.querySelectorAll('.cond').forEach(b=>b.classList.remove('show'));
+}
+
+async function editRecord(id){
+  const all=await dbAll();const r=all.find(x=>x.id===id);if(!r) return;
+  editingId=id;resetForm();showView('form');
+  document.getElementById('form-title').textContent='사고 수정 — '+r.accId;
+  document.getElementById('delete-btn').style.display='flex';
+  const sv=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v||'';};
+  sv('f-id',r.accId);sv('f-date',r.date);sv('f-name',r.name);sv('f-dept',r.dept);sv('f-place',r.place);sv('f-content',r.content);sv('f-joindate',r.joindate);sv('f-period',r.period);sv('f-done-date',r.doneDate);sv('f-done-note',r.doneNote);sv('f-offdays',r.offdays);sv('f-meddate',r.meddate);sv('f-cost1',r.cost1);sv('f-cost2',r.cost2);sv('f-note',r.note);sv('f-report-date',r.reportDate);sv('f-report-other',r.reportOther);sv('f-type-other',r.typeOther);sv('f-agent-other',r.agentOther);sv('f-injury-other',r.injuryOther);
+  document.getElementById('f-cnt').value=r.cnt||1;document.getElementById('f-site').value=r.site||'';
+  ['imart','proc','report'].forEach(name=>{const val=r[name];if(!val) return;radios[name]=val;const btn=[...document.querySelectorAll(`#rg-${name} .r-btn`)].find(b=>b.textContent.trim()===val);if(btn) btn.classList.add('active');});
+  if(r.report==='날짜') showCond('date');else if(r.report==='기타') showCond('other');
+  ['type','agent','injury'].forEach(cat=>{const val=r[cat];if(!val) return;badges[cat]=val;const cls={type:'on-type',agent:'on-agent',injury:'on-injury'}[cat];const el=[...document.querySelectorAll(`#bg-${cat} .b-sel`)].find(b=>b.textContent.trim()===val);if(el){el.classList.add(cls);if(val==='기타') document.getElementById(`cond-${cat}-other`).classList.add('show');}});
+}
+
+// ══ 저장 ══════════════════════════════════════════════
+async function saveRecord(){
+  const accId=document.getElementById('f-id').value.trim();
+  const date=document.getElementById('f-date').value;
+  const content=document.getElementById('f-content').value.trim();
+  if(!accId){toast('사고번호를 입력하세요','err');return;}
+  if(!date){toast('사고일시를 입력하세요','err');return;}
+  if(!content){toast('사고내용을 입력하세요','err');return;}
+  if(!radios.proc){toast('처리유형을 선택하세요','err');return;}
+  if(!radios.report){toast('산업재해조사표를 선택하세요','err');return;}
+  const g=id=>document.getElementById(id)?.value||'';
+  const rec={accId,date,name:g('f-name'),site:g('f-site'),dept:g('f-dept'),imart:radios.imart||'',joindate:g('f-joindate'),period:g('f-period'),cnt:+g('f-cnt')||1,type:badges.type||'',typeOther:g('f-type-other'),agent:badges.agent||'',agentOther:g('f-agent-other'),injury:badges.injury||'',injuryOther:g('f-injury-other'),place:g('f-place'),content,proc:radios.proc,report:radios.report,reportDate:g('f-report-date'),reportOther:g('f-report-other'),doneDate:g('f-done-date'),doneNote:g('f-done-note'),offdays:+g('f-offdays')||0,meddate:g('f-meddate'),cost1:+g('f-cost1')||0,cost2:+g('f-cost2')||0,note:g('f-note'),savedAt:new Date().toISOString()};
+  if(editingId) rec.id=editingId;
+  try{await dbPut(rec);await makeDocx(rec);toast('저장 완료 + docx 다운로드');showView('list');}
+  catch(e){toast('저장 오류: '+e.message,'err');}
+}
+
+// ══ 삭제 ══════════════════════════════════════════════
+function deleteRecord(){document.getElementById('del-modal').classList.add('show');}
+async function confirmDelete(){if(!editingId) return;await dbDel(editingId);document.getElementById('del-modal').classList.remove('show');toast('삭제되었습니다');showView('list');}
+
+// ══ docx ══════════════════════════════════════════════
+async function makeDocx(r){
+  const {Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,BorderStyle,WidthType,ShadingType,AlignmentType}=docx;
+  const W=9026,border={style:BorderStyle.SINGLE,size:4,color:'DDDDDD'},borders={top:border,bottom:border,left:border,right:border};
+  const hC=(t,w)=>new TableCell({borders,shading:{fill:'FFF4EF',type:ShadingType.CLEAR},width:{size:w,type:WidthType.DXA},margins:{top:80,bottom:80,left:120,right:120},children:[new Paragraph({children:[new TextRun({text:t,bold:true,size:22,font:'Arial'})]})]});
+  const vC=(t,w)=>new TableCell({borders,width:{size:w,type:WidthType.DXA},margins:{top:80,bottom:80,left:120,right:120},children:[new Paragraph({children:[new TextRun({text:String(t||'-'),size:22,font:'Arial'})]})]});
+  const r1=(l,v)=>new TableRow({children:[hC(l,2400),vC(v,W-2400)]});
+  const r2=(l1,v1,l2,v2)=>{const w=Math.floor(W/4);return new TableRow({children:[hC(l1,w),vC(v1,w),hC(l2,w),vC(v2,W-w*3)]});};
+  const rv=r.report==='날짜'?(r.reportDate||'미입력'):r.report==='기타'?(r.reportOther||'기타'):(r.report||'-');
+  const tv=r.type==='기타'?(r.typeOther||'기타'):(r.type||'-');
+  const av=r.agent==='기타'?(r.agentOther||'기타'):(r.agent||'-');
+  const iv=r.injury==='기타'?(r.injuryOther||'기타'):(r.injury||'-');
+  const sw=Math.floor(W/3);
+  const doc=new Document({sections:[{properties:{page:{size:{width:11906,height:16838},margin:{top:1080,right:1080,bottom:1080,left:1080}}},children:[
+    new Paragraph({children:[new TextRun({text:'산업안전 사고 조사 기록',bold:true,size:36,font:'Arial',color:'CC4A1A'})],spacing:{after:160}}),
+    new Paragraph({children:[new TextRun({text:`이앤원(주) 여주물류센터   작성일: ${new Date().toLocaleDateString('ko-KR')}`,size:20,font:'Arial',color:'888888'})],spacing:{after:360}}),
+    new Paragraph({children:[new TextRun({text:'■ 기본 정보',bold:true,size:24,font:'Arial'})],spacing:{before:100,after:80}}),
+    new Table({width:{size:W,type:WidthType.DXA},rows:[r2('사고번호',r.accId,'사고일시',r.date),r2('이름',r.name,'영업점',r.site),r2('부서',r.dept,'이마트여부',r.imart),r2('입사일',r.joindate,'근무기간',r.period),r2('사고횟수',r.cnt+'회','사고장소',r.place)]}),
+    new Paragraph({children:[new TextRun({text:'■ 사고 분류',bold:true,size:24,font:'Arial'})],spacing:{before:360,after:80}}),
+    new Table({width:{size:W,type:WidthType.DXA},rows:[r2('사고유형',tv,'기인물·가해물',av),r2('상해분류',iv,'',''),r1('사고내용',r.content)]}),
+    new Paragraph({children:[new TextRun({text:'■ 처리 및 산업재해조사표',bold:true,size:24,font:'Arial'})],spacing:{before:360,after:80}}),
+    new Table({width:{size:W,type:WidthType.DXA},rows:[r2('처리유형',r.proc,'산업재해조사표',rv),r2('조치완료일',r.doneDate,'조치경과',r.doneNote),r2('휴업일수',r.offdays+'일','요양급여신청서',r.meddate)]}),
+    new Paragraph({children:[new TextRun({text:'■ 비용 및 비고',bold:true,size:24,font:'Arial'})],spacing:{before:360,after:80}}),
+    new Table({width:{size:W,type:WidthType.DXA},rows:[r2('공상비용',(r.cost1||0).toLocaleString()+'원','기타비용',(r.cost2||0).toLocaleString()+'원'),r1('비고',r.note)]}),
+    new Paragraph({spacing:{before:560}}),
+    new Table({width:{size:W,type:WidthType.DXA},rows:[
+      new TableRow({children:[new TableCell({borders,shading:{fill:'FFF4EF',type:ShadingType.CLEAR},width:{size:sw,type:WidthType.DXA},margins:{top:80,bottom:80,left:120,right:120},children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:'작성',bold:true,size:22,font:'Arial'})]})]}),new TableCell({borders,shading:{fill:'FFF4EF',type:ShadingType.CLEAR},width:{size:sw,type:WidthType.DXA},margins:{top:80,bottom:80,left:120,right:120},children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:'검토',bold:true,size:22,font:'Arial'})]})]}),new TableCell({borders,shading:{fill:'FFF4EF',type:ShadingType.CLEAR},width:{size:W-sw*2,type:WidthType.DXA},margins:{top:80,bottom:80,left:120,right:120},children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:'승인',bold:true,size:22,font:'Arial'})]})]})]})  ,
+      new TableRow({children:[new TableCell({borders,width:{size:sw,type:WidthType.DXA},margins:{top:560,bottom:560},children:[new Paragraph({})]}),new TableCell({borders,width:{size:sw,type:WidthType.DXA},margins:{top:560,bottom:560},children:[new Paragraph({})]}),new TableCell({borders,width:{size:W-sw*2,type:WidthType.DXA},margins:{top:560,bottom:560},children:[new Paragraph({})]})]})
+    ]})
+  ]}]});
+  const buf=await Packer.toBuffer(doc);
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'}));a.download=`사고기록_${r.accId}_${r.date}.docx`;a.click();URL.revokeObjectURL(a.href);
+}
+
+// ══ 백업 ══════════════════════════════════════════════
+async function exportBackup(){const all=await dbAll();const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(all,null,2)],{type:'application/json'}));a.download=`사고DB_백업_${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(a.href);toast(`${all.length}건 백업 완료`);}
+
+// ══ 임포트 ════════════════════════════════════════════
+async function previewJson(){
+  const file=document.getElementById('json-file').files[0];if(!file){toast('파일을 선택하세요','err');return;}
+  try{
+    parsedJsonData=JSON.parse(await file.text());
+    if(!Array.isArray(parsedJsonData)||!parsedJsonData.length){toast('올바른 파일이 아닙니다','err');return;}
+    document.getElementById('import-count').textContent=parsedJsonData.length;
+    document.getElementById('import-json-btn').style.display='inline-flex';
+    document.getElementById('json-preview').style.display='block';
+    const heads=['사고번호','날짜','이름','영업점','사고유형','기인물','처리','조사표'];
+    document.getElementById('json-preview-table').innerHTML=`<table style="width:100%;border-collapse:collapse;min-width:600px"><thead><tr>${heads.map(h=>`<th style="padding:6px 10px;background:#fafaf8;border-bottom:1px solid #e8e8e3;font-size:11px;font-weight:700;color:#999">${h}</th>`).join('')}</tr></thead><tbody>${parsedJsonData.slice(0,10).map(r=>`<tr>${[r.accId,r.date,r.name,r.site,r.type,r.agent,r.proc,r.report].map(v=>`<td style="padding:6px 10px;border-bottom:1px solid #f0f0ec;font-size:12px">${v||''}</td>`).join('')}</tr>`).join('')}</tbody></table><p style="padding:8px 10px;font-size:11px;color:#999">처음 10건 / 전체 ${parsedJsonData.length}건</p>`;
+    toast(`${parsedJsonData.length}건 확인 완료`);
+  }catch(e){toast('파일 오류: '+e.message,'err');}
+}
+async function doImport(){
+  if(!parsedJsonData.length){toast('먼저 미리보기를 실행하세요','err');return;}
+  const overwrite=document.getElementById('import-overwrite').checked;
+  const existing=await dbAll();const existMap={};existing.forEach(r=>{existMap[r.accId]=r;});
+  let added=0,updated=0,skipped=0;
+  for(const rec of parsedJsonData){const copy={...rec};if(existMap[copy.accId]){if(overwrite){copy.id=existMap[copy.accId].id;await dbPut(copy);updated++;}else skipped++;}else{delete copy.id;await dbPut(copy);added++;}}
+  document.getElementById('import-result').style.display='block';
+  document.getElementById('import-result-msg').innerHTML=`✅ 임포트 완료 — 신규: <b>${added}건</b> / 업데이트: <b>${updated}건</b> / 건너뜀: <b>${skipped}건</b>`;
+  updateStats();toast(`임포트 완료 — ${added}건 추가`);
+}
+
+// ══ 토스트 ════════════════════════════════════════════
+function toast(msg,type=''){const el=document.getElementById('toast');el.textContent=msg;el.className='toast'+(type?' '+type:'');void el.offsetWidth;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2800);}
+
+// ══ 초기화 ════════════════════════════════════════════
+openDB().then(()=>{renderList();updateStats();});
+</script>
+</body>
+</html>
