@@ -114,6 +114,15 @@ body{font-family:'Jua',sans-serif;display:flex;flex-direction:column;height:100v
 
 #pCanvas{position:fixed;inset:0;z-index:350;pointer-events:none;}
 #bombFlash{position:fixed;inset:0;background:radial-gradient(circle,rgba(255,120,0,.65),transparent 70%);z-index:500;display:none;pointer-events:none;}
+
+/* 리더보드 */
+.lb-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;z-index:500;backdrop-filter:blur(10px);}
+.lb-box{background:rgba(20,30,60,0.95);border:2px solid rgba(100,180,255,0.5);border-radius:24px;padding:24px 20px;width:90%;max-width:320px;max-height:80vh;overflow-y:auto;}
+.lb-title{font-family:'Black Han Sans',sans-serif;font-size:26px;color:#ffe066;text-align:center;margin-bottom:16px;}
+.lb-row{display:flex;align-items:center;padding:8px 6px;border-bottom:1px solid rgba(255,255,255,0.1);font-size:15px;color:#fff;}
+.lb-name{flex:1;margin-left:8px;}
+.lb-score{font-family:'Black Han Sans',sans-serif;color:#4ab8e8;font-size:16px;}
+.lb-close{width:100%;padding:14px;font-family:'Black Han Sans',sans-serif;font-size:18px;background:linear-gradient(135deg,#4ab8e8,#1a6ab1);color:#fff;border:none;border-radius:12px;cursor:pointer;margin-top:14px;}
 </style>
 </head>
 <body>
@@ -143,6 +152,18 @@ body{font-family:'Jua',sans-serif;display:flex;flex-direction:column;height:100v
     ⚔️ AI 대전
   </button>
   <div class="best-txt">🏆 최고: <span id="bestDisp">0</span> 점</div>
+<button class="start-btn" onclick="document.getElementById('lbOv').style.display='flex'"
+  style="background:linear-gradient(135deg,#a855f7,#6366f1);margin-top:0;box-shadow:0 6px 24px rgba(168,85,247,0.4);">
+  🏆 전체 순위 보기
+</button>
+<div id="lbOv" class="lb-overlay" style="display:none;" onclick="if(event.target===this)this.style.display='none'">
+  <div class="lb-box">
+    <div class="lb-title">🏆 전체 순위</div>
+    <div id="lbList"><div style="color:rgba(255,255,255,0.5);text-align:center;padding:10px">로딩 중...</div></div>
+    <button class="lb-close" onclick="document.getElementById('lbOv').style.display='none'">닫기</button>
+  </div>
+</div>
+
 </div>
 
 <!-- GAME -->
@@ -218,7 +239,7 @@ body{font-family:'Jua',sans-serif;display:flex;flex-direction:column;height:100v
   </div>
 </div>
 
-<script>
+<script type="module">
 // ═══════════════════════════════════════════════
 // 아이템 정의
 // ═══════════════════════════════════════════════
@@ -1014,7 +1035,8 @@ function continueGame(){
 function endGame(){
   running=false;clearInterval(dropTimer);stopBGM();
   document.getElementById('sirenBorder').classList.remove('on');
-  const isNew=score>best;if(isNew){best=score;localStorage.setItem('tBest',score);}
+  if(score>0)saveScore(score);
+const isNew=score>best;if(isNew){best=score;localStorage.setItem('tBest',score);}
   document.getElementById('finalSc').textContent=score.toLocaleString();
   document.getElementById('finalLines').textContent='줄 제거: '+lines+'개';
   document.getElementById('finalCombo').textContent='최고 콤보: '+maxCombo+'연속';
@@ -1052,7 +1074,7 @@ function bindBtn(id,fn,repeat=false){
   el.addEventListener('touchcancel',()=>{el.classList.remove('pressed');clearInterval(tmr);});
   el.addEventListener('mousedown',()=>{if(!running||paused)return;fn();if(repeat)tmr=setInterval(fn,100);});
   el.addEventListener('mouseup',()=>clearInterval(tmr));
-}
+}h
 window.addEventListener('DOMContentLoaded',()=>{
   bindBtn('btnL',()=>{if(canP(cur,curX-1,curY)){curX--;drawAll();}},true);
   bindBtn('btnRot',()=>doRotate(),false);
@@ -1073,6 +1095,62 @@ window.addEventListener('DOMContentLoaded',()=>{
 });
 window.addEventListener('resize',()=>{if(running){setupLayout();resizeBG();drawAll();}});
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+
+
+// ═══════════════════════════════════════════════
+// FIREBASE 리더보드
+// ═══════════════════════════════════════════════
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+import { getDatabase, ref, push, query, orderByChild, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDoqYkAdHNiwxx4_qz-LsrwXbZM5Og0i2Y",
+  authDomain: "tetris-leaderboard-26f06.firebaseapp.com",
+  databaseURL: "https://tetris-leaderboard-26f06-default-rtdb.firebaseio.com",
+  projectId: "tetris-leaderboard-26f06",
+  storageBucket: "tetris-leaderboard-26f06.firebasestorage.app",
+  messagingSenderId: "984050959904",
+  appId: "1:984050959904:web:fa7964bc5312179058de45"
+};
+
+const fbApp = initializeApp(firebaseConfig);
+const db = getDatabase(fbApp);
+
+function getNickname() {
+  let nick = localStorage.getItem('blockNick');
+  if (!nick) {
+    nick = prompt('닉네임을 입력하세요 (최초 1회):', '플레이어' + Math.floor(Math.random()*1000));
+    if (!nick || nick.trim() === '') nick = '익명';
+    nick = nick.trim().slice(0, 12);
+    localStorage.setItem('blockNick', nick);
+  }
+  return nick;
+}
+
+function saveScore(scoreVal) {
+  const nick = getNickname();
+  const scoresRef = ref(db, 'scores');
+  push(scoresRef, { name: nick, score: scoreVal, time: Date.now() });
+}
+
+function loadLeaderboard() {
+  const scoresRef = query(ref(db, 'scores'), orderByChild('score'), limitToLast(10));
+  onValue(scoresRef, (snapshot) => {
+    const entries = [];
+    snapshot.forEach(child => entries.push(child.val()));
+    entries.sort((a, b) => b.score - a.score);
+    const el = document.getElementById('lbList');
+    if (!el) return;
+    el.innerHTML = entries.map((e, i) => {
+      const medals = ['🥇','🥈','🥉'];
+      const medal = medals[i] || (i+1)+'.';
+      return '<div class="lb-row">'+medal+' <span class="lb-name">'+e.name+'</span><span class="lb-score">'+e.score.toLocaleString()+'</span></div>';
+    }).join('') || '<div style="color:rgba(255,255,255,0.5);text-align:center;padding:10px">아직 기록이 없어요!</div>';
+  });
+}
+
+window.addEventListener('DOMContentLoaded', () => { loadLeaderboard(); });
+
 </script>
 <div style="position:fixed;bottom:3px;right:8px;font-size:9px;color:rgba(255,255,255,0.18);letter-spacing:1px;z-index:1;pointer-events:none;font-family:Arial,sans-serif;">
   Made by Lee Hyunsoo with Claude | Block Game
