@@ -1073,8 +1073,8 @@ function bindBtn(id,fn,repeat=false){
   el.addEventListener('touchend',e=>{e.preventDefault();el.classList.remove('pressed');clearInterval(tmr);},{passive:false});
   el.addEventListener('touchcancel',()=>{el.classList.remove('pressed');clearInterval(tmr);});
   el.addEventListener('mousedown',()=>{if(!running||paused)return;fn();if(repeat)tmr=setInterval(fn,100);});
-  el.addEventListener('mouseup',()=>clearInterval(tmr));
-}h
+  el.addEventListener('mouseup',()=>clearInterval(tmr))
+}
 window.addEventListener('DOMContentLoaded',()=>{
   bindBtn('btnL',()=>{if(canP(cur,curX-1,curY)){curX--;drawAll();}},true);
   bindBtn('btnRot',()=>doRotate(),false);
