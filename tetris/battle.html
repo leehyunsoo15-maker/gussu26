@@ -91,11 +91,35 @@ body{font-family:'Jua',sans-serif;background:linear-gradient(160deg,#0f0f2e,#1a1
 .ov-btn.sec{background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.2);color:#fff;}
 .stat-row{display:flex;justify-content:space-between;font-size:13px;color:rgba(255,255,255,0.75);margin:4px 0;}
 .stat-row span{color:#ffd700;font-family:'Black Han Sans',sans-serif;}
+
+/* 몬스터 캐릭터 */
+#monsterWrap{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:36px;}
+#monsterFace{font-size:32px;line-height:1;transition:transform .15s;display:block;text-align:center;}
+#monsterFace.shake{animation:mShake .3s ease;}
+@keyframes mShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+#monsterFace.bounce{animation:mBounce .4s ease;}
+@keyframes mBounce{0%,100%{transform:scale(1)}50%{transform:scale(1.35)}}
+
+/* AI 게이지 */
+#aiGaugeWrap{display:flex;flex-direction:column;align-items:center;gap:1px;width:28px;}
+.gauge-label{font-size:8px;color:rgba(255,255,255,0.5);letter-spacing:.5px;}
+#aiGaugeBar{width:12px;background:rgba(255,255,255,0.1);border-radius:6px;overflow:hidden;border:1px solid rgba(255,100,68,0.3);height:60px;display:flex;flex-direction:column-reverse;}
+#aiGaugeFill{width:100%;background:linear-gradient(180deg,#ff4444,#ff8844);border-radius:6px;transition:height .3s ease;}
+#aiGaugeText{font-size:8px;color:#ff6644;font-family:'Black Han Sans',sans-serif;}
+
+/* 시간 공격 게이지 */
+#timeGaugeWrap{position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(255,255,255,0.1);}
+#timeGaugeFill{height:100%;background:linear-gradient(90deg,#ff4444,#ff8844);transition:width .1s linear;}
+
+/* 공격 예고 */
+#warningMsg{position:fixed;top:35%;left:50%;transform:translate(-50%,-50%);font-family:'Black Han Sans',sans-serif;font-size:28px;color:#ff4444;text-shadow:0 0 20px rgba(255,0,0,0.8);z-index:250;display:none;pointer-events:none;animation:warnPulse .5s ease infinite alternate;}
+@keyframes warnPulse{from{opacity:0.6;transform:translate(-50%,-50%) scale(0.95)}to{opacity:1;transform:translate(-50%,-50%) scale(1.05)}}
 </style>
 </head>
 <body>
 <canvas id="starCanvas"></canvas>
 <canvas id="pCanvas2"></canvas>
+<div id="warningMsg">⚠️ 공격 준비!</div>
 <div id="effectMsg"></div>
 <div id="toast2"></div>
 
@@ -104,9 +128,9 @@ body{font-family:'Jua',sans-serif;background:linear-gradient(160deg,#0f0f2e,#1a1
   <h1>블록게임</h1>
   <div class="vs-badge">⚔️ AI 대전 모드 · 2분 제한</div>
   <div class="diff-grid">
-    <button class="diff-btn sel" data-diff="0"><span class="de">🐣</span><span class="dn">쉬움</span><span class="dd">초보자</span></button>
-    <button class="diff-btn" data-diff="1"><span class="de">😊</span><span class="dn">보통</span><span class="dd">중간 실력</span></button>
-    <button class="diff-btn" data-diff="2"><span class="de">😤</span><span class="dn">어려움</span><span class="dd">잘하는 사람</span></button>
+    <button class="diff-btn sel" data-diff="0"><span class="de">🐣</span><span class="dn">쉬움</span><span class="dd">15초 공격</span></button>
+    <button class="diff-btn" data-diff="1"><span class="de">😤</span><span class="dn">보통</span><span class="dd">10초 공격</span></button>
+    <button class="diff-btn" data-diff="2"><span class="de">🔥</span><span class="dn">어려움</span><span class="dd">7초 공격</span></button>
   </div>
   <button class="start-btn" id="startBattleBtn">⚔️ 대전 시작</button>
   <button class="back-btn" onclick="location.href='index.html'">← 블록게임으로</button>
@@ -132,6 +156,7 @@ body{font-family:'Jua',sans-serif;background:linear-gradient(160deg,#0f0f2e,#1a1
       <div class="ps-shield" id="aShieldDisp">🛡️0</div>
     </div>
     <div id="pauseBtn2">⏸</div>
+  <div id="timeGaugeWrap"><div id="timeGaugeFill" style="width:0%"></div></div>
   </div>
 
   <div id="boardArea">
@@ -141,6 +166,14 @@ body{font-family:'Jua',sans-serif;background:linear-gradient(160deg,#0f0f2e,#1a1
     </div>
     <div id="attackZone">
       <div class="atk-arrow" id="atkR">➡️</div>
+      <div id="monsterWrap">
+        <span id="monsterFace">😴</span>
+        <div id="aiGaugeWrap">
+          <div class="gauge-label">분노</div>
+          <div id="aiGaugeBar"><div id="aiGaugeFill" style="height:0%"></div></div>
+          <div id="aiGaugeText">0%</div>
+        </div>
+      </div>
       <div id="pendingBar"></div>
       <div class="atk-arrow" id="atkL">⬅️</div>
     </div>
@@ -196,6 +229,102 @@ body{font-family:'Jua',sans-serif;background:linear-gradient(160deg,#0f0f2e,#1a1
   let t=0;function draw(){t++;x.clearRect(0,0,c.width,c.height);stars.forEach(s=>{const tw=Math.sin(t*.03+s.p)*.5+.5;x.save();x.globalAlpha=s.a*(0.4+tw*.6);x.fillStyle='#fff';x.beginPath();x.arc(s.x,s.y,s.r*(0.8+tw*.4),0,Math.PI*2);x.fill();x.restore();});requestAnimationFrame(draw);}
   draw();
 })();
+
+
+// ══════════════════════════════════
+// 쿠키런 방식: 몬스터 + 게이지 시스템
+// ══════════════════════════════════
+let aiGauge=0;          // 0~100
+let timeAttackTimer=null;
+let timeAttackInterval=15; // 쉬움:15초, 보통:10초, 어려움:7초
+let timeAttackLeft=timeAttackInterval;
+let timeGaugeFillWidth=0;
+const MONSTER_FACES={idle:'😴',ready:'😠',attack:'😈',shocked:'😱',angry:'🤬',win:'😎'};
+
+function setMonsterFace(type,shake=false){
+  const el=document.getElementById('monsterFace');
+  el.textContent=MONSTER_FACES[type]||type;
+  el.className='';
+  if(shake){el.classList.add('shake');}
+  else if(type==='attack'){el.classList.add('bounce');}
+}
+
+function updAiGauge(delta){
+  aiGauge=Math.max(0,Math.min(100,aiGauge+delta));
+  const pct=Math.round(aiGauge);
+  document.getElementById('aiGaugeFill').style.height=pct+'%';
+  document.getElementById('aiGaugeText').textContent=pct+'%';
+  // 표정 변화
+  if(aiGauge>=100){
+    triggerMonsterAttack();
+  } else if(aiGauge>=70){
+    setMonsterFace('angry');
+  } else if(aiGauge>=40){
+    setMonsterFace('ready');
+  } else {
+    setMonsterFace('idle');
+  }
+}
+
+function triggerMonsterAttack(){
+  // 게이지 MAX → 강력 공격
+  const diffLines=[2,3,4][difficulty];
+  setMonsterFace('attack');
+  showWarning('💥 몬스터 강습!');
+  setTimeout(()=>{
+    if(!gameRunning)return;
+    attackTarget('player',diffLines,false);
+    aiGauge=0;
+    updAiGauge(0);
+    sfx2('attack');
+  },600);
+}
+
+function triggerTimeAttack(){
+  // 시간 공격 (약한 공격)
+  if(!gameRunning||gamePaused)return;
+  const diffLines=[1,1,2][difficulty];
+  setMonsterFace('attack');
+  showWarning('⏰ 시간 공격!');
+  setTimeout(()=>{
+    if(!gameRunning)return;
+    attackTarget('player',diffLines,false);
+    setMonsterFace(aiGauge>=70?'angry':aiGauge>=40?'ready':'idle');
+  },500);
+}
+
+function showWarning(msg){
+  const el=document.getElementById('warningMsg');
+  el.textContent=msg;el.style.display='block';
+  clearTimeout(el._t);
+  el._t=setTimeout(()=>el.style.display='none',1200);
+}
+
+function startTimeAttack(){
+  clearInterval(timeAttackTimer);
+  timeAttackLeft=timeAttackInterval;
+  timeAttackTimer=setInterval(()=>{
+    if(!gameRunning||gamePaused)return;
+    timeAttackLeft--;
+    // 게이지 시각화
+    const pct=((timeAttackInterval-timeAttackLeft)/timeAttackInterval)*100;
+    document.getElementById('timeGaugeFill').style.width=pct+'%';
+    if(timeAttackLeft<=3){
+      document.getElementById('timeGaugeFill').style.background='linear-gradient(90deg,#ff0000,#ff4444)';
+      setMonsterFace('ready');
+    }
+    if(timeAttackLeft<=0){
+      triggerTimeAttack();
+      timeAttackLeft=timeAttackInterval;
+      document.getElementById('timeGaugeFill').style.background='linear-gradient(90deg,#ff4444,#ff8844)';
+    }
+  },1000);
+}
+
+function stopTimeAttack(){
+  clearInterval(timeAttackTimer);
+  document.getElementById('timeGaugeFill').style.width='0%';
+}
 
 // ══════════════════════════════════
 // 파티클
@@ -479,6 +608,10 @@ function commitClearP(n){
   const atkLines=Math.floor(ATK_TABLE[Math.min(n,4)]*comboMult*crisisMult);
   if(atkLines>0)attackTarget('ai',atkLines,false);
   if(pCombo>=2){sfx2('combo');showComboMsg(pCombo,comboMult);}
+  // 반격 시 AI 게이지 감소 + 몬스터 shocked
+  const gaugeDmg=[0,10,20,30,50][Math.min(n,4)];
+  updAiGauge(-gaugeDmg);
+  if(gaugeDmg>=20){setMonsterFace('shocked',true);}
   updUI2();afterPlaceP();
 }
 function afterPlaceP(){spawnPlayer();drawAll2();}
@@ -531,8 +664,11 @@ function findClearsA(){
 }
 function commitClearA(n){
   aLines+=n;aScore+=n*50;
+  // AI 클리어 시 게이지 상승 + 공격
+  const gaugeUp=[0,15,25,40,60][Math.min(n,4)];
+  updAiGauge(gaugeUp);
   const atkLines=ATK_TABLE[Math.min(n,4)];
-  if(atkLines>0)attackTarget('player',atkLines,false);
+  if(atkLines>0&&aiGauge<100)attackTarget('player',atkLines,false);
   updUI2();afterPlaceA();
 }
 function afterPlaceA(){spawnAI();drawAll2();}
@@ -720,19 +856,23 @@ function startBattle(){
   requestAnimationFrame(()=>{
     setupCanvases();spawnPlayer();spawnAI();updUI2();updTimer();drawAll2();
     startDropP();startDropA();startTimer();initAC();startBGM2(false);
+    aiGauge=0;updAiGauge(0);setMonsterFace('idle');
+    timeAttackInterval=[15,10,7][difficulty];
+    startTimeAttack();
   });
 }
 function endBattle(reason){
   gameRunning=false;
   clearInterval(pDropTimer);clearInterval(aDropTimer);clearInterval(timerInterval);
   clearTimeout(aThinkTimer);clearTimeout(aiMoveTimer);
-  stopBGM2();
+  stopBGM2();stopTimeAttack();
   let isWin=false;
   if(reason==='lose')isWin=false;
   else if(reason==='win')isWin=true;
   else{ // 시간 종료
     isWin=pLines>aLines||(pLines===aLines&&pScore>aScore);
   }
+  setMonsterFace(isWin?'shocked':'win');
   if(isWin){sfx2('win');spawnConfetti2();}else sfx2('lose');
   document.getElementById('resultTitle').textContent=isWin?'🏆 승리!':'💀 패배...';
   document.getElementById('resultEmoji').textContent=isWin?'🎉':'😢';
