@@ -43,11 +43,11 @@ body{font-family:'Jua',sans-serif;background:linear-gradient(160deg,#0f0f2e,#1a1
 #pauseBtn2{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:34px;height:34px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:10px;font-size:15px;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;}
 
 /* 보드 */
-#boardArea{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;min-height:0;padding:3px;position:relative;z-index:3;}
+#boardArea{flex:1;display:flex;align-items:flex-start;justify-content:center;gap:4px;min-height:0;padding:3px;position:relative;z-index:3;}
 .board-wrap{display:flex;flex-direction:column;align-items:center;gap:2px;}
 .board-label{font-size:10px;color:rgba(255,255,255,0.55);letter-spacing:1px;}
-#playerCanvas{border:2px solid rgba(68,136,255,0.7);box-shadow:0 0 16px rgba(68,136,255,0.2);border-radius:7px;display:block;image-rendering:pixelated;}
-#aiCanvas{border:2px solid rgba(255,100,68,0.7);box-shadow:0 0 16px rgba(255,100,68,0.2);border-radius:7px;display:block;image-rendering:pixelated;}
+#playerCanvas{border:3px solid rgba(68,136,255,0.9);box-shadow:0 0 24px rgba(68,136,255,0.4);border-radius:8px;display:block;image-rendering:pixelated;}
+#aiCanvas{border:2px solid rgba(255,100,68,0.6);box-shadow:0 0 10px rgba(255,100,68,0.2);border-radius:7px;display:block;image-rendering:pixelated;}
 
 /* 공격존 */
 #attackZone{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:36px;}
@@ -59,10 +59,10 @@ body{font-family:'Jua',sans-serif;background:linear-gradient(160deg,#0f0f2e,#1a1
 
 /* 컨트롤 */
 #controls2{flex-shrink:0;display:flex;align-items:center;justify-content:center;gap:8px;padding:7px 8px calc(12px + env(safe-area-inset-bottom,0px));background:rgba(0,0,0,0.25);border-top:1px solid rgba(255,255,255,0.1);position:relative;z-index:5;}
-.cbtn2{flex:1;max-width:100px;height:76px;border-radius:20px;color:#fff;font-size:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;touch-action:none;transition:all .08s;box-shadow:0 3px 10px rgba(0,0,0,0.3);}
+.cbtn2{flex:1;max-width:110px;height:86px;border-radius:24px;color:#fff;font-size:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;touch-action:none;transition:all .08s;box-shadow:0 4px 12px rgba(0,0,0,0.2);}
 .cbtn2.lr{background:rgba(68,136,255,0.25);border:2.5px solid rgba(68,136,255,0.5);}
-.cbtn2.rot{background:rgba(255,200,30,0.3);border:2.5px solid rgba(255,220,60,0.7);font-size:32px;}
-.cbtn2.dn{background:rgba(30,200,255,0.25);border:2.5px solid rgba(60,220,255,0.6);font-size:32px;}
+.cbtn2.rot{background:rgba(255,200,30,0.4);border:3px solid rgba(255,220,60,0.8);font-size:36px;}
+.cbtn2.dn{background:rgba(30,180,255,0.35);border:3px solid rgba(60,200,255,0.7);font-size:36px;}
 .cbtn2:active,.cbtn2.pressed{transform:scale(.88);}
 
 /* 이펙트 */
@@ -160,7 +160,7 @@ body{font-family:'Jua',sans-serif;background:linear-gradient(160deg,#0f0f2e,#1a1
   </div>
 
   <div id="boardArea">
-    <div class="board-wrap">
+    <div class="board-wrap" style="flex:7;">
       <div class="board-label">👤 나</div>
       <canvas id="playerCanvas"></canvas>
     </div>
@@ -177,7 +177,7 @@ body{font-family:'Jua',sans-serif;background:linear-gradient(160deg,#0f0f2e,#1a1
       <div id="pendingBar"></div>
       <div class="atk-arrow" id="atkL">⬅️</div>
     </div>
-    <div class="board-wrap">
+    <div class="board-wrap" style="flex:3;">
       <div class="board-label" id="aiLabel">🤖 AI</div>
       <canvas id="aiCanvas"></canvas>
     </div>
@@ -376,7 +376,7 @@ function stopBGM2(){bgm2.on=false;clearTimeout(bgm2.tmr);if(AC&&mG){try{mG.gain.
 // 상수
 // ══════════════════════════════════
 const COLS=10,ROWS=20;
-let CELL=22;
+let CELL=22,P_CELL=22,A_CELL=14;
 const COLORS={I:'#00c8ff',O:'#ffd700',T:'#cc44ff',S:'#44ee88',Z:'#ff4466',J:'#4488ff',L:'#ff8844'};
 const SHAPES={
   I:[[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]],
@@ -414,14 +414,20 @@ const aCanvas=document.getElementById('aiCanvas');
 const aCtx=aCanvas.getContext('2d');
 
 function setupCanvases(){
-  const topH=document.getElementById('statusBar').getBoundingClientRect().height||50;
-  const ctrlH=document.getElementById('controls2').getBoundingClientRect().height||88;
-  const availH=window.innerHeight-topH-ctrlH-14;
-  const availW=(window.innerWidth-50)/2;
-  CELL=Math.floor(Math.min(availH/ROWS,availW/COLS));
-  CELL=Math.max(CELL,18);
-  pCanvas.width=aCanvas.width=CELL*COLS;
-  pCanvas.height=aCanvas.height=CELL*ROWS;
+const topH=document.getElementById('statusBar').getBoundingClientRect().height||50;
+const ctrlH=document.getElementById('controls2').getBoundingClientRect().height||88;
+const availH=window.innerHeight-topH-ctrlH-14;
+const totalW=window.innerWidth-50;
+// 7:3 비율 - 플레이어 70%, AI 30%
+const pW=Math.floor(totalW*0.68);
+const aW=Math.floor(totalW*0.28);
+P_CELL=Math.floor(Math.min(availH/ROWS,pW/COLS));
+P_CELL=Math.max(P_CELL,20);
+A_CELL=Math.floor(Math.min(availH/ROWS,aW/COLS));
+A_CELL=Math.max(A_CELL,12);
+CELL=P_CELL;
+pCanvas.width=P_CELL*COLS;pCanvas.height=P_CELL*ROWS;
+aCanvas.width=A_CELL*COLS;aCanvas.height=A_CELL*ROWS;
 }
 
 // ══════════════════════════════════
@@ -589,7 +595,7 @@ function findClearsP(){
   if(rows.length>0){
     startClearAnimP(rows,()=>{
       [...rows].sort((a,b)=>b-a).forEach(r=>{pBoard.splice(r,1);pBoard.unshift(Array(COLS).fill(null));});
-      rows.forEach(r=>spawnLineParts(pCanvas,r,CELL,COLS));
+      rows.forEach(r=>spawnLineParts(pCanvas,r,P_CELL,COLS));
       commitClearP(rows.length);
     });
   }else{pCombo=0;updUI2();afterPlaceP();}
@@ -763,12 +769,13 @@ function dAny(c2,type,x,y,sz,alpha=1){
   }
   else dCell(c2,x,y,COLORS[type]||'#888',sz,alpha);
 }
-function drawBoard(c2,canvas,board,cur,curX,curY,curType,clearAnim,darkEnd,freezeEnd){
+function drawBoard(c2,canvas,board,cur,curX,curY,curType,clearAnim,darkEnd,freezeEnd,cellSize){
+const sz=cellSize||sz;
   c2.clearRect(0,0,canvas.width,canvas.height);
   c2.fillStyle='rgba(255,255,255,0.06)';c2.beginPath();c2.roundRect(0,0,canvas.width,canvas.height,6);c2.fill();
   c2.strokeStyle='rgba(255,255,255,0.05)';c2.lineWidth=.5;
-  for(let r=0;r<ROWS;r++){c2.beginPath();c2.moveTo(0,r*CELL);c2.lineTo(canvas.width,r*CELL);c2.stroke();}
-  for(let c=0;c<COLS;c++){c2.beginPath();c2.moveTo(c*CELL,0);c2.lineTo(c*CELL,canvas.height);c2.stroke();}
+  for(let r=0;r<ROWS;r++){c2.beginPath();c2.moveTo(0,r*sz);c2.lineTo(canvas.width,r*sz);c2.stroke();}
+  for(let c=0;c<COLS;c++){c2.beginPath();c2.moveTo(c*sz,0);c2.lineTo(c*sz,canvas.height);c2.stroke();}
 
   // 고스트
   if(cur&&Date.now()>=darkEnd){
@@ -776,7 +783,7 @@ function drawBoard(c2,canvas,board,cur,curX,curY,curType,clearAnim,darkEnd,freez
     for(let r=0;r<cur.length;r++)for(let c=0;c<cur[r].length;c++){
       if(!cur[r][c])continue;const nr=gy+r,nc=curX+c;
       if(nr<0||nr>=ROWS||nc<0||nc>=COLS)continue;
-      c2.save();c2.globalAlpha=.15;c2.fillStyle='#fff';c2.beginPath();c2.roundRect(nc*CELL+1,nr*CELL+1,CELL-2,CELL-2,3);c2.fill();c2.restore();
+      c2.save();c2.globalAlpha=.15;c2.fillStyle='#fff';c2.beginPath();c2.roundRect(nc*sz+1,nr*sz+1,sz-2,sz-2,3);c2.fill();c2.restore();
     }
   }
 
@@ -784,17 +791,17 @@ function drawBoard(c2,canvas,board,cur,curX,curY,curType,clearAnim,darkEnd,freez
   for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
     const t=board[r][c];if(!t)continue;
     if(clearAnim&&clearAnim.rows.includes(r)){
-      const p=clearAnim.progress,sX=p*canvas.width,cx2=c*CELL;
-      if(cx2<sX){const fr=Math.min(1,(sX-cx2)/CELL);dAny(c2,t,cx2,r*CELL,CELL,1-fr);c2.save();c2.globalAlpha=fr*.8;c2.fillStyle='rgba(255,255,255,.9)';c2.fillRect(cx2,r*CELL,CELL,CELL);c2.restore();continue;}
+      const p=clearAnim.progress,sX=p*canvas.width,cx2=c*sz;
+      if(cx2<sX){const fr=Math.min(1,(sX-cx2)/sz);dAny(c2,t,cx2,r*sz,sz,1-fr);c2.save();c2.globalAlpha=fr*.8;c2.fillStyle='rgba(255,255,255,.9)';c2.fillRect(cx2,r*sz,sz,sz);c2.restore();continue;}
     }
-    dAny(c2,t,c*CELL,r*CELL,CELL);
+    dAny(c2,t,c*sz,r*sz,sz);
   }
 
   // 현재 피스 (암흑이면 숨김)
   if(cur&&Date.now()>=darkEnd){
     for(let r=0;r<cur.length;r++)for(let c=0;c<cur[r].length;c++){
       if(!cur[r][c])continue;const nr=curY+r,nc=curX+c;if(nr<0)continue;
-      dAny(c2,curType,nc*CELL,nr*CELL,CELL);
+      dAny(c2,curType,nc*sz,nr*sz,sz);
     }
   }
 
@@ -805,8 +812,8 @@ function drawBoard(c2,canvas,board,cur,curX,curY,curType,clearAnim,darkEnd,freez
 }
 function drawAll2(){
   if(!gameRunning)return;
-  drawBoard(pCtx,pCanvas,pBoard,pCur,pCurX,pCurY,pType,pClearAnim,pDarkEnd,pFreezeEnd);
-  drawBoard(aCtx,aCanvas,aBoard,aCur,aCurX,aCurY,aType,aClearAnim,aDarkEnd,aFreezeEnd);
+  drawBoard(pCtx,pCanvas,pBoard,pCur,pCurX,pCurY,pType,pClearAnim,pDarkEnd,pFreezeEnd,P_CELL);
+  drawBoard(aCtx,aCanvas,aBoard,aCur,aCurX,aCurY,aType,aClearAnim,aDarkEnd,aFreezeEnd,A_CELL);
 }
 
 // ══════════════════════════════════
