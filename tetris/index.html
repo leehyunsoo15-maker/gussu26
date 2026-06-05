@@ -269,6 +269,7 @@ body{font-family:'Jua',sans-serif;display:flex;flex-direction:column;height:100v
     <h2>⏸ 일시정지</h2>
     <p style="margin:14px 0 20px;color:rgba(255,255,255,.9);font-size:18px;">잠깐 쉬어가요 😊</p>
     <button class="ov-btn pri" id="resumeBtn">▶ 계속하기</button>
+    <button class="ov-btn sec" id="pauseHomeBtn">🏠 나가기</button>
   </div>
 </div>
 <div class="overlay" id="overOv">
@@ -295,11 +296,11 @@ const ITEMS = {
   SLOW:   {emoji:'⭐',name:'슬로우',    desc:'5초 속도 느려짐!',   color:'#44cc44',bgColor:'#88ee88',shape:[[1,1],[1,1]],  good:true},
   DIAMOND:{emoji:'💎',name:'다이아몬드',desc:'다음 줄 2배 점수!',  color:'#00b4d8',bgColor:'#80d8ff',shape:[[1]],           good:true},
   THUNDER:{emoji:'🌩️',name:'천둥',     desc:'바닥 1줄 제거!',    color:'#8844ff',bgColor:'#cc88ff',shape:[[1,1,1,1]],     good:true},
-  STOP:   {emoji:'⏱️',name:'시간정지', desc:'5초간 낙하 정지!',   color:'#0088cc',bgColor:'#44bbff',shape:[[0,1,0],[1,1,1],[0,1,0]],good:true},
+  STOP:   {emoji:'⏱️',name:'시간정지', desc:'5초간 낙하 정지!',   color:'#0088cc',bgColor:'#44bbff',shape:[[1,1],[1,1]],good:true},
   PERFECT:{emoji:'🎯',name:'완벽블록', desc:'다음 블록 I자!',     color:'#ff8800',bgColor:'#ffcc44',shape:[[1,1],[1,1]],   good:true},
   // 👎 나쁜 아이템
   FREEZE: {emoji:'❄️',name:'얼음',     desc:'5초 회전 불가!',    color:'#0066cc',bgColor:'#88ccff',shape:[[1,1,1],[1,1,1]],good:false},
-  FIRE:   {emoji:'🔥',name:'불꽃',     desc:'5초 속도 30% 증가!', color:'#cc4400',bgColor:'#ff8844',shape:[[0,1,0],[1,1,1],[0,1,0]],good:false},
+  FIRE:   {emoji:'🔥',name:'불꽃',     desc:'5초 속도 30% 증가!', color:'#cc4400',bgColor:'#ff8844',shape:[[1,1,1]],good:false},
   SKULL:  {emoji:'💀',name:'해골',     desc:'방해줄 2개 추가!',   color:'#444444',bgColor:'#888888',shape:[[1,1],[1,1]],   good:false},
   CHAOS:  {emoji:'🌀',name:'혼돈',     desc:'다음 블록 랜덤 회전!',color:'#884488',bgColor:'#cc88cc',shape:[[1,1,1]],     good:false},
 };
@@ -673,11 +674,8 @@ let diamondActive=false; // 다이아몬드 다음 줄 3배
 // 피스 생성
 // ═══════════════════════════════════════════════
 function randType(){
-  const cfg=LCFG[Math.min(lv,MAX_LV)],r=Math.random();
-  if(r<cfg.itemChance){
-    const idx=Math.floor(Math.random()*ALL_ITEM_TYPES.length);
-    return ALL_ITEM_TYPES[idx];
-  }
+  const itemType=getItemType(lv);
+  if(itemType)return itemType;
   const t=Object.keys(SHAPES);return t[Math.floor(Math.random()*t.length)];
 }
 function getMat(type){
@@ -1205,6 +1203,7 @@ window.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('homeBtn').addEventListener('click',()=>{document.getElementById('overOv').classList.remove('on');running=false;clearInterval(dropTimer);stopBGM();if(bgRAF)cancelAnimationFrame(bgRAF);document.getElementById('sirenBorder').classList.remove('on');showScreen('startScreen');});
   document.getElementById('pauseBtn').addEventListener('click',togglePause);
   document.getElementById('resumeBtn').addEventListener('click',togglePause);
+  document.getElementById('pauseHomeBtn').addEventListener('click',()=>{document.getElementById('pauseOv').classList.remove('on');running=false;clearInterval(dropTimer);stopBGM();if(bgRAF)cancelAnimationFrame(bgRAF);document.getElementById('sirenBorder').classList.remove('on');showScreen('startScreen');});
   document.getElementById('bestDisp').textContent=best.toLocaleString();
   initStartBG();
 });
