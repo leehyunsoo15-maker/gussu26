@@ -141,6 +141,8 @@ body{font-family:'Jua',sans-serif;display:flex;flex-direction:column;height:100v
 .lb-score{font-family:'Black Han Sans',sans-serif;color:#4ab8e8;font-size:16px;}
 .lb-close{width:100%;padding:14px;font-family:'Black Han Sans',sans-serif;font-size:18px;background:linear-gradient(135deg,#4ab8e8,#1a6ab1);color:#fff;border:none;border-radius:12px;cursor:pointer;margin-top:14px;}
 </style>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 </head>
 <body>
 <canvas id="pCanvas"></canvas>
@@ -283,7 +285,7 @@ body{font-family:'Jua',sans-serif;display:flex;flex-direction:column;height:100v
   </div>
 </div>
 
-<script type="module">
+<script>
 // ═══════════════════════════════════════════════
 // 아이템 정의
 // ═══════════════════════════════════════════════
@@ -1213,8 +1215,7 @@ if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(
 // ═══════════════════════════════════════════════
 // FIREBASE 리더보드
 // ═══════════════════════════════════════════════
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-import { getDatabase, ref, push, query, orderByChild, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
+// Firebase SDK는 head에서 로드
 
 const firebaseConfig = {
   apiKey: "AIzaSyDoqYkAdHNiwxx4_qz-LsrwXbZM5Og0i2Y",
@@ -1226,8 +1227,8 @@ const firebaseConfig = {
   appId: "1:984050959904:web:fa7964bc5312179058de45"
 };
 
-const fbApp = initializeApp(firebaseConfig);
-const db = getDatabase(fbApp);
+const fbApp = firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
 function getNickname() {
   let nick = localStorage.getItem('blockNick');
@@ -1242,13 +1243,13 @@ function getNickname() {
 
 function saveScore(scoreVal) {
   const nick = getNickname();
-  const scoresRef = ref(db, 'scores');
-  push(scoresRef, { name: nick, score: scoreVal, time: Date.now() });
+  const scoresRef = db.ref('scores');
+  scoresRef.push({ name: nick, score: scoreVal, time: Date.now() });
 }
 
 function loadLeaderboard() {
-  const scoresRef = query(ref(db, 'scores'), orderByChild('score'), limitToLast(10));
-  onValue(scoresRef, (snapshot) => {
+  const scoresRef = db.ref('scores').orderByChild('score').limitToLast(10);
+  scoresRef.on('value', (snapshot) => {
     const entries = [];
     snapshot.forEach(child => entries.push(child.val()));
     entries.sort((a, b) => b.score - a.score);
