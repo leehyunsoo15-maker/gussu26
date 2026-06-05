@@ -298,11 +298,6 @@ const ITEMS = {
   THUNDER:{emoji:'🌩️',name:'천둥',     desc:'바닥 1줄 제거!',    color:'#8844ff',bgColor:'#cc88ff',shape:[[1,1,1,1]],     good:true},
   STOP:   {emoji:'⏱️',name:'시간정지', desc:'5초간 낙하 정지!',   color:'#0088cc',bgColor:'#44bbff',shape:[[1,1],[1,1]],good:true},
   PERFECT:{emoji:'🎯',name:'완벽블록', desc:'다음 블록 I자!',     color:'#ff8800',bgColor:'#ffcc44',shape:[[1,1],[1,1]],   good:true},
-  // 👎 나쁜 아이템
-  FREEZE: {emoji:'❄️',name:'얼음',     desc:'5초 회전 불가!',    color:'#0066cc',bgColor:'#88ccff',shape:[[1,1,1],[1,1,1]],good:false},
-  FIRE:   {emoji:'🔥',name:'불꽃',     desc:'5초 속도 30% 증가!', color:'#cc4400',bgColor:'#ff8844',shape:[[1,1,1]],good:false},
-  SKULL:  {emoji:'💀',name:'해골',     desc:'방해줄 2개 추가!',   color:'#444444',bgColor:'#888888',shape:[[1,1],[1,1]],   good:false},
-  CHAOS:  {emoji:'🌀',name:'혼돈',     desc:'다음 블록 랜덤 회전!',color:'#884488',bgColor:'#cc88cc',shape:[[1,1,1]],     good:false},
 };
 
 // 단계별 아이템 확률 테이블
@@ -310,18 +305,11 @@ function getItemType(lv){
   const r=Math.random();
   // 좋은 아이템 확률: 1~2단계 높음, 5~6단계 낮음
   const goodChance=[0,.18,.16,.14,.12,.10,.08][Math.min(lv,6)];
-  // 나쁜 아이템 확률: 1~2단계 낮음, 5~6단계 높음
-  const badChance=[0,.05,.08,.12,.15,.18,.20][Math.min(lv,6)];
   if(r<goodChance){
     const goods=['SLOW','DIAMOND','THUNDER','STOP','PERFECT'];
     // 각 좋은 아이템 확률 균등
     const idx=Math.floor(Math.random()*goods.length);
     return goods[idx];
-  }
-  if(r<goodChance+badChance){
-    const bads=['FREEZE','FIRE','SKULL','CHAOS'];
-    const idx=Math.floor(Math.random()*bads.length);
-    return bads[idx];
   }
   return null; // 일반 블록
 }
@@ -650,7 +638,6 @@ function getMs(){
   const base=LCFG[Math.min(lv,MAX_LV)].ms;
   let speedMult=1;
   if(slowOn)speedMult=2.5;           // 슬로우: 느려짐
-  if(Date.now()<fireEnd)speedMult=0.7; // 불꽃: 30% 빠르게
   const lineBoost=Math.pow(0.99,lines);
   return Math.max(200,Math.floor(base*lineBoost*speedMult));
 }
@@ -661,7 +648,6 @@ const MAX_LV=6;
 // ═══════════════════════════════════════════════
 let board,cur,curX,curY,curType;
 let stopActive=false,stopTmr=null; // 시간정지
-let freezeEnd=0,fireEnd=0;         // 얼음/불꽃 종료시각
 let hold=null,holdUsed=false,queue=[];
 let score=0,lines=0,lv=1,startLv=1,stLines=0,combo=0,maxCombo=0;
 let running=false,paused=false,dropTimer=null;
