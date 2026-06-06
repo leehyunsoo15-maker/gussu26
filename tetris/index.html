@@ -89,11 +89,11 @@ body{font-family:'Jua',sans-serif;display:flex;flex-direction:column;height:100v
 .cbtn:active,.cbtn.pressed{transform:scale(.88);box-shadow:0 1px 4px rgba(0,0,0,0.2);}
 
 /* 아이템 알림 */
-#itemAlert{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:250;display:none;pointer-events:none;}
-.ia-box{background:linear-gradient(135deg,rgba(30,30,60,0.95),rgba(60,30,90,0.95));border:3px solid rgba(255,200,255,0.6);border-radius:20px;padding:16px 24px;text-align:center;box-shadow:0 0 30px rgba(200,100,255,0.4);}
-.ia-emoji{font-size:48px;display:block;margin-bottom:4px;}
-.ia-name{font-family:'Black Han Sans',sans-serif;font-size:22px;color:#fff;margin-bottom:2px;}
-.ia-desc{font-size:14px;color:rgba(255,200,255,0.85);}
+#itemAlert{position:fixed;top:18%;left:50%;transform:translate(-50%,-50%);z-index:250;display:none;pointer-events:none;transition:opacity .2s;}
+.ia-box{background:linear-gradient(135deg,rgba(30,30,60,0.55),rgba(60,30,90,0.55));border:2px solid rgba(255,200,255,0.4);border-radius:16px;padding:8px 18px;text-align:center;box-shadow:0 0 16px rgba(200,100,255,0.25);backdrop-filter:blur(4px);}
+.ia-emoji{font-size:32px;display:block;margin-bottom:2px;}
+.ia-name{font-family:'Black Han Sans',sans-serif;font-size:16px;color:rgba(255,255,255,0.9);margin-bottom:1px;}
+.ia-desc{font-size:11px;color:rgba(255,200,255,0.75);}
 
 /* 오버레이 */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.65);display:none;align-items:center;justify-content:center;z-index:200;backdrop-filter:blur(10px);}
@@ -626,12 +626,12 @@ const SHAPES={
 };
 // 아이템 확률 (단계별로 감소 - 단계 높을수록 아이템 적음)
 const LCFG=[null,
-  {ms:1300,sl:25,cr:.30,crisisH:12}, // 1단계
-  {ms:1000,sl:30,cr:.18,crisisH:12}, // 2단계 (÷1.3)
-  {ms:770, sl:35,cr:.10,crisisH:12}, // 3단계
-  {ms:590, sl:40,cr:.06,crisisH:12}, // 4단계
-  {ms:455, sl:45,cr:.03,crisisH:12}, // 5단계
-  {ms:350, sl:50,cr:.01,crisisH:13}, // 6단계
+  {ms:1300,sl:20,cr:.30,crisisH:12}, // 1단계
+  {ms:1000,sl:25,cr:.18,crisisH:12}, // 2단계 (÷1.3)
+  {ms:770, sl:30,cr:.10,crisisH:12}, // 3단계
+  {ms:590, sl:35,cr:.06,crisisH:12}, // 4단계
+  {ms:455, sl:40,cr:.03,crisisH:12}, // 5단계
+  {ms:350, sl:45,cr:.01,crisisH:13}, // 6단계
 ];
 // 현재 실제 속도 계산 (단계 기본속도 × 0.99^클리어줄수, 최소 200ms)
 function getMs(){
@@ -982,8 +982,8 @@ function showItemAlert(item){
   document.getElementById('iaEmoji').textContent=item.emoji;
   document.getElementById('iaName').textContent=item.name;
   document.getElementById('iaDesc').textContent=item.desc;
-  const el=document.getElementById('itemAlert');el.style.display='flex';
-  clearTimeout(el._t);el._t=setTimeout(()=>el.style.display='none',2000);
+  const el=document.getElementById('itemAlert');el.style.display='flex';el.style.opacity='1';
+  clearTimeout(el._t);el._t=setTimeout(()=>{el.style.opacity='0';setTimeout(()=>{el.style.display='none';el.style.opacity='1';},200);},800);
 }
 
 // ═══════════════════════════════════════════════
