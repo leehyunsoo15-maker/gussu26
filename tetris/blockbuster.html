@@ -306,6 +306,66 @@ function sfx(type){if(!AC)return;const T=AC.currentTime;
   else if(type==='timerlow'){pN(880,.08,T,'sine',.13);}
 }
 
+// ─── BGM 시스템 ───
+const BB_HZ = {
+  C3:130.81,D3:146.83,E3:164.81,F3:174.61,G3:196,A3:220,B3:246.94,
+  C4:261.63,D4:293.66,E4:329.63,F4:349.23,G4:392,A4:440,B4:493.88,
+  C5:523.25,D5:587.33,E5:659.25,F5:698.46,G5:783.99,A5:880,B5:987.77,
+  Cs4:277.18,Ds4:311.13,Fs4:369.99,Gs4:415.30,As4:466.16,
+  Cs5:554.37,Fs5:739.99,
+};
+
+// 스테이지별 BGM - 블록버스터 테마 (긴장감, 액션)
+const BB_STAGE_BGM = [null,
+  // 1단계 쉬움: 경쾌한 멜로디
+  {bpm:140,notes:[[BB_HZ.E5,1],[BB_HZ.D5,.5],[BB_HZ.C5,.5],[BB_HZ.D5,1],[BB_HZ.E5,1],[BB_HZ.E5,1],[BB_HZ.E5,2],[BB_HZ.D5,1],[BB_HZ.D5,1],[BB_HZ.D5,2],[BB_HZ.E5,1],[BB_HZ.G5,1],[BB_HZ.G5,2],[BB_HZ.E5,1],[BB_HZ.D5,.5],[BB_HZ.C5,.5],[BB_HZ.D5,1],[BB_HZ.E5,1],[BB_HZ.E5,1],[BB_HZ.E5,.5],[BB_HZ.E5,.5],[BB_HZ.D5,1],[BB_HZ.D5,1],[BB_HZ.E5,.5],[BB_HZ.D5,.5],[BB_HZ.C5,2]]},
+  // 2단계 보통: 활기찬 박자
+  {bpm:160,notes:[[BB_HZ.A4,1],[BB_HZ.A4,.5],[BB_HZ.G4,.5],[BB_HZ.F4,1],[BB_HZ.E4,.5],[BB_HZ.F4,.5],[BB_HZ.G4,1],[BB_HZ.A4,1],[BB_HZ.A4,.5],[BB_HZ.A4,.5],[BB_HZ.G4,1],[BB_HZ.G4,1],[BB_HZ.A4,2],[BB_HZ.C5,1],[BB_HZ.C5,.5],[BB_HZ.B4,.5],[BB_HZ.A4,1],[BB_HZ.G4,.5],[BB_HZ.A4,.5],[BB_HZ.B4,1],[BB_HZ.C5,1],[BB_HZ.C5,.5],[BB_HZ.C5,.5],[BB_HZ.B4,1],[BB_HZ.B4,1],[BB_HZ.A4,2]]},
+  // 3단계 어려움: 긴장감 단조
+  {bpm:175,notes:[[BB_HZ.A4,.5],[BB_HZ.G4,.5],[BB_HZ.F4,.5],[BB_HZ.E4,.5],[BB_HZ.D4,.5],[BB_HZ.E4,.5],[BB_HZ.F4,.5],[BB_HZ.G4,.5],[BB_HZ.A4,1],[BB_HZ.A4,.5],[BB_HZ.B4,.5],[BB_HZ.C5,1],[BB_HZ.B4,.5],[BB_HZ.A4,.5],[BB_HZ.G4,.5],[BB_HZ.F4,.5],[BB_HZ.E4,2],[BB_HZ.E4,.5],[BB_HZ.Fs4,.5],[BB_HZ.G4,1],[BB_HZ.Fs4,.5],[BB_HZ.E4,.5],[BB_HZ.D4,.5],[BB_HZ.E4,.5],[BB_HZ.Fs4,.5],[BB_HZ.G4,.5],[BB_HZ.A4,1.5],[BB_HZ.A4,.5],[BB_HZ.A4,2]]},
+  // 4단계 극한: 빠른 단조 
+  {bpm:190,notes:[[BB_HZ.E4,.5],[BB_HZ.A4,.5],[BB_HZ.E4,.5],[BB_HZ.A4,.5],[BB_HZ.D4,.5],[BB_HZ.G4,.5],[BB_HZ.D4,.5],[BB_HZ.G4,.5],[BB_HZ.C4,.5],[BB_HZ.F4,.5],[BB_HZ.C4,.5],[BB_HZ.F4,.5],[BB_HZ.B3,.5],[BB_HZ.E4,.5],[BB_HZ.B3,.5],[BB_HZ.E4,.5],[BB_HZ.A3,1],[BB_HZ.E4,.5],[BB_HZ.A4,.5],[0,.25],[BB_HZ.A4,.25],[BB_HZ.G4,.25],[BB_HZ.Fs4,.25],[BB_HZ.E4,.5],[BB_HZ.D4,.5],[BB_HZ.E4,1],[BB_HZ.A3,1]]},
+  // 5단계 지옥: 극한 스피드
+  {bpm:205,notes:[[BB_HZ.A4,.25],[BB_HZ.C5,.25],[BB_HZ.E5,.25],[BB_HZ.A5,.25],[BB_HZ.G5,.5],[BB_HZ.Fs5,.5],[BB_HZ.E5,.5],[BB_HZ.D5,.5],[BB_HZ.C5,.25],[BB_HZ.E5,.25],[BB_HZ.G5,.25],[BB_HZ.C5,.25],[BB_HZ.B4,1],[BB_HZ.A4,.25],[BB_HZ.B4,.25],[BB_HZ.C5,.25],[BB_HZ.D5,.25],[BB_HZ.E5,.5],[BB_HZ.Fs5,.5],[BB_HZ.G5,.25],[BB_HZ.A5,.25],[BB_HZ.G5,.25],[BB_HZ.Fs5,.25],[BB_HZ.E5,.5],[BB_HZ.D5,.5],[BB_HZ.A4,1.5]]},
+  // 6단계 마스터: 보스 테마
+  {bpm:220,notes:[[BB_HZ.E4,.25],[BB_HZ.E4,.25],[BB_HZ.E4,.5],[BB_HZ.E4,.25],[BB_HZ.E4,.25],[BB_HZ.E4,.5],[BB_HZ.E4,.25],[BB_HZ.G4,.25],[BB_HZ.C4,.25],[BB_HZ.D4,.25],[BB_HZ.E4,1],[BB_HZ.F4,.25],[BB_HZ.F4,.25],[BB_HZ.F4,.5],[BB_HZ.F4,.25],[BB_HZ.E4,.25],[BB_HZ.E4,.5],[BB_HZ.E4,.25],[BB_HZ.E4,.25],[BB_HZ.D4,.25],[BB_HZ.D4,.25],[BB_HZ.E4,.5],[BB_HZ.D4,.5],[BB_HZ.G4,1]]},
+  // 7단계 히든 천상계: 지옥의 멜로디
+  {bpm:240,notes:[[BB_HZ.A4,.25],[BB_HZ.A4,.25],[0,.25],[BB_HZ.A4,.25],[0,.25],[BB_HZ.A4,.25],[BB_HZ.B4,.5],[BB_HZ.A4,.5],[BB_HZ.G4,.25],[BB_HZ.G4,.25],[0,.25],[BB_HZ.G4,.25],[0,.25],[BB_HZ.G4,.25],[BB_HZ.A4,.5],[BB_HZ.G4,.5],[BB_HZ.Fs4,.25],[BB_HZ.Fs4,.25],[0,.25],[BB_HZ.Fs4,.25],[BB_HZ.G4,.5],[BB_HZ.Fs4,.5],[BB_HZ.E4,1],[BB_HZ.D4,.5],[BB_HZ.E4,.5],[BB_HZ.Fs4,.5],[BB_HZ.G4,.5],[BB_HZ.A4,1]]},
+];
+
+let bbBgm={on:false,tmr:null,stage:1,crisis:false};
+
+function pNBB(f,d,t,vol=0.3){if(!AC||f<=0)return;const o=AC.createOscillator(),g=AC.createGain();o.type='square';o.frequency.value=f;g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.001,t+d*.82);o.connect(g);g.connect(mG);o.start(t);o.stop(t+d*.85);}
+function startBGM(st,crisisMode){
+  stopBGM();if(!AC)return;
+  bbBgm.on=true;bbBgm.stage=st||stageIdx;bbBgm.crisis=crisisMode||false;
+  function loop(){
+    if(!bbBgm.on)return;
+    const s=BB_STAGE_BGM[Math.min(bbBgm.stage,7)];
+    if(!s){bbBgm.tmr=setTimeout(loop,2000);return;}
+    const speedMult=bbBgm.crisis?1.5:1.0;
+    const bpm=Math.round(s.bpm*speedMult);
+    const b=60/bpm;
+    let t=AC.currentTime+.05;
+    let totalTime=0;
+    s.notes.forEach(([f,bt])=>{
+      pNBB(f,bt*b,t);
+      t+=bt*b;totalTime+=bt*b;
+    });
+    bbBgm.tmr=setTimeout(loop,(totalTime-.08)*1000);
+  }
+  loop();
+}
+function stopBGM(){
+  bbBgm.on=false;clearTimeout(bbBgm.tmr);
+  if(AC&&mG){try{mG.gain.cancelScheduledValues(AC.currentTime);mG.gain.setValueAtTime(0,AC.currentTime);mG.gain.linearRampToValueAtTime(0.14,AC.currentTime+0.05);}catch(e){}}
+}
+function switchBGMCrisis(isCrisis){
+  if(bbBgm.crisis===isCrisis)return;
+  bbBgm.crisis=isCrisis;
+  stopBGM();setTimeout(()=>{if(running&&!paused)startBGM(stageIdx,isCrisis);},150);
+}
+
 // ═══ 배경 ═══
 let bgCtx=null,bgTick=0,bgStars=[];
 function initBG(){const c=document.getElementById('bgCanvas');bgCtx=c.getContext('2d');bgStars=Array.from({length:35},()=>({x:Math.random()*c.width,y:Math.random()*c.height,r:.5+Math.random()*1.5,alpha:.15+Math.random()*.4,phase:Math.random()*Math.PI*2}));}
@@ -490,8 +550,8 @@ function checkCrisis(){
   let maxH=0;for(let c=0;c<COLS;c++)for(let r=0;r<ROWS;r++)if(board[r][c]){maxH=Math.max(maxH,ROWS-r);break;}
   const was=crisis;crisis=maxH>=14;
   document.getElementById('sirenBorder').classList.toggle('on',crisis);
-  if(crisis&&!was)showToast('crToast','⚠️ 위험! 쌓이고 있어!',2000);
-  else if(!crisis&&was)showToast('spToast','😮‍💨 위기 탈출!',1400);
+  if(crisis&&!was)switchBGMCrisis(true);showToast('crToast','⚠️ 위험! 쌓이고 있어!',2000);
+  else if(!crisis&&was)switchBGMCrisis(false);showToast('spToast','😮‍💨 위기 탈출!',1400);
 }
 
 // ═══ 타이머 ═══
@@ -533,6 +593,7 @@ function startGame(st){
   updUI();updTimer();
   refill();spawn();drawAll();
   restartDrop();startTimer();
+  startBGM(stageIdx,false);
 }
 
 function continueGame(){
@@ -559,10 +620,11 @@ function continueGame(){
   updUI();updTimer();
   refill();spawn();drawAll();
   restartDrop();startTimer();
+  startBGM(stageIdx,false);
 }
 
 function stageClearScreen(){
-  running=false;clearInterval(dropTimer);clearInterval(timerInterval);
+  running=false;stopBGM();clearInterval(dropTimer);clearInterval(timerInterval);
   const bonus=Math.floor(timeLeft)*20*stageIdx;
   score+=bonus;
   // ★ 최고 점수 즉시 갱신
@@ -593,7 +655,7 @@ function updateBest(){
 
 // 나가기 시 최고점수 처리
 function showQuitScreen(){
-  running=false;clearInterval(dropTimer);clearInterval(timerInterval);
+  running=false;stopBGM();clearInterval(dropTimer);clearInterval(timerInterval);
   document.getElementById('pauseOv').classList.remove('on');
   updateBest(); // ★ 나가기에서도 갱신
   const isNew=score>=best;
@@ -607,7 +669,7 @@ function showQuitScreen(){
 }
 
 function endGame(msg,isAllClear=false){
-  running=false;clearInterval(dropTimer);clearInterval(timerInterval);
+  running=false;stopBGM();clearInterval(dropTimer);clearInterval(timerInterval);
   document.getElementById('sirenBorder').classList.remove('on');
   document.getElementById('darkOverlay').classList.remove('on');
   document.getElementById('hiddenLabel').style.display='none';
@@ -626,6 +688,7 @@ function endGame(msg,isAllClear=false){
 
 function togglePause(){
   if(!running)return;paused=!paused;
+  if(paused)stopBGM();else startBGM(stageIdx,crisis);
   document.getElementById('pauseBtn').textContent=paused?'▶':'⏸';
   document.getElementById('pauseOv').classList.toggle('on',paused);
   if(paused)document.getElementById('pauseInfo').textContent='스테이지 '+stageIdx+' · '+Math.ceil(timeLeft)+'초 남음 · '+score.toLocaleString()+'점';
