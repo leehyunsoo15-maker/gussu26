@@ -686,7 +686,7 @@ const LCFG=[null,
   {ms:590, sl:35,cr:.06,crisisH:12}, // 4단계
   {ms:455, sl:40,cr:.03,crisisH:12}, // 5단계
   {ms:350, sl:45,cr:.01,crisisH:13}, // 6단계
-  {ms:270, sl:9999,cr:0, crisisH:99}, // 7단계 천상계 (보너스)
+  {ms:270, sl:60,  cr:0, crisisH:99}, // 7단계 천상계 (보너스)
 ];
 // 현재 실제 속도 계산 (단계 기본속도 × 0.99^클리어줄수, 최소 200ms)
 function getMs(){
@@ -697,7 +697,7 @@ function getMs(){
   const lineBoost=Math.pow(0.99,lines);
   return Math.max(80,Math.floor(base*lineBoost*speedMult));
 }
-const MAX_LV=6;
+const MAX_LV=7;
 
 // ═══════════════════════════════════════════════
 // 게임 상태
