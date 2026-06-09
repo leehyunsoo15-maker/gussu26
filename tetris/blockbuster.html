@@ -162,6 +162,18 @@ body{font-family:'Jua',sans-serif;display:flex;flex-direction:column;height:100v
 
 <div id="stageClear"><div class="sc-box"><div class="sc-emoji" id="scEmoji">✅</div><div class="sc-title" id="scTitle">클리어!</div><div class="sc-sub" id="scSub"></div></div></div>
 
+<div class="overlay" id="hiddenPrompt">
+  <div class="ov-box" style="border-color:rgba(255,45,120,0.6);">
+    <div style="font-size:52px;animation:titleBounce 1.5s ease infinite;">🌍</div>
+    <h2 style="color:#ffbb00;font-size:22px;margin:8px 0;">🏆 세계 정복 완료!</h2>
+    <p style="color:rgba(255,200,150,.9);font-size:13px;margin-bottom:6px;">6단계를 모두 클리어했습니다!</p>
+    <p style="color:#ff2d78;font-family:'Black Han Sans',sans-serif;font-size:14px;margin-bottom:14px;text-shadow:0 0 10px rgba(255,45,120,0.8);">👹 전설의 천상계가 열렸습니다...</p>
+    <p style="color:rgba(255,180,100,.8);font-size:12px;margin-bottom:4px;">⚠️ 천상계는 극한 난이도의 보너스 스테이지입니다</p>
+    <button class="ov-btn pri" id="enterHiddenBtn" style="background:linear-gradient(135deg,#6600aa,#ff2d78);margin-top:10px;">👹 천상계 입장하기</button>
+    <button class="ov-btn sec" id="skipHiddenBtn">🏠 메인으로 돌아가기</button>
+  </div>
+</div>
+
 <div class="overlay" id="pauseOv">
   <div class="ov-box">
     <h2>⏸ 일시정지</h2>
@@ -229,7 +241,7 @@ const SHAPES={
 // 유리한 아이템 (1~6단계)
 const ITEMS={
   BOMB:{emoji:'💣',name:'폭탄!',desc:'주변 3×3 제거',color:'#ff4d00',
-    shape:[[0,1,0],[1,2,1],[0,1,0]],
+    shape:[[1,2],[1,1]],
     effect(board,row,col){const c=[];for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){const nr=row+dr,nc=col+dc;if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS)c.push([nr,nc]);}return c;}},
   THUNDER:{emoji:'⚡',name:'번개!',desc:'가장 꽉 찬 줄 제거',color:'#ffbb00',shape:[[0,1,0],[0,2,0],[0,1,0]]},
   SLOW:{emoji:'🐢',name:'슬로우!',desc:'5초간 낙하 느려짐',color:'#44ee88',shape:[[1,0],[2,0],[1,0]],duration:5000},
@@ -250,7 +262,7 @@ const ITEM_POOL=[null,
   ['BOMB','THUNDER'],                                 // 6
   ['NOROT','NOROT','DARK','DARK','SPEED','SPEED'],    // 7 히든: 불리한 것만
 ];
-const ITEM_CHANCE=[null,.18,.16,.14,.12,.10,.08,.25]; // 히든은 확률 높게
+const ITEM_CHANCE=[null,.23,.21,.18,.16,.13,.11,.33]; // 히든은 확률 높게
 
 const COLS=10,ROWS=20;
 let CELL=28;
@@ -294,7 +306,7 @@ animParts();
 
 // ═══ 오디오 ═══
 let AC=null,mG=null;
-function initAC(){if(AC)return;AC=new(window.AudioContext||window.webkitAudioContext)();mG=AC.createGain();mG.gain.value=0.14;mG.connect(AC.destination);}
+function initAC(){if(AC)return;AC=new(window.AudioContext||window.webkitAudioContext)();mG=AC.createGain();mG.gain.value=0.14;mG.connect(AC.destination);if(AC.state==='suspended')AC.resume();}
 function pN(f,d,t,type='square',vol=0.45){if(!AC||f<=0)return;const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.001,t+d*.84);o.connect(g);g.connect(mG);o.start(t);o.stop(t+d*.87);}
 function sfx(type){if(!AC)return;const T=AC.currentTime;
   if(type==='place'){pN(160,.06,T,'square',.07);}
@@ -637,11 +649,12 @@ function stageClearScreen(){
   document.getElementById('scEmoji').textContent=STAGE_EMOJI[stageIdx]+'✅';
   document.getElementById('scTitle').textContent='STAGE '+stageIdx+' 클리어!';
   document.getElementById('scSub').textContent='시간 보너스 +'+bonus+'점';
-  if(stageIdx===6){
-    document.getElementById('scSub').textContent='시간 보너스 +'+bonus+'점  👹 히든 스테이지 등장!';
-  }
   sc.classList.add('show');
-  setTimeout(()=>{sc.classList.remove('show');continueGame();},2600);
+  if(stageIdx===6){
+    setTimeout(()=>{sc.classList.remove('show');document.getElementById('hiddenPrompt').classList.add('on');},2600);
+  } else {
+    setTimeout(()=>{sc.classList.remove('show');continueGame();},2600);
+  }
 }
 
 // ★ 최고점수 갱신 함수 (게임 중간에도 호출)
@@ -787,6 +800,18 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.getElementById('bestDisp').textContent=best.toLocaleString();
   document.querySelectorAll('.lv-btn').forEach(b=>{b.addEventListener('click',()=>{document.querySelectorAll('.lv-btn').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');startSt=parseInt(b.dataset.st);});});
   document.getElementById('startBtn').addEventListener('click',()=>{initAC();startGame(startSt);});
+  document.getElementById('enterHiddenBtn').addEventListener('click',()=>{
+    document.getElementById('hiddenPrompt').classList.remove('on');
+    continueGame();
+  });
+  document.getElementById('skipHiddenBtn').addEventListener('click',()=>{
+    document.getElementById('hiddenPrompt').classList.remove('on');
+    document.getElementById('sirenBorder').classList.remove('on');
+    document.getElementById('sirenBorder').style.boxShadow='';
+    document.getElementById('darkOverlay').classList.remove('on');
+    document.getElementById('hiddenLabel').style.display='none';
+    showScreen('startScreen');
+  });
   document.getElementById('pauseBtn').addEventListener('click',togglePause);
   document.getElementById('resumeBtn').addEventListener('click',togglePause);
   document.getElementById('quitBtn').addEventListener('click',showQuitScreen);
