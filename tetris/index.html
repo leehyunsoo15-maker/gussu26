@@ -9,7 +9,7 @@
 <link rel="manifest" href="manifest.json">
 <title>블록게임</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Jua&family=Black+Han+Sans&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Jua&family=Black+Han+Sans&family=Cute+Font&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html,body{width:100%;height:100%;overflow:hidden;touch-action:none;}
 body{font-family:'Jua',sans-serif;display:flex;flex-direction:column;height:100vh;}
@@ -20,21 +20,29 @@ body{font-family:'Jua',sans-serif;display:flex;flex-direction:column;height:100v
 /* START */
 #startScreen{position:relative;overflow:hidden;background:linear-gradient(180deg,#87ceeb,#b0e2ff,#e0f4ff);}
 #startScreen h1{
-  font-family:'Black Han Sans',sans-serif;
-  font-size:58px;
-  letter-spacing:8px;
-  margin-bottom:6px;
+  font-family:'Cute Font',sans-serif;
+  font-size:82px;
+  letter-spacing:10px;
+  margin-bottom:10px;
   position:relative;z-index:2;
-  background:linear-gradient(135deg,#ff4466 0%,#ff8844 20%,#ffd700 40%,#44ee88 60%,#00c8ff 80%,#cc44ff 100%);
+  background:linear-gradient(160deg,#FFE500 0%,#FF88CC 35%,#FF4DAE 55%,#44BBFF 80%,#00E5FF 100%);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-  filter:drop-shadow(0 4px 12px rgba(0,0,0,0.35)) drop-shadow(0 0 20px rgba(100,200,255,0.3));
-  animation:titleBounce 2s ease infinite;
+  filter:
+    drop-shadow(-3px -3px 0 #fff)
+    drop-shadow( 3px -3px 0 #fff)
+    drop-shadow(-3px  3px 0 #fff)
+    drop-shadow( 3px  3px 0 #fff)
+    drop-shadow(0 5px 0 rgba(255,100,180,0.5))
+    drop-shadow(0 8px 20px rgba(255,100,200,0.35));
+  animation:titleBounce 1.6s ease-in-out infinite;
 }
 @keyframes titleBounce{
-  0%,100%{transform:scale(1) rotate(-1deg);}
-  25%{transform:scale(1.04) rotate(1deg);}
-  50%{transform:scale(1.02) rotate(-0.5deg);}
-  75%{transform:scale(1.03) rotate(0.5deg);}
+  0%  {transform:rotate(-3deg) scale(1.00);}
+  20% {transform:rotate( 2deg) scale(1.05);}
+  40% {transform:rotate(-2deg) scale(1.03);}
+  60% {transform:rotate( 3deg) scale(1.06);}
+  80% {transform:rotate(-1deg) scale(1.02);}
+  100%{transform:rotate(-3deg) scale(1.00);}
 }
 .subtitle{font-size:14px;color:rgba(255,255,255,0.9);letter-spacing:4px;margin-bottom:22px;position:relative;z-index:2;
   text-shadow:0 0 10px rgba(100,200,255,0.5);}
@@ -140,6 +148,9 @@ body{font-family:'Jua',sans-serif;display:flex;flex-direction:column;height:100v
 .lb-name{flex:1;margin-left:8px;}
 .lb-score{font-family:'Black Han Sans',sans-serif;color:#4ab8e8;font-size:16px;}
 .lb-close{width:100%;padding:14px;font-family:'Black Han Sans',sans-serif;font-size:18px;background:linear-gradient(135deg,#4ab8e8,#1a6ab1);color:#fff;border:none;border-radius:12px;cursor:pointer;margin-top:14px;}
+.lb-tabs{display:flex;gap:6px;margin-bottom:12px;}
+.lb-tab{flex:1;padding:9px 4px;font-family:'Black Han Sans',sans-serif;font-size:13px;background:rgba(255,255,255,0.07);border:1.5px solid rgba(100,180,255,0.2);border-radius:10px;color:rgba(255,255,255,0.5);cursor:pointer;letter-spacing:.5px;}
+.lb-tab.on{background:rgba(74,184,232,0.2);border-color:#4ab8e8;color:#4ab8e8;}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
@@ -168,23 +179,24 @@ body{font-family:'Jua',sans-serif;display:flex;flex-direction:column;height:100v
     </div>
   </div>
   <button class="start-btn" id="startBtn">▶ 게임 시작</button>
-  <button class="start-btn" onclick="location.href='battle.html'"
-    style="background:linear-gradient(135deg,#ff6644,#cc2200);margin-top:0;box-shadow:0 6px 24px rgba(255,100,68,0.4);">
-    ⚔️ AI 대전
-  </button>
 <button class="start-btn" onclick="location.href='blockbuster.html'"
 style="background:linear-gradient(135deg,#ff4d00,#cc2200);margin-top:0;box-shadow:0 6px 24px rgba(255,77,0,0.4);">
 💥 블록버스터
 </button>
   <div class="best-txt">🏆 최고: <span id="bestDisp">0</span> 점</div>
-<button class="start-btn" onclick="document.getElementById('lbOv').style.display='flex'"
+<button class="start-btn" onclick="document.getElementById('lbOv').style.display='flex';switchLbTab('normal')"
   style="background:linear-gradient(135deg,#a855f7,#6366f1);margin-top:0;box-shadow:0 6px 24px rgba(168,85,247,0.4);">
   🏆 전체 순위 보기
 </button>
 <div id="lbOv" class="lb-overlay" style="display:none;" onclick="if(event.target===this)this.style.display='none'">
   <div class="lb-box">
     <div class="lb-title">🏆 전체 순위</div>
+    <div class="lb-tabs">
+      <button class="lb-tab on" id="tabNormal" onclick="switchLbTab('normal')">🎮 일반게임</button>
+      <button class="lb-tab" id="tabBB" onclick="switchLbTab('bb')">💥 블록버스터</button>
+    </div>
     <div id="lbList"><div style="color:rgba(255,255,255,0.5);text-align:center;padding:10px">로딩 중...</div></div>
+    <div id="lbListBB" style="display:none"><div style="color:rgba(255,255,255,0.5);text-align:center;padding:10px">로딩 중...</div></div>
     <button class="lb-close" onclick="document.getElementById('lbOv').style.display='none'">닫기</button>
   </div>
 </div>
@@ -267,6 +279,14 @@ style="background:linear-gradient(135deg,#ff4d00,#cc2200);margin-top:0;box-shado
       box-shadow:0 6px 24px rgba(255,200,0,0.5);">
       🎮 다시 도전하기
     </button>
+    <button id="wcHidden" onclick="enterHiddenStage()"
+      style="opacity:0;animation:wcFadeIn 1s ease 3.6s forwards;display:block;
+      font-family:'Black Han Sans',sans-serif;font-size:18px;padding:14px 32px;
+      background:linear-gradient(135deg,#6600aa,#ff2d78);color:#fff;border:none;
+      border-radius:18px;cursor:pointer;letter-spacing:2px;margin-top:10px;
+      box-shadow:0 6px 24px rgba(255,45,120,0.55);">
+      👹 천상계 입장하기 (보너스)
+    </button>
   </div>
 </div>
 
@@ -326,9 +346,16 @@ const ITEMS = {
 
 // 단계별 아이템 확률 테이블
 function getItemType(lv){
+  // 천상계: 불리한 아이템만
+  if(lv>=7){
+    if(Math.random()<0.32){
+      const bads=['NOROT','DARK','SPEED'];
+      return bads[Math.floor(Math.random()*bads.length)];
+    }
+    return null;
+  }
   const r=Math.random();
   const goodChance=[0,.18,.16,.14,.12,.10,.08][Math.min(lv,6)];
-  // 4단계 이상: 불리한 아이템 확률 추가
   const badChance=[0,0,0,0,.08,.12,.16][Math.min(lv,6)];
   if(r<goodChance){
     const goods=['SLOW','DIAMOND','THUNDER','STOP','PERFECT'];
@@ -654,15 +681,16 @@ const SHAPES={
 // 아이템 확률 (단계별로 감소 - 단계 높을수록 아이템 적음)
 const LCFG=[null,
   {ms:1300,sl:20,cr:.30,crisisH:12}, // 1단계
-  {ms:1000,sl:25,cr:.18,crisisH:12}, // 2단계 (÷1.3)
+  {ms:1000,sl:25,cr:.18,crisisH:12}, // 2단계
   {ms:770, sl:30,cr:.10,crisisH:12}, // 3단계
   {ms:590, sl:35,cr:.06,crisisH:12}, // 4단계
   {ms:455, sl:40,cr:.03,crisisH:12}, // 5단계
   {ms:350, sl:45,cr:.01,crisisH:13}, // 6단계
+  {ms:270, sl:9999,cr:0, crisisH:99}, // 7단계 천상계 (보너스)
 ];
 // 현재 실제 속도 계산 (단계 기본속도 × 0.99^클리어줄수, 최소 200ms)
 function getMs(){
-  const base=LCFG[Math.min(lv,MAX_LV)].ms;
+  const base=LCFG[Math.min(lv,7)].ms;
   let speedMult=1;
   if(slowOn)speedMult=2.5;
   if(speedOn)speedMult=0.4;
@@ -994,6 +1022,28 @@ function closeWorldConquer(){
   if(wcCallback)wcCallback();
   wcCallback=null;
 }
+function enterHiddenStage(){
+  document.getElementById('worldConquer').style.display='none';
+  stopFireworks();
+  wcCallback=null;
+  lv=7;stLines=0;board=emptyB();queue=[];hold=null;holdUsed=false;
+  combo=0;slowOn=false;crisis=false;
+  noRotOn=false;darkOn=false;speedOn=false;
+  clearAnim=null;bombAnim=null;parts=[];running=true;paused=false;diamondActive=false;
+  const sb=document.getElementById('sirenBorder');
+  sb.style.boxShadow='inset 0 0 0 8px rgba(255,45,120,0.85),inset 0 0 40px rgba(200,0,100,0.45)';
+  sb.classList.add('on');
+  showScreen('gameScreen');
+  requestAnimationFrame(()=>{
+    setupLayout();
+    bgLv=6;bgCrisis=false;
+    const bgc=document.getElementById('bgCanvas');
+    bgItems=SCENES[6].initItems(bgc.width,bgc.height);
+    runBGLoop();
+    updUI();updStageFill();refill();spawn();drawAll();startDrop();
+    startBGM('crisis',6);
+  });
+}
 
 // 불꽃놀이
 let fwRAF=null,fwParticles=[];
@@ -1149,7 +1199,7 @@ function drawAll(){
 // ═══════════════════════════════════════════════
 function updUI(){
   document.getElementById('scoreDisp').textContent=score.toLocaleString();
-  document.getElementById('levelDisp').textContent=lv;
+  document.getElementById('levelDisp').textContent=lv>=7?'👹':lv;
   document.getElementById('linesDisp').textContent=lines;
 }
 function updCombo(){const el=document.getElementById('comboDisp');el.textContent=combo;if(combo>0){el.style.transform='scale(1.3)';setTimeout(()=>el.style.transform='',150);}}
@@ -1193,7 +1243,8 @@ function updateBest(){
 }
 function endGame(){
   running=false;clearInterval(dropTimer);stopBGM();
-  document.getElementById('sirenBorder').classList.remove('on');
+  const sb=document.getElementById('sirenBorder');
+  sb.classList.remove('on');sb.style.boxShadow='';
   document.getElementById('darkOverlay').classList.remove('on');
   noRotOn=false;darkOn=false;speedOn=false;
   if(score>0)saveScore(score);
@@ -1344,7 +1395,31 @@ function loadLeaderboard() {
   });
 }
 
-window.addEventListener('DOMContentLoaded', () => { loadLeaderboard(); });
+function switchLbTab(tab){
+  const isNormal = tab==='normal';
+  document.getElementById('tabNormal').classList.toggle('on', isNormal);
+  document.getElementById('tabBB').classList.toggle('on', !isNormal);
+  document.getElementById('lbList').style.display = isNormal ? 'block' : 'none';
+  document.getElementById('lbListBB').style.display = isNormal ? 'none' : 'block';
+}
+
+function loadBBLeaderboard(){
+  db.ref('bb_scores').orderByChild('score').limitToLast(10).on('value',(snapshot)=>{
+    const entries=[];
+    snapshot.forEach(child=>entries.push(child.val()));
+    entries.sort((a,b)=>b.score-a.score);
+    const el=document.getElementById('lbListBB');
+    if(!el)return;
+    el.innerHTML=entries.map((e,i)=>{
+      const medals=['🥇','🥈','🥉'];
+      const medal=medals[i]||(i+1)+'.';
+      const sub=e.stage?` <span style="font-size:11px;color:rgba(255,255,255,0.45)">ST${e.stage}</span>`:'';
+      return '<div class="lb-row">'+medal+' <span class="lb-name">'+e.name+'</span>'+sub+'<span class="lb-score">'+e.score.toLocaleString()+'</span></div>';
+    }).join('')||'<div style="color:rgba(255,255,255,0.5);text-align:center;padding:10px">아직 기록이 없어요!</div>';
+  });
+}
+
+window.addEventListener('DOMContentLoaded', () => { loadLeaderboard(); loadBBLeaderboard(); });
 
 </script>
 <div style="position:fixed;bottom:4px;left:50%;transform:translateX(-50%);font-size:9px;color:rgba(255,255,255,0.25);letter-spacing:.8px;z-index:1;pointer-events:none;font-family:Arial,sans-serif;white-space:nowrap;">
