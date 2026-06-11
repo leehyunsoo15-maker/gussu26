@@ -134,6 +134,35 @@ body{font-family:'Jua',sans-serif;color:#fff;}
 
 /* ── LOBBY ERROR ── */
 #lobbyMsg{font-size:13px;color:#ff8888;min-height:18px;margin-top:-6px;margin-bottom:4px;text-align:center;}
+
+/* ── GAME MODE ── */
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+.mode-btn{padding:14px 4px;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.2);border-radius:14px;color:#ccc;font-family:'Jua',sans-serif;font-size:14px;cursor:pointer;text-align:center;transition:all 0.2s;}
+.mode-btn .mn{font-family:'Black Han Sans',sans-serif;font-size:20px;color:#fff;display:block;margin-bottom:2px;}
+.mode-btn.sel{background:rgba(255,107,107,0.2);border-color:#ff6b6b;color:#ff6b6b;}
+.mode-btn.sel .mn{color:#ff6b6b;}
+.mode-btn.normal.sel{background:rgba(74,184,232,0.2);border-color:#4ab8e8;color:#4ab8e8;}
+.mode-btn.normal.sel .mn{color:#4ab8e8;}
+
+/* ── ROOM LIST ── */
+.room-list-section{width:100%;max-width:340px;margin-bottom:14px;}
+.room-list-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.room-list-refresh{background:none;border:1px solid rgba(255,255,255,0.3);border-radius:8px;color:rgba(255,255,255,0.6);font-size:12px;padding:4px 10px;cursor:pointer;font-family:'Jua',sans-serif;}
+.room-list-body{display:flex;flex-direction:column;gap:8px;max-height:200px;overflow-y:auto;}
+.room-item{display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.15);border-radius:12px;padding:10px 14px;cursor:pointer;transition:all 0.15s;}
+.room-item:hover{background:rgba(255,255,255,0.12);border-color:rgba(74,184,232,0.5);}
+.room-item-left{display:flex;flex-direction:column;gap:2px;}
+.room-item-code{font-family:'Black Han Sans',sans-serif;font-size:16px;color:#4ab8e8;letter-spacing:2px;}
+.room-item-info{font-size:11px;color:rgba(255,255,255,0.5);}
+.room-item-mode{font-size:12px;padding:3px 8px;border-radius:8px;font-family:'Jua',sans-serif;}
+.room-item-mode.item{background:rgba(255,107,107,0.2);color:#ff6b6b;border:1px solid rgba(255,107,107,0.4);}
+.room-item-mode.normal{background:rgba(74,184,232,0.2);color:#4ab8e8;border:1px solid rgba(74,184,232,0.4);}
+.room-list-empty{text-align:center;color:rgba(255,255,255,0.3);font-size:13px;padding:16px;}
+
+/* ── WAIT MODE BADGE ── */
+.wait-mode-badge{display:inline-block;padding:4px 14px;border-radius:20px;font-size:13px;font-family:'Jua',sans-serif;margin-bottom:10px;}
+.wait-mode-badge.item{background:rgba(255,107,107,0.2);color:#ff6b6b;border:1px solid rgba(255,107,107,0.4);}
+.wait-mode-badge.normal{background:rgba(74,184,232,0.2);color:#4ab8e8;border:1px solid rgba(74,184,232,0.4);}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
@@ -163,6 +192,14 @@ body{font-family:'Jua',sans-serif;color:#fff;}
     </div>
   </div>
 
+  <div class="glass">
+    <div class="lbl">🎮 게임 모드</div>
+    <div class="mode-grid">
+      <div class="mode-btn normal sel" id="modeNormalBtn" onclick="selectMode('normal')"><span class="mn">일반전</span>블록 대결</div>
+      <div class="mode-btn item" id="modeItemBtn" onclick="selectMode('item')"><span class="mn">🎁 아이템전</span>아이템 사용</div>
+    </div>
+  </div>
+
   <button class="big-btn blue" id="createBtn">🏠 방 만들기</button>
 
   <div class="glass" style="margin-bottom:10px;">
@@ -174,6 +211,16 @@ body{font-family:'Jua',sans-serif;color:#fff;}
   </div>
 
   <div id="lobbyMsg"></div>
+
+  <div class="glass room-list-section" id="roomListSection">
+    <div class="room-list-header">
+      <div class="lbl" style="margin:0">🏠 열린 방 목록</div>
+      <button class="room-list-refresh" onclick="refreshRoomList()">🔄 새로고침</button>
+    </div>
+    <div class="room-list-body" id="roomListBody">
+      <div class="room-list-empty">방을 불러오는 중...</div>
+    </div>
+  </div>
   <button class="big-btn gray" onclick="location.href='index.html'" style="max-width:340px;">← 일반 게임으로</button>
 </div>
 
@@ -181,6 +228,7 @@ body{font-family:'Jua',sans-serif;color:#fff;}
 <div id="waitScreen" class="screen">
   <div class="wait-box">
     <h2>🏠 대기 중</h2>
+    <div id="waitModeBadge" class="wait-mode-badge normal">일반전</div>
     <div style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:4px;">방 코드를 공유하세요</div>
     <div class="room-code-display" id="roomCodeDisplay" onclick="copyRoomCode()">------</div>
     <div class="copy-hint">탭하면 복사됩니다</div>
@@ -807,9 +855,11 @@ async function createRoom() {
   attacksRef = roomRef.child('attacks');
 
   const timeLimit = selectedTime;
+  const gameMode = selectedMode || 'normal';
   await roomRef.set({
     status: 'waiting',
     timeLimit,
+    gameMode,
     createdAt: Date.now(),
     players: {
       player1: { nickname: nick, score: 0, board: '', gameOver: false }
@@ -823,6 +873,13 @@ async function createRoom() {
   document.getElementById('p2Status').textContent = '대기 중';
   document.getElementById('p2Status').classList.add('dot-anim');
   setWaitTimeSel(timeLimit, true);
+
+  // 모드 배지 업데이트
+  const badge = document.getElementById('waitModeBadge');
+  if (badge) {
+    badge.className = 'wait-mode-badge ' + gameMode;
+    badge.textContent = gameMode === 'item' ? '🎁 아이템전' : '일반전';
+  }
 
   // 상대 입장 감지
   opRef.on('value', snap => {
@@ -880,6 +937,14 @@ async function joinRoom() {
   document.getElementById('p2Status').classList.remove('dot-anim');
   setWaitTimeSel(selectedTime, false);
 
+  // 모드 배지 업데이트
+  const gameMode = data.gameMode || 'normal';
+  const badge = document.getElementById('waitModeBadge');
+  if (badge) {
+    badge.className = 'wait-mode-badge ' + gameMode;
+    badge.textContent = gameMode === 'item' ? '🎁 아이템전' : '일반전';
+  }
+
   // 방장 이름 표시
   document.getElementById('startWaitBtn').disabled = true;
   document.getElementById('startWaitBtn').innerHTML = '방장이 시작할 때까지 대기 중<span class="dot-anim"></span>';
@@ -924,6 +989,7 @@ function copyRoomCode() {
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  if (id === 'lobbyScreen') setTimeout(refreshRoomList, 300);
 }
 
 function showToast(id, msg, dur) {
@@ -1065,6 +1131,50 @@ window.addEventListener('resize', () => {
 
 // 페이지 닫힐 때 정리
 window.addEventListener('beforeunload', () => leaveRoom());
+
+// ── GAME MODE & ROOM LIST ──
+let selectedMode = 'normal';
+
+function selectMode(mode) {
+  selectedMode = mode;
+  const normalBtn = document.getElementById('modeNormalBtn');
+  const itemBtn = document.getElementById('modeItemBtn');
+  if (mode === 'normal') {
+    normalBtn.classList.add('sel');
+    itemBtn.classList.remove('sel');
+  } else {
+    itemBtn.classList.add('sel');
+    normalBtn.classList.remove('sel');
+  }
+}
+
+function refreshRoomList() {
+  const body = document.getElementById('roomListBody');
+  if (!body) return;
+  body.innerHTML = '<div class="room-list-empty">불러오는 중...</div>';
+  db.ref('battle/rooms').orderByChild('status').equalTo('waiting').once('value').then(snap => {
+    const val = snap.val();
+    body.innerHTML = '';
+    if (!val) { body.innerHTML = '<div class="room-list-empty">열린 방이 없습니다</div>'; return; }
+    const rooms = Object.entries(val).sort((a,b) => (b[1].createdAt||0)-(a[1].createdAt||0));
+    rooms.forEach(([code, room]) => {
+      const hostName = (room.players && room.players.player1 && room.players.player1.nickname) || '???';
+      const mode = room.gameMode || 'normal';
+      const timeLabel = room.timeLimit === 120 ? '2분' : room.timeLimit === 60 ? '1분' : '30초';
+      const modeLabel = mode === 'item' ? '🎁 아이템전' : '일반전';
+      const item = document.createElement('div');
+      item.className = 'room-item';
+      item.innerHTML = `<div class="room-item-left"><div class="room-item-code">${code}</div><div class="room-item-info">👑 ${hostName} · ⏱ ${timeLabel}</div></div><div class="room-item-mode ${mode}">${modeLabel}</div>`;
+      item.onclick = () => {
+        document.getElementById('roomCodeInput').value = code;
+        document.getElementById('roomCodeInput').style.borderColor = '#4ab8e8';
+        setTimeout(() => { document.getElementById('roomCodeInput').style.borderColor = ''; }, 1000);
+      };
+      body.appendChild(item);
+    });
+  }).catch(() => { body.innerHTML = '<div class="room-list-empty">불러오기 실패</div>'; });
+}
+
 </script>
 
 <div style="position:fixed;bottom:4px;left:50%;transform:translateX(-50%);font-size:9px;color:rgba(255,255,255,0.2);letter-spacing:.8px;z-index:1;pointer-events:none;font-family:Arial,sans-serif;white-space:nowrap;">
