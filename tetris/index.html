@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#4ab8e8">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="블록게임">
@@ -85,12 +85,12 @@ body{font-family:'Jua',sans-serif;display:flex;flex-direction:column;height:100v
 #pauseBtn{position:fixed;top:12px;right:12px;width:50px;height:50px;background:rgba(0,0,0,0.35);border:2px solid rgba(255,255,255,0.5);border-radius:14px;font-size:22px;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.3);}
 
 /* 게임 영역 */
-#gameArea{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:3px;min-height:0;position:relative;z-index:3;}
+#gameArea{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:2px;min-height:0;position:relative;z-index:3;-webkit-overflow-scrolling:touch;}
 #gameCanvas{display:block;image-rendering:pixelated;border:2.5px solid rgba(255,255,255,0.6);border-radius:10px;box-shadow:0 4px 24px rgba(0,0,0,0.2);}
 
 /* 컨트롤 */
-#controls{flex-shrink:0;display:flex;align-items:center;justify-content:center;gap:10px;padding:10px 10px calc(16px + env(safe-area-inset-bottom,0px));background:rgba(0,0,0,0.25);border-top:2px solid rgba(255,255,255,0.2);position:relative;z-index:5;}
-.cbtn{flex:1;max-width:110px;height:86px;border-radius:24px;color:#fff;font-size:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:none;transition:all .08s;box-shadow:0 4px 12px rgba(0,0,0,0.2);}
+#controls{flex-shrink:0;display:flex;align-items:center;justify-content:center;gap:10px;padding:8px 10px calc(max(12px, env(safe-area-inset-bottom,0px)) + 4px);background:rgba(0,0,0,0.25);border-top:2px solid rgba(255,255,255,0.2);position:relative;z-index:5;}
+.cbtn{flex:1;max-width:110px;height:clamp(70px,11vw,96px);border-radius:24px;color:#fff;font-size:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:none;transition:all .08s;box-shadow:0 4px 12px rgba(0,0,0,0.2);}
 .cbtn.lr{background:rgba(255,255,255,0.25);border:3px solid rgba(255,255,255,0.5);}
 .cbtn.rot{background:rgba(255,200,30,0.4);border:3px solid rgba(255,220,60,0.8);font-size:36px;}
 .cbtn.dn{background:rgba(30,180,255,0.35);border:3px solid rgba(60,200,255,0.7);font-size:36px;}
@@ -337,11 +337,11 @@ style="background:linear-gradient(135deg,#ff4dae,#a855f7,#4ab8e8);margin-top:0;b
 // ── 아이템 정의 ──
 const ITEMS = {
   // 👍 좋은 아이템
-  SLOW:   {emoji:'⭐',name:'슬로우',    desc:'5초 속도 느려짐!',   color:'#44cc44',bgColor:'#88ee88',shape:[[1,1],[1,1]],  good:true,duration:5000},
-  DIAMOND:{emoji:'💎',name:'다이아몬드',desc:'다음 줄 2배 점수!',  color:'#00b4d8',bgColor:'#80d8ff',shape:[[1]],           good:true},
-  THUNDER:{emoji:'🌩️',name:'천둥',     desc:'바닥 1줄 제거!',    color:'#8844ff',bgColor:'#cc88ff',shape:[[1,1,1,1]],     good:true},
-  STOP:   {emoji:'⏱️',name:'시간정지', desc:'5초간 낙하 정지!',   color:'#0088cc',bgColor:'#44bbff',shape:[[1,1],[1,1]],good:true},
-  PERFECT:{emoji:'🎯',name:'완벽블록', desc:'다음 블록 I자!',     color:'#ff8800',bgColor:'#ffcc44',shape:[[1,1],[1,1]],   good:true},
+  SLOW:   {emoji:'☁️',name:'슬로우',    desc:'5초 속도 느려짐!',   color:'#44cc44',bgColor:'#88ee88',shape:[[1,1],[1,1]],  good:true,duration:5000},
+  DIAMOND:{emoji:'🌸',name:'다이아몬드',desc:'다음 줄 2배 점수!',  color:'#00b4d8',bgColor:'#80d8ff',shape:[[1]],           good:true},
+  THUNDER:{emoji:'🌲',name:'천둥',     desc:'바닥 1줄 제거!',    color:'#8844ff',bgColor:'#cc88ff',shape:[[1,1,1,1]],     good:true},
+  STOP:   {emoji:'🚀',name:'시간정지', desc:'5초간 낙하 정지!',   color:'#0088cc',bgColor:'#44bbff',shape:[[1,1],[1,1]],good:true},
+  PERFECT:{emoji:'🌌',name:'완벽블록', desc:'다음 블록 I자!',     color:'#ff8800',bgColor:'#ffcc44',shape:[[1,1],[1,1]],   good:true},
   // 👎 불리한 아이템 (4단계 이상)
   NOROT:  {emoji:'🔒',name:'회전불가!', desc:'5초간 회전 막힘',    color:'#ff2d78',bgColor:'#ff6699',shape:[[1,1],[1,1]],  bad:true,duration:5000},
   DARK:   {emoji:'🌑',name:'어둠!',     desc:'4초간 화면 어두워짐',color:'#220033',bgColor:'#440055',shape:[[1,1],[1,1]],  bad:true,duration:4000},
@@ -1122,7 +1122,7 @@ function dItemCell(c2,x,y,type,sz,alpha=1){
   g.addColorStop(0,item.bgColor||'#ffaa44');g.addColorStop(1,item.color||'#ff4400');
   c2.fillStyle=g;c2.beginPath();c2.roundRect(x+1,y+1,sz-2,sz-2,6);c2.fill();
   c2.font=`${Math.floor(sz*.62)}px serif`;c2.textAlign='center';c2.textBaseline='middle';
-  c2.fillText(item.emoji||'?',x+sz/2,y+sz/2+1);c2.restore();
+  c2.fillText(item.emoji||'?',x+sz/2,y+sz/2+1);c2.strokeStyle='rgba(255,255,255,0.85)';c2.lineWidth=2.5;c2.setLineDash([3,2]);c2.beginPath();c2.roundRect(x+1,y+1,sz-2,sz-2,6);c2.stroke();c2.setLineDash([]);c2.restore();
 }
 function dAny(c2,type,x,y,sz,alpha=1){
   if(!type)return;
@@ -1278,8 +1278,8 @@ document.addEventListener('keydown',e=>{
     case'ArrowLeft':if(canP(cur,curX-1,curY)){curX--;drawAll();}break;
     case'ArrowRight':if(canP(cur,curX+1,curY)){curX++;drawAll();}break;
     case'ArrowDown':if(canP(cur,curX,curY+1)){curY++;score+=1;updUI();}else place();drawAll();break;
-    case'ArrowUp':case'KeyX':doRotate();break;
-    case'Space':e.preventDefault();while(canP(cur,curX,curY+1)){curY++;score+=2;}updUI();place();drawAll();break;
+    case'ArrowUp':case'Space':e.preventDefault();doRotate();break;
+    case'KeyX':e.preventDefault();while(canP(cur,curX,curY+1)){curY++;score+=2;}updUI();place();drawAll();break;
     case'KeyC':doHold();break;
     case'KeyP':case'Escape':togglePause();break;
   }
