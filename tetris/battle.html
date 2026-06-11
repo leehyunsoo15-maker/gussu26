@@ -424,8 +424,8 @@ function rot90(p) {
 function randPiece() {
   // 1/8 확률로 공격 아이템 블록
   const r = Math.random();
-  if (r < 0.07) return 'ATK1';
-  if (r < 0.13) return 'ATK2';
+  if (r < 0.105) return 'ATK1';
+  if (r < 0.195) return 'ATK2';
   const types = Object.keys(SHAPES);
   return types[Math.floor(Math.random() * types.length)];
 }
@@ -724,7 +724,8 @@ function startDrop() {
 // ═══════════════════════════════════════════════
 function startGame(timeSec) {
   selectedTime = timeSec;
-  dropInterval = DROP_SPEEDS[1];
+  // 30초는 심우주(index 6단계, 350ms) 속도로 설정
+  dropInterval = (timeSec <= 30) ? 350 : DROP_SPEEDS[1];
   board = emptyBoard();
   queue = [];
   score = 0; opScore = 0;
@@ -865,6 +866,8 @@ async function createRoom() {
       player1: { nickname: nick, score: 0, board: '', gameOver: false }
     }
   });
+  // 방장 연결 끊기면 방 자동 삭제
+  roomRef.onDisconnect().remove();
 
   showScreen('waitScreen');
   document.getElementById('roomCodeDisplay').textContent = roomId;
@@ -952,6 +955,14 @@ async function joinRoom() {
   // 게임 시작 감시
   roomRef.child('status').on('value', snap => {
     if (snap.val() === 'playing') launchGame();
+  });
+  // 방장이 나가면 방이 삭제됨 → 로비로 이동
+  roomRef.child('players/player1').on('value', snap => {
+    if (!snap.val() && myRole === 'player2') {
+      showLobbyMsg('방장이 방을 나갔습니다.');
+      leaveRoom();
+      showScreen('lobbyScreen');
+    }
   });
 }
 
