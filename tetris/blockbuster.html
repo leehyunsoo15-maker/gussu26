@@ -243,9 +243,9 @@ const ITEMS={
   BOMB:{emoji:'💣',name:'폭탄!',desc:'주변 3×3 제거',color:'#ff4d00',
     shape:[[1,2],[1,1]],
     effect(board,row,col){const c=[];for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){const nr=row+dr,nc=col+dc;if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS)c.push([nr,nc]);}return c;}},
-  THUNDER:{emoji:'⚡',name:'번개!',desc:'가장 꽉 찬 줄 제거',color:'#ffbb00',shape:[[0,1,0],[0,2,0],[0,1,0]]},
-  SLOW:{emoji:'🐢',name:'슬로우!',desc:'5초간 낙하 느려짐',color:'#44ee88',shape:[[1,0],[2,0],[1,0]],duration:5000},
-  TIMEUP:{emoji:'⏱️',name:'+10초!',desc:'시간 보너스',color:'#00c8ff',shape:[[1,1],[2,1]]},
+  THUNDER:{emoji:'🌲',name:'번개!',desc:'가장 꽉 찬 줄 제거',color:'#ffbb00',shape:[[0,1,0],[0,2,0],[0,1,0]]},
+  SLOW:{emoji:'☁️',name:'슬로우!',desc:'5초간 낙하 느려짐',color:'#44ee88',shape:[[1,0],[2,0],[1,0]],duration:5000},
+  TIMEUP:{emoji:'🚀',name:'+10초!',desc:'시간 보너스',color:'#00c8ff',shape:[[1,1],[2,1]]},
   // 불리한 아이템 (히든 전용)
   NOROT:{emoji:'🔒',name:'회전불가!',desc:'5초간 회전 막힘',color:'#ff2d78',shape:[[1,0],[2,0],[1,0]],duration:5000,bad:true},
   DARK:{emoji:'🌑',name:'어둠!',desc:'4초간 화면 어두워짐',color:'#220033',shape:[[0,1,0],[1,2,1],[0,1,0]],duration:4000,bad:true},
@@ -262,7 +262,7 @@ const ITEM_POOL=[null,
   ['BOMB','THUNDER'],                                 // 6
   ['NOROT','NOROT','DARK','DARK','SPEED','SPEED'],    // 7 히든: 불리한 것만
 ];
-const ITEM_CHANCE=[null,.23,.21,.18,.16,.13,.11,.33]; // 히든은 확률 높게
+const ITEM_CHANCE=[null,.46,.42,.36,.32,.26,.22,.50]; // 히든은 확률 높게
 
 const COLS=10,ROWS=20;
 let CELL=28;
@@ -731,7 +731,7 @@ function animClear(){clearAnim.progress+=.07;if(clearAnim.progress>=1){const cb=
 
 // ═══ 그리기 ═══
 function drawBlock(c,r,color,alpha=1){ctx.save();ctx.globalAlpha=alpha;ctx.fillStyle=color;ctx.fillRect(c*CELL+1,r*CELL+1,CELL-2,CELL-2);ctx.fillStyle='rgba(255,255,255,0.18)';ctx.fillRect(c*CELL+1,r*CELL+1,CELL-2,4);ctx.fillStyle='rgba(0,0,0,0.15)';ctx.fillRect(c*CELL+1,r*CELL+CELL-3,CELL-2,2);ctx.restore();}
-function drawItemBlock(c,r,type,alpha=1){const item=ITEMS[type];if(!item)return;ctx.save();ctx.globalAlpha=alpha;ctx.fillStyle=item.color;ctx.fillRect(c*CELL+1,r*CELL+1,CELL-2,CELL-2);ctx.fillStyle='rgba(255,255,255,0.22)';ctx.fillRect(c*CELL+1,r*CELL+1,CELL-2,4);ctx.font=Math.floor(CELL*.52)+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(item.emoji,c*CELL+CELL/2,r*CELL+CELL/2+1);ctx.restore();}
+function drawItemBlock(c,r,type,alpha=1){const item=ITEMS[type];if(!item)return;ctx.save();ctx.globalAlpha=alpha;ctx.fillStyle=item.color;ctx.fillRect(c*CELL+1,r*CELL+1,CELL-2,CELL-2);ctx.fillStyle='rgba(255,255,255,0.22)';ctx.fillRect(c*CELL+1,r*CELL+1,CELL-2,4);ctx.font=Math.floor(CELL*.52)+'px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(item.emoji,c*CELL+CELL/2,r*CELL+CELL/2+1);ctx.strokeStyle='rgba(255,255,255,0.85)';ctx.lineWidth=2.5;ctx.setLineDash([3,2]);ctx.strokeRect(c*CELL+2,r*CELL+2,CELL-4,CELL-4);ctx.setLineDash([]);ctx.restore();}
 
 function drawAll(){
   // 어둠 상태: 보드 주변만 약하게 보임
