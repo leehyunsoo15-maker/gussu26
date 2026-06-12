@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>블록게임 대전</title>
+<title>ë¸ë¡ê²ì ëì </title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Jua&family=Black+Han+Sans&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -13,35 +13,40 @@ body{font-family:'Jua',sans-serif;color:#fff;}
 .screen{display:none;width:100%;height:100%;flex-direction:column;align-items:center;justify-content:center;padding:16px;}
 .screen.active{display:flex;}
 
-/* ── LOBBY ── */
-#lobbyScreen{background:linear-gradient(180deg,#0a0a2e,#1a1a4e);}
-#lobbyScreen h1{font-family:'Black Han Sans',sans-serif;font-size:48px;letter-spacing:4px;margin-bottom:6px;
+/* ââ LOBBY ── */
+#lobbyScreen{background:linear-gradient(180deg,#0a0a2e,#1a1a4e);overflow-y:auto;overflow-x:hidden;justify-content:flex-start;padding:8px 10px;}
+#lobbyScreen h1{font-family:'Black Han Sans',sans-serif;font-size:32px;letter-spacing:3px;margin-bottom:2px;
   background:linear-gradient(135deg,#ff4dae,#44bbff,#ffe500);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.lobby-sub{font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:28px;letter-spacing:2px;}
-.glass{background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);border-radius:20px;padding:20px;width:100%;max-width:340px;margin-bottom:14px;}
-.glass .lbl{font-size:14px;color:rgba(255,255,255,0.7);margin-bottom:12px;}hh
-.nick-input{width:100%;padding:12px 14px;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.25);border-radius:12px;
-  color:#fff;font-size:16px;font-family:'Jua',sans-serif;outline:none;margin-bottom:10px;}
+.lobby-sub{font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:6px;letter-spacing:2px;}
+.lobby-layout{display:flex;gap:8px;width:100%;max-width:700px;align-items:flex-start;}
+.lobby-col-left{flex:1;display:flex;flex-direction:column;min-width:0;}
+.lobby-col-right{flex:1;display:flex;flex-direction:column;min-width:0;}
+.glass{background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);border-radius:14px;padding:10px;width:100%;margin-bottom:8px;}
+.glass .lbl{font-size:12px;color:rgba(255,255,255,0.7);margin-bottom:7px;}
+.nick-input{width:100%;padding:8px 10px;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.25);border-radius:10px;
+  color:#fff;font-size:14px;font-family:'Jua',sans-serif;outline:none;margin-bottom:6px;}
 .nick-input::placeholder{color:rgba(255,255,255,0.35);}
-.time-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;}
-.time-btn{padding:14px 4px;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.2);border-radius:14px;
-  color:#ccc;font-family:'Jua',sans-serif;font-size:13px;cursor:pointer;text-align:center;}
-.time-btn .tn{font-family:'Black Han Sans',sans-serif;font-size:22px;color:#fff;}
+.time-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:6px;}
+.time-btn{padding:8px 4px;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.2);border-radius:10px;
+  color:#ccc;font-family:'Jua',sans-serif;font-size:11px;cursor:pointer;text-align:center;}
+.time-btn .tn{font-family:'Black Han Sans',sans-serif;font-size:16px;color:#fff;}
 .time-btn.sel{background:rgba(74,184,232,0.2);border-color:#4ab8e8;color:#4ab8e8;}
 .time-btn.sel .tn{color:#4ab8e8;}
-.big-btn{width:100%;max-width:340px;padding:18px;font-family:'Black Han Sans',sans-serif;font-size:22px;letter-spacing:2px;
-  color:#fff;border:none;border-radius:16px;cursor:pointer;margin-bottom:10px;}
-.big-btn.blue{background:linear-gradient(135deg,#4ab8e8,#1a6ab1);box-shadow:0 6px 20px rgba(74,184,232,0.35);}
-.big-btn.purple{background:linear-gradient(135deg,#a855f7,#6366f1);box-shadow:0 6px 20px rgba(168,85,247,0.35);}
+.big-btn{width:100%;padding:11px;font-family:'Black Han Sans',sans-serif;font-size:16px;letter-spacing:1px;
+  color:#fff;border:none;border-radius:12px;cursor:pointer;margin-bottom:8px;}
+.big-btn.blue{background:linear-gradient(135deg,#4ab8e8,#1a6ab1);box-shadow:0 4px 14px rgba(74,184,232,0.35);}
+.big-btn.purple{background:linear-gradient(135deg,#a855f7,#6366f1);box-shadow:0 4px 14px rgba(168,85,247,0.35);}
 .big-btn.gray{background:rgba(255,255,255,0.12);border:1.5px solid rgba(255,255,255,0.25);}
-.room-input-row{display:flex;gap:8px;margin-bottom:0;}
-.room-input{flex:1;padding:12px 14px;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.25);border-radius:12px;
-  color:#fff;font-size:16px;font-family:'Jua',sans-serif;outline:none;letter-spacing:3px;text-align:center;text-transform:uppercase;}
+.small-btn{padding:7px 14px;font-family:'Black Han Sans',sans-serif;font-size:12px;letter-spacing:1px;
+  color:rgba(255,255,255,0.65);border:1px solid rgba(255,255,255,0.2);border-radius:10px;cursor:pointer;background:rgba(255,255,255,0.07);margin-bottom:6px;width:100%;text-align:center;}
+.room-input-row{display:flex;gap:6px;margin-bottom:0;}
+.room-input{flex:1;padding:8px 10px;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.25);border-radius:10px;
+  color:#fff;font-size:14px;font-family:'Jua',sans-serif;outline:none;letter-spacing:3px;text-align:center;text-transform:uppercase;}
 .room-input::placeholder{color:rgba(255,255,255,0.3);letter-spacing:1px;text-transform:none;}
-.join-btn{padding:12px 18px;background:linear-gradient(135deg,#a855f7,#6366f1);border:none;border-radius:12px;
-  color:#fff;font-family:'Black Han Sans',sans-serif;font-size:16px;cursor:pointer;white-space:nowrap;}
+.join-btn{padding:8px 12px;background:linear-gradient(135deg,#a855f7,#6366f1);border:none;border-radius:10px;
+  color:#fff;font-family:'Black Han Sans',sans-serif;font-size:14px;cursor:pointer;white-space:nowrap;}
 
-/* ── WAITING ── */
+/* WAITING ââ */
 #waitScreen{background:linear-gradient(180deg,#0a0a2e,#1a1a4e);}
 .wait-box{background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);border-radius:24px;
   padding:32px 24px;text-align:center;width:100%;max-width:340px;}
@@ -68,7 +73,7 @@ body{font-family:'Jua',sans-serif;color:#fff;}
 .wait-time-btn.sel .wtn{color:#4ab8e8;}
 .wait-time-btn:disabled,.wait-time-btn[disabled]{opacity:0.4;cursor:default;}
 
-/* ── GAME ── */
+/* ââ GAME ââ */
 #gameScreen{flex-direction:column;padding:0;justify-content:flex-start;background:#0a0a1e;position:relative;}
 #topBar{display:flex;align-items:center;padding:6px 10px;gap:8px;background:rgba(255,255,255,0.07);
   border-bottom:1px solid rgba(255,255,255,0.12);flex-shrink:0;}
@@ -101,7 +106,7 @@ body{font-family:'Jua',sans-serif;color:#fff;}
 .cbtn.dn{background:rgba(30,180,255,0.25);border:2.5px solid rgba(60,200,255,0.5);}
 .cbtn:active,.cbtn.pressed{transform:scale(.88);}
 
-/* ── OVERLAYS ── */
+/* ââ OVERLAYS ââ */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);display:none;align-items:center;justify-content:center;z-index:200;backdrop-filter:blur(10px);}
 .overlay.on{display:flex;}
 .ov-box{background:rgba(20,20,50,0.95);border:2px solid rgba(255,255,255,0.25);border-radius:26px;
@@ -119,47 +124,47 @@ body{font-family:'Jua',sans-serif;color:#fff;}
 .ov-btn.pri{background:linear-gradient(135deg,#4ab8e8,#1a6ab1);color:#fff;}
 .ov-btn.sec{background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.25);color:#fff;}
 
-/* ── ATTACK FLASH ── */
+/* ââ ATTACK FLASH ââ */
 #attackFlash{position:fixed;inset:0;pointer-events:none;z-index:150;opacity:0;
   box-shadow:inset 0 0 0 6px rgba(255,50,50,0.9),inset 0 0 50px rgba(255,0,0,0.4);
   transition:opacity .1s;}
 #attackFlash.show{opacity:1;animation:attackFade .6s ease forwards;}
 @keyframes attackFade{0%{opacity:1;}100%{opacity:0;}}
 
-/* ── TOAST ── */
+/* ââ TOAST ââ */
 .toast{position:fixed;left:50%;transform:translateX(-50%);font-family:'Black Han Sans',sans-serif;
   border-radius:14px;z-index:300;display:none;pointer-events:none;white-space:nowrap;padding:10px 20px;}
 #gameToast{top:22%;background:rgba(0,0,0,0.75);color:#fff;font-size:16px;}
 #attackToast{top:30%;background:linear-gradient(135deg,#ff4466,#cc0033);color:#fff;font-size:14px;}
 
-/* ── LOBBY ERROR ── */
+/* ââ LOBBY ERROR ââ */
 #lobbyMsg{font-size:13px;color:#ff8888;min-height:18px;margin-top:-6px;margin-bottom:4px;text-align:center;}
 
-/* ── GAME MODE ── */
-.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
-.mode-btn{padding:14px 4px;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.2);border-radius:14px;color:#ccc;font-family:'Jua',sans-serif;font-size:14px;cursor:pointer;text-align:center;transition:all 0.2s;}
-.mode-btn .mn{font-family:'Black Han Sans',sans-serif;font-size:20px;color:#fff;display:block;margin-bottom:2px;}
+/* ââ GAME MODE ââ */
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:6px;}
+.mode-btn{padding:9px 4px;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.2);border-radius:10px;color:#ccc;font-family:'Jua',sans-serif;font-size:12px;cursor:pointer;text-align:center;transition:all 0.2s;}
+.mode-btn .mn{font-family:'Black Han Sans',sans-serif;font-size:16px;color:#fff;display:block;margin-bottom:1px;}
 .mode-btn.sel{background:rgba(255,107,107,0.2);border-color:#ff6b6b;color:#ff6b6b;}
 .mode-btn.sel .mn{color:#ff6b6b;}
 .mode-btn.normal.sel{background:rgba(74,184,232,0.2);border-color:#4ab8e8;color:#4ab8e8;}
 .mode-btn.normal.sel .mn{color:#4ab8e8;}
 
-/* ── ROOM LIST ── */
-.room-list-section{width:100%;max-width:340px;margin-bottom:14px;}
-.room-list-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
-.room-list-refresh{background:none;border:1px solid rgba(255,255,255,0.3);border-radius:8px;color:rgba(255,255,255,0.6);font-size:12px;padding:4px 10px;cursor:pointer;font-family:'Jua',sans-serif;}
-.room-list-body{display:flex;flex-direction:column;gap:8px;max-height:200px;overflow-y:auto;}
-.room-item{display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.15);border-radius:12px;padding:10px 14px;cursor:pointer;transition:all 0.15s;}
+/* ââ ROOM LIST ââ */
+.room-list-section{width:100%;margin-bottom:8px;}
+.room-list-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;}
+.room-list-refresh{background:none;border:1px solid rgba(255,255,255,0.3);border-radius:8px;color:rgba(255,255,255,0.6);font-size:11px;padding:3px 8px;cursor:pointer;font-family:'Jua',sans-serif;}
+.room-list-body{display:flex;flex-direction:column;gap:5px;max-height:240px;overflow-y:auto;}
+.room-item{display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.15);border-radius:10px;padding:7px 10px;cursor:pointer;transition:all 0.15s;}
 .room-item:hover{background:rgba(255,255,255,0.12);border-color:rgba(74,184,232,0.5);}
-.room-item-left{display:flex;flex-direction:column;gap:2px;}
-.room-item-code{font-family:'Black Han Sans',sans-serif;font-size:16px;color:#4ab8e8;letter-spacing:2px;}
-.room-item-info{font-size:11px;color:rgba(255,255,255,0.5);}
-.room-item-mode{font-size:12px;padding:3px 8px;border-radius:8px;font-family:'Jua',sans-serif;}
+.room-item-left{display:flex;flex-direction:column;gap:1px;}
+.room-item-code{font-family:'Black Han Sans',sans-serif;font-size:14px;color:#4ab8e8;letter-spacing:2px;}
+.room-item-info{font-size:10px;color:rgba(255,255,255,0.5);}
+.room-item-mode{font-size:11px;padding:2px 6px;border-radius:7px;font-family:'Jua',sans-serif;}
 .room-item-mode.item{background:rgba(255,107,107,0.2);color:#ff6b6b;border:1px solid rgba(255,107,107,0.4);}
 .room-item-mode.normal{background:rgba(74,184,232,0.2);color:#4ab8e8;border:1px solid rgba(74,184,232,0.4);}
-.room-list-empty{text-align:center;color:rgba(255,255,255,0.3);font-size:13px;padding:16px;}
+.room-list-empty{text-align:center;color:rgba(255,255,255,0.3);font-size:12px;padding:12px;}
 
-/* ── WAIT MODE BADGE ── */
+/* ââ WAIT MODE BADGE ââ */
 .wait-mode-badge{display:inline-block;padding:4px 14px;border-radius:20px;font-size:13px;font-family:'Jua',sans-serif;margin-bottom:10px;}
 .wait-mode-badge.item{background:rgba(255,107,107,0.2);color:#ff6b6b;border:1px solid rgba(255,107,107,0.4);}
 .wait-mode-badge.normal{background:rgba(74,184,232,0.2);color:#4ab8e8;border:1px solid rgba(74,184,232,0.4);}
@@ -173,106 +178,111 @@ body{font-family:'Jua',sans-serif;color:#fff;}
 <div class="toast" id="gameToast"></div>
 <div class="toast" id="attackToast"></div>
 
-<!-- ══ LOBBY ══ -->
-<div id="lobbyScreen" class="screen active">
+<!-- ââ LOBBY ââ -->
+<div id="lobbyScreen" class="screen">
   <h1>⚔️ 대전</h1>
   <div class="lobby-sub">BATTLE MODE</div>
 
-  <div class="glass">
-    <div class="lbl">👤 닉네임</div>
-    <input id="nickInput" class="nick-input" type="text" maxlength="10" placeholder="닉네임 입력">
-  </div>
+  <div class="lobby-layout">
+    <div class="lobby-col-left">
+      <div class="glass">
+        <div class="lbl">🤝 닉네임</div>
+        <input id="nickInput" class="nick-input" type="text" maxlength="10" placeholder="닉네임 입력">
+      </div>
 
-  <div class="glass">
-    <div class="lbl">⏱ 제한 시간 선택</div>
-    <div class="time-grid">
-      <div class="time-btn" data-sec="120"><div class="tn">2분</div>여유</div>
-      <div class="time-btn sel" data-sec="60"><div class="tn">1분</div>표준</div>
-      <div class="time-btn" data-sec="30"><div class="tn">30초</div>스피드</div>
+      <div class="glass">
+        <div class="lbl">⏱ 제한 시간 선택</div>
+        <div class="time-grid">
+          <div class="time-btn" data-sec="120"><div class="tn">2분</div>여유</div>
+          <div class="time-btn sel" data-sec="60"><div class="tn">1분</div>표준</div>
+          <div class="time-btn" data-sec="30"><div class="tn">30초</div>스피드</div>
+        </div>
+      </div>
+
+      <div class="glass">
+        <div class="lbl">🎮 게임 모드</div>
+        <div class="mode-grid">
+          <div class="mode-btn normal sel" id="modeNormalBtn" onclick="selectMode('normal')"><span class="mn">일반전</span>블록 대결</div>
+          <div class="mode-btn item" id="modeItemBtn" onclick="selectMode('item')"><span class="mn">아이템전</span>아이템음 대결</div>
+        </div>
+      </div>
+
+      <button class="big-btn blue" id="createBtn">🏠 방 만들기</button>
+    </div>
+
+    <div class="lobby-col-right">
+      <div class="glass">
+        <div class="lbl">🔑 방 코드로 참가</div>
+        <div class="room-input-row">
+          <input id="roomCodeInput" class="room-input" type="text" maxlength="6" placeholder="코드 입력">
+          <button class="join-btn" id="joinBtn">참가</button>
+        </div>
+      </div>
+
+      <div class="room-list-section" id="roomListSection">
+        <div class="room-list-header">
+          <div class="lbl" style="margin:0">🏠 열린 방 목록</div>
+          <button class="room-list-refresh" onclick="refreshRoomList()">🔄 새로고침</button>
+        </div>
+        <div class="room-list-body" id="roomListBody">
+          <div class="room-list-empty">방을 불러오는 중...</div>
+        </div>
+      </div>
+
+      <button class="small-btn" onclick="location.href='index.html'">← 일반 게임으로</button>
     </div>
   </div>
-
-  <div class="glass">
-    <div class="lbl">🎮 게임 모드</div>
-    <div class="mode-grid">
-      <div class="mode-btn normal sel" id="modeNormalBtn" onclick="selectMode('normal')"><span class="mn">일반전</span>블록 대결</div>
-      <div class="mode-btn item" id="modeItemBtn" onclick="selectMode('item')"><span class="mn">🎁 아이템전</span>아이템 사용</div>
-    </div>
-  </div>
-
-  <button class="big-btn blue" id="createBtn">🏠 방 만들기</button>
-
-  <div class="glass" style="margin-bottom:10px;">
-    <div class="lbl">🔑 방 코드로 참가</div>
-    <div class="room-input-row">
-      <input id="roomCodeInput" class="room-input" type="text" maxlength="6" placeholder="코드 입력">
-      <button class="join-btn" id="joinBtn">입장</button>
-    </div>
-  </div>
-
-  <div id="lobbyMsg"></div>
-
-  <div class="glass room-list-section" id="roomListSection">
-    <div class="room-list-header">
-      <div class="lbl" style="margin:0">🏠 열린 방 목록</div>
-      <button class="room-list-refresh" onclick="refreshRoomList()">🔄 새로고침</button>
-    </div>
-    <div class="room-list-body" id="roomListBody">
-      <div class="room-list-empty">방을 불러오는 중...</div>
-    </div>
-  </div>
-  <button class="big-btn gray" onclick="location.href='index.html'" style="max-width:340px;">← 일반 게임으로</button>
 </div>
 
-<!-- ══ WAITING ══ -->
+<!-- ── WAITING ── -->
 <div id="waitScreen" class="screen">
   <div class="wait-box">
-    <h2>🏠 대기 중</h2>
-    <div id="waitModeBadge" class="wait-mode-badge normal">일반전</div>
-    <div style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:4px;">방 코드를 공유하세요</div>
+    <h2>ð  ëê¸° ì¤</h2>
+    <div id="waitModeBadge" class="wait-mode-badge normal">ì¼ë°ì </div>
+    <div style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:4px;">ë°© ì½ëë¥¼ ê³µì íì¸ì</div>
     <div class="room-code-display" id="roomCodeDisplay" onclick="copyRoomCode()">------</div>
-    <div class="copy-hint">탭하면 복사됩니다</div>
+    <div class="copy-hint">í­íë©´ ë³µì¬ë©ëë¤</div>
 
     <div id="waitTimeSel" style="margin-bottom:14px;">
-      <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:8px;">⏱ 제한 시간</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:8px;">â± ì í ìê°</div>
       <div class="wait-time-row">
-        <div class="wait-time-btn" data-sec="120"><div class="wtn">2분</div>여유</div>
-        <div class="wait-time-btn sel" data-sec="60"><div class="wtn">1분</div>표준</div>
-        <div class="wait-time-btn" data-sec="30"><div class="wtn">30초</div>스피드</div>
+        <div class="wait-time-btn" data-sec="120"><div class="wtn">2ë¶</div>ì¬ì </div>
+        <div class="wait-time-btn sel" data-sec="60"><div class="wtn">1ë¶</div>íì¤</div>
+        <div class="wait-time-btn" data-sec="30"><div class="wtn">30ì´</div>ì¤í¼ë</div>
       </div>
     </div>
 
     <div class="players-row">
       <div class="player-slot me">
-        <div>👑 방장</div>
+        <div>ð ë°©ì¥</div>
         <div class="ps-name" id="p1Name">-</div>
-        <div class="ps-status">준비 완료</div>
+        <div class="ps-status">ì¤ë¹ ìë£</div>
       </div>
       <div class="player-slot">
-        <div>🎮 상대</div>
+        <div>ð® ìë</div>
         <div class="ps-name" id="p2Name">-</div>
-        <div class="ps-status dot-anim" id="p2Status">대기 중</div>
+        <div class="ps-status dot-anim" id="p2Status">ëê¸° ì¤</div>
       </div>
     </div>
 
-    <button class="big-btn blue" id="startWaitBtn" disabled>상대를 기다리는 중<span class="dot-anim"></span></button>
-    <button class="big-btn gray" id="cancelWaitBtn" style="margin-top:8px;">취소</button>
+    <button class="big-btn blue" id="startWaitBtn" disabled>ìëë¥¼ ê¸°ë¤ë¦¬ë ì¤<span class="dot-anim"></span></button>
+    <button class="big-btn gray" id="cancelWaitBtn" style="margin-top:8px;">ì·¨ì</button>
   </div>
 </div>
 
-<!-- ══ GAME ══ -->
+<!-- ââ GAME ââ -->
 <div id="gameScreen" class="screen">
   <div id="topBar">
-    <div class="score-box"><div class="sl">내 점수</div><div class="sv mine" id="myScoreDisp">0</div></div>
+    <div class="score-box"><div class="sl">ë´ ì ì</div><div class="sv mine" id="myScoreDisp">0</div></div>
     <div class="sep"></div>
     <div class="timer-display" id="timerDisp">1:00</div>
     <div class="sep"></div>
-    <div class="score-box"><div class="sl">상대 점수</div><div class="sv theirs" id="opScoreDisp">0</div></div>
+    <div class="score-box"><div class="sl">ìë ì ì</div><div class="sv theirs" id="opScoreDisp">0</div></div>
   </div>
 
   <div id="gameArea">
     <div class="board-wrap">
-      <div class="board-label">나</div>
+      <div class="board-label">ë</div>
       <canvas id="gameCanvas"></canvas>
       <div class="mini-wrap">
         <div class="mini-label">NEXT</div>
@@ -280,33 +290,33 @@ body{font-family:'Jua',sans-serif;color:#fff;}
       </div>
     </div>
     <div class="board-wrap">
-      <div class="board-label">상대</div>
+      <div class="board-label">ìë</div>
       <canvas id="opponentCanvas"></canvas>
     </div>
   </div>
 
   <div id="controls">
-    <div class="cbtn lr" id="btnL">◀</div>
-    <div class="cbtn rot" id="btnRot">🔄</div>
-    <div class="cbtn dn" id="btnD">▼</div>
-    <div class="cbtn lr" id="btnR">▶</div>
+    <div class="cbtn lr" id="btnL">â</div>
+    <div class="cbtn rot" id="btnRot">ð</div>
+    <div class="cbtn dn" id="btnD">â¼</div>
+    <div class="cbtn lr" id="btnR">â¶</div>
   </div>
 </div>
 
-<!-- ══ RESULT ══ -->
+<!-- ââ RESULT ââ -->
 <div class="overlay" id="resultOv">
   <div class="ov-box">
-    <h2 id="resultTitle">🏆 결과</h2>
+    <h2 id="resultTitle">ð ê²°ê³¼</h2>
     <div class="result-row" id="resultRow"></div>
-    <button class="ov-btn pri" id="rematchBtn">🔄 재대결</button>
-    <button class="ov-btn sec" id="resultHomeBtn">🏠 메인으로</button>
+    <button class="ov-btn pri" id="rematchBtn">ð ì¬ëê²°</button>
+    <button class="ov-btn sec" id="resultHomeBtn">ð  ë©ì¸ì¼ë¡</button>
   </div>
 </div>
 
 <script>
-// ═══════════════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââââââââââ
 // FIREBASE
-// ═══════════════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââââââââââ
 const firebaseConfig = {
   apiKey: "AIzaSyDoqYkAdHNiwxx4_qz-LsrwXbZM5Og0i2Y",
   authDomain: "tetris-leaderboard-26f06.firebaseapp.com",
@@ -319,9 +329,9 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// ═══════════════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââââââââââ
 // CONSTANTS
-// ═══════════════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââââââââââ
 const COLS = 10, ROWS = 20;
 let CELL = 26, OP_CELL = 13;
 
@@ -337,31 +347,31 @@ const SHAPES = {
 };
 const ATTACK_COLORS = ['#ff0044','#ff6600','#ffcc00','#00ff88','#00ccff','#aa44ff','#ff44aa'];
 
-// 아이템 블록 정의 (대전 전용)
+// ìì´í ë¸ë¡ ì ì (ëì  ì ì©)
 const ATTACK_ITEMS = {
-  ATK1: {label:'⭐',  lines:1, shape:[[1]], color:'#ff6600', bgColor:'#ffaa44'},
-  ATK2: {label:'⭐⭐', lines:2, shape:[[1,1]], color:'#ff0044', bgColor:'#ff6688'},
+  ATK1: {label:'â­',  lines:1, shape:[[1]], color:'#ff6600', bgColor:'#ffaa44'},
+  ATK2: {label:'â­â­', lines:2, shape:[[1,1]], color:'#ff0044', bgColor:'#ff6688'},
 };
 
-// 단계별 속도 (ms)
+// ë¨ê³ë³ ìë (ms)
 const DROP_SPEEDS = [0, 800, 600, 460, 350, 260, 190];
 
-// ═══════════════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââââââââââ
 // SESSION STATE
-// ═══════════════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââââââââââ
 let myRole = null;       // 'player1' | 'player2'
 let roomId = null;
 let roomRef = null;
 let myRef = null;
 let opRef = null;
 let attacksRef = null;
-let selectedTime = 60;   // 로비에서 선택한 제한시간
+let selectedTime = 60;   // ë¡ë¹ìì ì íí ì íìê°
 let myNick = '';
 let opNick = '';
 
-// ═══════════════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââââââââââ
 // GAME STATE
-// ═══════════════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââââââââââ
 const gc = document.getElementById('gameCanvas');
 const ctx = gc.getContext('2d');
 const oc = document.getElementById('opponentCanvas');
@@ -377,15 +387,15 @@ let timeLeft = 60;
 let speedLevel = 1;
 let dropInterval = 800;
 
-// ═══════════════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââââââââââ
 // LAYOUT
-// ═══════════════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââââââââââ
 function setupLayout() {
   const topH = document.getElementById('topBar').getBoundingClientRect().height || 52;
   const ctrlH = document.getElementById('controls').getBoundingClientRect().height || 96;
   const areaH = window.innerHeight - topH - ctrlH - 8;
   const areaW = window.innerWidth - 12;
-  // 내 보드 + 상대 보드(절반 크기) 나란히
+  // ë´ ë³´ë + ìë ë³´ë(ì ë° í¬ê¸°) ëëí
   // areaW = CELL*COLS + gap + OP_CELL*COLS
   CELL = Math.floor(Math.min(areaH / ROWS, (areaW - 16) / (COLS + COLS * 0.55)));
   CELL = Math.max(CELL, 20);
@@ -394,9 +404,9 @@ function setupLayout() {
   oc.width = OP_CELL * COLS; oc.height = OP_CELL * ROWS;
 }
 
-// ═══════════════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââââââââââ
 // TETRIS ENGINE
-// ═══════════════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââââââââââ
 function emptyBoard() { return Array.from({length: ROWS}, () => Array(COLS).fill(null)); }
 
 function canPlace(p, px, py) {
@@ -422,7 +432,7 @@ function rot90(p) {
 }
 
 function randPiece() {
-  // 1/8 확률로 공격 아이템 블록
+  // 1/8 íë¥ ë¡ ê³µê²© ìì´í ë¸ë¡
   const r = Math.random();
   if (r < 0.105) return 'ATK1';
   if (r < 0.195) return 'ATK2';
@@ -472,13 +482,13 @@ function placePiece() {
       board[nr][nc2] = curType;
     }
 
-  // 클리어 체크
+  // í´ë¦¬ì´ ì²´í¬
   const clearedRows = [];
-  let triggeredAttacks = []; // 아이템 블록이 포함된 클리어 줄들
+  let triggeredAttacks = []; // ìì´í ë¸ë¡ì´ í¬í¨ë í´ë¦¬ì´ ì¤ë¤
 
   for (let r = ROWS - 1; r >= 0; r--) {
     if (board[r].every(c => c !== null)) {
-      // 이 줄에 공격 아이템이 있는지 확인
+      // ì´ ì¤ì ê³µê²© ìì´íì´ ìëì§ íì¸
       board[r].forEach(cell => {
         if (cell && ATTACK_ITEMS[cell]) triggeredAttacks.push(ATTACK_ITEMS[cell].lines);
       });
@@ -495,14 +505,14 @@ function placePiece() {
     score += pts;
     updScoreUI();
 
-    // 공격 발동
+    // ê³µê²© ë°ë
     if (triggeredAttacks.length > 0) {
       const totalLines = triggeredAttacks.reduce((a, b) => a + b, 0);
       sendAttack(totalLines);
     }
   }
 
-  // 보드 상태 Firebase 전송 (착지 시점)
+  // ë³´ë ìí Firebase ì ì¡ (ì°©ì§ ìì )
   pushBoardState();
   spawn();
 }
@@ -510,29 +520,29 @@ function placePiece() {
 function sendAttack(lines) {
   if (!attacksRef || !myRole) return;
   attacksRef.push({ from: myRole, lines, timestamp: Date.now() });
-  showToast('attackToast', `⚔️ 공격! 무지개 줄 ${lines}개 전송!`, 1500);
+  showToast('attackToast', `âï¸ ê³µê²©! ë¬´ì§ê° ì¤ ${lines}ê° ì ì¡!`, 1500);
 }
 
 function addRainbowLines(count) {
-  // 무지개 줄을 보드 맨 아래에 추가 (기존 줄을 위로 밀어냄)
+  // ë¬´ì§ê° ì¤ì ë³´ë ë§¨ ìëì ì¶ê° (ê¸°ì¡´ ì¤ì ìë¡ ë°ì´ë)
   for (let i = 0; i < count; i++) {
-    board.shift(); // 위쪽 빈 줄 제거
+    board.shift(); // ììª½ ë¹ ì¤ ì ê±°
     const rainbowRow = Array.from({length: COLS}, () => 'RAINBOW');
     board.push(rainbowRow);
   }
-  // 공격 받은 시각 효과
+  // ê³µê²© ë°ì ìê° í¨ê³¼
   const flash = document.getElementById('attackFlash');
   flash.classList.remove('show');
   void flash.offsetWidth;
   flash.classList.add('show');
-  showToast('attackToast', `💥 공격받음! 무지개 줄 ${count}개 추가!`, 1800);
+  showToast('attackToast', `ð¥ ê³µê²©ë°ì! ë¬´ì§ê° ì¤ ${count}ê° ì¶ê°!`, 1800);
   drawAll();
   pushBoardState();
 }
 
 function pushBoardState() {
   if (!myRef) return;
-  // 보드를 압축된 문자열로 전송 (Firebase 쓰기 최소화)
+  // ë³´ëë¥¼ ìì¶ë ë¬¸ìì´ë¡ ì ì¡ (Firebase ì°ê¸° ìµìí)
   const encoded = board.map(row => row.map(cell => {
     if (!cell) return '.';
     if (cell === 'RAINBOW') return 'R';
@@ -549,16 +559,16 @@ function decodeBoard(encoded) {
   );
 }
 
-// ═══════════════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââââââââââ
 // DRAWING
-// ═══════════════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââââââââââ
 function lighten(hex, a) {
   const n = parseInt(hex.replace('#', ''), 16);
   return `rgb(${Math.min(255,(n>>16)+a)},${Math.min(255,((n>>8)&255)+a)},${Math.min(255,(n&255)+a)})`;
 }
 
 function getCellColor(type) {
-  if (type === 'RAINBOW') return null; // 특수 처리
+  if (type === 'RAINBOW') return null; // í¹ì ì²ë¦¬
   if (ATTACK_ITEMS[type]) return ATTACK_ITEMS[type].color;
   return BLOCK_COLORS[type] || '#888';
 }
@@ -579,7 +589,7 @@ function drawCell(c2, x, y, type, sz) {
   c2.fillStyle = 'rgba(255,255,255,0.2)';
   c2.beginPath(); c2.roundRect(x + 2, y + 2, sz - 4, Math.max(2, sz * 0.15), 1); c2.fill();
 
-  // 아이템 블록 이모지
+  // ìì´í ë¸ë¡ ì´ëª¨ì§
   if (ATTACK_ITEMS[type] && sz >= 18) {
     c2.font = `${Math.floor(sz * 0.55)}px serif`;
     c2.textAlign = 'center'; c2.textBaseline = 'middle';
@@ -589,7 +599,7 @@ function drawCell(c2, x, y, type, sz) {
 
 let rainbowHue = 0;
 function drawRainbowCell(c2, x, y, sz) {
-  // 무지개 색상 사이클
+  // ë¬´ì§ê° ìì ì¬ì´í´
   const hue = (rainbowHue + x * 20) % 360;
   c2.fillStyle = `hsl(${hue},90%,55%)`;
   c2.beginPath(); c2.roundRect(x + 1, y + 1, sz - 2, sz - 2, 2); c2.fill();
@@ -598,7 +608,7 @@ function drawRainbowCell(c2, x, y, sz) {
   if (sz >= 12) {
     c2.font = `${Math.floor(sz * 0.5)}px serif`;
     c2.textAlign = 'center'; c2.textBaseline = 'middle';
-    c2.fillText('👾', x + sz / 2, y + sz / 2);
+    c2.fillText('ð¾', x + sz / 2, y + sz / 2);
   }
 }
 
@@ -606,7 +616,7 @@ function drawBoard() {
   ctx.clearRect(0, 0, gc.width, gc.height);
   ctx.fillStyle = 'rgba(255,255,255,0.06)';
   ctx.beginPath(); ctx.roundRect(0, 0, gc.width, gc.height, 6); ctx.fill();
-  // 그리드
+  // ê·¸ë¦¬ë
   ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.lineWidth = 0.5;
   for (let r = 1; r < ROWS; r++) { ctx.beginPath(); ctx.moveTo(0, r * CELL); ctx.lineTo(gc.width, r * CELL); ctx.stroke(); }
   for (let c2 = 1; c2 < COLS; c2++) { ctx.beginPath(); ctx.moveTo(c2 * CELL, 0); ctx.lineTo(c2 * CELL, gc.height); ctx.stroke(); }
@@ -682,9 +692,9 @@ function drawAll() {
   if (running) rainbowRAF = requestAnimationFrame(() => {});
 }
 
-// ═══════════════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââââââââââ
 // TIMER
-// ═══════════════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââââââââââ
 function startTimer() {
   timeLeft = selectedTime;
   updTimerUI();
@@ -706,9 +716,9 @@ function updScoreUI() {
   document.getElementById('myScoreDisp').textContent = score.toLocaleString();
 }
 
-// ═══════════════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââââââââââ
 // DROP LOOP
-// ═══════════════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââââââââââ
 function startDrop() {
   clearInterval(dropTimer);
   dropTimer = setInterval(() => {
@@ -719,12 +729,12 @@ function startDrop() {
   }, dropInterval);
 }
 
-// ═══════════════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââââââââââ
 // GAME FLOW
-// ═══════════════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââââââââââ
 function startGame(timeSec) {
   selectedTime = timeSec;
-  // 30초는 심우주(index 6단계, 350ms) 속도로 설정
+  // 30ì´ë ì¬ì°ì£¼(index 6ë¨ê³, 350ms) ìëë¡ ì¤ì 
   dropInterval = (timeSec <= 30) ? 350 : DROP_SPEEDS[1];
   board = emptyBoard();
   queue = [];
@@ -739,7 +749,7 @@ function startGame(timeSec) {
   startDrop();
   startTimer();
 
-  // 실시간 상대 보드 구독
+  // ì¤ìê° ìë ë³´ë êµ¬ë
   opRef.on('value', snap => {
     const data = snap.val();
     if (!data) return;
@@ -747,19 +757,19 @@ function startGame(timeSec) {
     document.getElementById('opScoreDisp').textContent = opScore.toLocaleString();
     if (data.board) { opponentBoard = decodeBoard(data.board); drawOpponent(); }
     if (data.gameOver) {
-      // 상대가 게임오버 → 내가 이김
+      // ìëê° ê²ìì¤ë² â ë´ê° ì´ê¹
       showResult('opponent_blockout');
     }
   });
 
-  // 공격 수신 구독
+  // ê³µê²© ìì  êµ¬ë
   attacksRef.on('child_added', snap => {
     const attack = snap.val();
     if (!attack) return;
-    // 내 역할이 아닌 쪽에서 온 공격만 처리
+    // ë´ ì­í ì´ ìë ìª½ìì ì¨ ê³µê²©ë§ ì²ë¦¬
     const opRole = myRole === 'player1' ? 'player2' : 'player1';
     if (attack.from === opRole) {
-      // 게임 시작 전 기록된 이전 공격은 무시 (타임스탬프로 필터)
+      // ê²ì ìì ì  ê¸°ë¡ë ì´ì  ê³µê²©ì ë¬´ì (íìì¤í¬íë¡ íí°)
       if (attack.timestamp > gameStartTimestamp) {
         addRainbowLines(attack.lines);
       }
@@ -778,13 +788,13 @@ function endGame(reason) {
   if (myRef) myRef.update({ score, gameOver: true });
 
   if (reason === 'blockout') {
-    // 내가 블록아웃 → 즉시 패배
+    // ë´ê° ë¸ë¡ìì â ì¦ì í¨ë°°
     showResult('my_blockout');
   } else if (reason === 'timeout') {
-    // 시간 종료 → 점수 비교
+    // ìê° ì¢ë£ â ì ì ë¹êµ
     showResult('timeout');
   }
-  // 'opponent_blockout'은 opRef 리스너에서 호출
+  // 'opponent_blockout'ì opRef ë¦¬ì¤ëìì í¸ì¶
 }
 
 function showResult(reason) {
@@ -796,42 +806,42 @@ function showResult(reason) {
   let title, myClass, opClass, myBadge, opBadge;
 
   if (reason === 'my_blockout') {
-    title = '💀 패배!';
+    title = 'ð í¨ë°°!';
     myClass = 'lose'; opClass = 'win';
-    myBadge = '😢'; opBadge = '🏆';
+    myBadge = 'ð¢'; opBadge = 'ð';
   } else if (reason === 'opponent_blockout') {
-    title = '🏆 승리!';
+    title = 'ð ì¹ë¦¬!';
     myClass = 'win'; opClass = 'lose';
-    myBadge = '🏆'; opBadge = '😢';
+    myBadge = 'ð'; opBadge = 'ð¢';
   } else {
     // timeout
     if (score > opScore) {
-      title = '🏆 승리!'; myClass = 'win'; opClass = 'lose'; myBadge = '🏆'; opBadge = '😢';
+      title = 'ð ì¹ë¦¬!'; myClass = 'win'; opClass = 'lose'; myBadge = 'ð'; opBadge = 'ð¢';
     } else if (score < opScore) {
-      title = '💀 패배!'; myClass = 'lose'; opClass = 'win'; myBadge = '😢'; opBadge = '🏆';
+      title = 'ð í¨ë°°!'; myClass = 'lose'; opClass = 'win'; myBadge = 'ð¢'; opBadge = 'ð';
     } else {
-      title = '🤝 무승부!'; myClass = 'draw'; opClass = 'draw'; myBadge = '🤝'; opBadge = '🤝';
+      title = 'ð¤ ë¬´ì¹ë¶!'; myClass = 'draw'; opClass = 'draw'; myBadge = 'ð¤'; opBadge = 'ð¤';
     }
   }
 
   document.getElementById('resultTitle').textContent = title;
   document.getElementById('resultRow').innerHTML = `
     <div class="result-card ${myClass}">
-      <div class="rc-name">${myNick || '나'}</div>
+      <div class="rc-name">${myNick || 'ë'}</div>
       <div class="rc-score">${score.toLocaleString()}</div>
       <div class="rc-badge">${myBadge}</div>
     </div>
     <div class="result-card ${opClass}">
-      <div class="rc-name">${opNick || '상대'}</div>
+      <div class="rc-name">${opNick || 'ìë'}</div>
       <div class="rc-score">${opScore.toLocaleString()}</div>
       <div class="rc-badge">${opBadge}</div>
     </div>`;
   document.getElementById('resultOv').classList.add('on');
 }
 
-// ═══════════════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââââââââââ
 // LOBBY & ROOM SYSTEM
-// ═══════════════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââââââââââ
 function generateRoomId() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   let id = '';
@@ -841,7 +851,7 @@ function generateRoomId() {
 
 function getNick() {
   return (document.getElementById('nickInput').value.trim() ||
-    localStorage.getItem('battleNick') || '플레이어' + Math.floor(Math.random() * 1000));
+    localStorage.getItem('battleNick') || 'íë ì´ì´' + Math.floor(Math.random() * 1000));
 }
 
 async function createRoom() {
@@ -866,48 +876,48 @@ async function createRoom() {
       player1: { nickname: nick, score: 0, board: '', gameOver: false }
     }
   });
-  // 방장 연결 끊기면 방 자동 삭제
+  // ë°©ì¥ ì°ê²° ëê¸°ë©´ ë°© ìë ì­ì 
   roomRef.onDisconnect().remove();
 
   showScreen('waitScreen');
   document.getElementById('roomCodeDisplay').textContent = roomId;
   document.getElementById('p1Name').textContent = nick;
   document.getElementById('p2Name').textContent = '-';
-  document.getElementById('p2Status').textContent = '대기 중';
+  document.getElementById('p2Status').textContent = 'ëê¸° ì¤';
   document.getElementById('p2Status').classList.add('dot-anim');
   setWaitTimeSel(timeLimit, true);
 
-  // 모드 배지 업데이트
+  // ëª¨ë ë°°ì§ ìë°ì´í¸
   const badge = document.getElementById('waitModeBadge');
   if (badge) {
     badge.className = 'wait-mode-badge ' + gameMode;
-    badge.textContent = gameMode === 'item' ? '🎁 아이템전' : '일반전';
+    badge.textContent = gameMode === 'item' ? 'ð ìì´íì ' : 'ì¼ë°ì ';
   }
 
-  // 상대 입장 감지
+  // ìë ìì¥ ê°ì§
   opRef.on('value', snap => {
     const data = snap.val();
     if (data && data.nickname) {
       opNick = data.nickname;
       document.getElementById('p2Name').textContent = opNick;
-      document.getElementById('p2Status').textContent = '입장 완료 ✅';
+      document.getElementById('p2Status').textContent = 'ìì¥ ìë£ â';
       document.getElementById('p2Status').classList.remove('dot-anim');
       document.getElementById('startWaitBtn').disabled = false;
-      document.getElementById('startWaitBtn').innerHTML = '▶ 게임 시작!';
+      document.getElementById('startWaitBtn').innerHTML = 'â¶ ê²ì ìì!';
     }
   });
 
-  // 방 상태 감시 (player2가 시작 트리거)
+  // ë°© ìí ê°ì (player2ê° ìì í¸ë¦¬ê±°)
   roomRef.child('status').on('value', snap => {
     if (snap.val() === 'playing') launchGame();
   });
 
-  // 방 정리 예약 (1시간 후 자동 삭제는 Firebase Rules로 처리)
+  // ë°© ì ë¦¬ ìì½ (1ìê° í ìë ì­ì ë Firebase Rulesë¡ ì²ë¦¬)
 }
 
 async function joinRoom() {
   const code = document.getElementById('roomCodeInput').value.trim().toUpperCase();
-  if (code.length !== 6) { showLobbyMsg('6자리 코드를 입력하세요.'); return; }
+  if (code.length !== 6) { showLobbyMsg('6ìë¦¬ ì½ëë¥¼ ìë ¥íì¸ì.'); return; }
 
   const nick = getNick();
   localStorage.setItem('battleNick', nick);
@@ -915,9 +925,9 @@ async function joinRoom() {
 
   const snap = await db.ref('battle/rooms/' + code).once('value');
   const data = snap.val();
-  if (!data) { showLobbyMsg('존재하지 않는 방입니다.'); return; }
-  if (data.status !== 'waiting') { showLobbyMsg('이미 시작된 방입니다.'); return; }
-  if (data.players && data.players.player2) { showLobbyMsg('이미 가득 찬 방입니다.'); return; }
+  if (!data) { showLobbyMsg('ì¡´ì¬íì§ ìë ë°©ìëë¤.'); return; }
+  if (data.status !== 'waiting') { showLobbyMsg('ì´ë¯¸ ììë ë°©ìëë¤.'); return; }
+  if (data.players && data.players.player2) { showLobbyMsg('ì´ë¯¸ ê°ë ì°¬ ë°©ìëë¤.'); return; }
 
   myRole = 'player2';
   roomId = code;
@@ -929,37 +939,37 @@ async function joinRoom() {
 
   await myRef.set({ nickname: nick, score: 0, board: '', gameOver: false });
 
-  opNick = data.players.player1.nickname || '상대';
+  opNick = data.players.player1.nickname || 'ìë';
 
-  // 대기 화면 (참가자는 시간 선택 불가, 방장 설정 따름)
+  // ëê¸° íë©´ (ì°¸ê°ìë ìê° ì í ë¶ê°, ë°©ì¥ ì¤ì  ë°ë¦)
   showScreen('waitScreen');
   document.getElementById('roomCodeDisplay').textContent = roomId;
   document.getElementById('p1Name').textContent = opNick;
   document.getElementById('p2Name').textContent = nick;
-  document.getElementById('p2Status').textContent = '나 (입장 완료)';
+  document.getElementById('p2Status').textContent = 'ë (ìì¥ ìë£)';
   document.getElementById('p2Status').classList.remove('dot-anim');
   setWaitTimeSel(selectedTime, false);
 
-  // 모드 배지 업데이트
+  // ëª¨ë ë°°ì§ ìë°ì´í¸
   const gameMode = data.gameMode || 'normal';
   const badge = document.getElementById('waitModeBadge');
   if (badge) {
     badge.className = 'wait-mode-badge ' + gameMode;
-    badge.textContent = gameMode === 'item' ? '🎁 아이템전' : '일반전';
+    badge.textContent = gameMode === 'item' ? 'ð ìì´íì ' : 'ì¼ë°ì ';
   }
 
-  // 방장 이름 표시
+  // ë°©ì¥ ì´ë¦ íì
   document.getElementById('startWaitBtn').disabled = true;
-  document.getElementById('startWaitBtn').innerHTML = '방장이 시작할 때까지 대기 중<span class="dot-anim"></span>';
+  document.getElementById('startWaitBtn').innerHTML = 'ë°©ì¥ì´ ììí  ëê¹ì§ ëê¸° ì¤<span class="dot-anim"></span>';
 
-  // 게임 시작 감시
+  // ê²ì ìì ê°ì
   roomRef.child('status').on('value', snap => {
     if (snap.val() === 'playing') launchGame();
   });
-  // 방장이 나가면 방이 삭제됨 → 로비로 이동
+  // ë°©ì¥ì´ ëê°ë©´ ë°©ì´ ì­ì ë¨ â ë¡ë¹ë¡ ì´ë
   roomRef.child('players/player1').on('value', snap => {
     if (!snap.val() && myRole === 'player2') {
-      showLobbyMsg('방장이 방을 나갔습니다.');
+      showLobbyMsg('ë°©ì¥ì´ ë°©ì ëê°ìµëë¤.');
       leaveRoom();
       showScreen('lobbyScreen');
     }
@@ -967,7 +977,7 @@ async function joinRoom() {
 }
 
 function launchGame() {
-  // 리스너 정리 (status 감시 제거)
+  // ë¦¬ì¤ë ì ë¦¬ (status ê°ì ì ê±°)
   if (roomRef) roomRef.child('status').off();
   if (myRole === 'player1' && opRef) opRef.off();
 
@@ -994,7 +1004,7 @@ function showLobbyMsg(msg) {
 function copyRoomCode() {
   if (!roomId) return;
   navigator.clipboard.writeText(roomId).catch(() => {});
-  showToast('gameToast', '📋 코드 복사됨: ' + roomId, 1500);
+  showToast('gameToast', 'ð ì½ë ë³µì¬ë¨: ' + roomId, 1500);
 }
 
 function showScreen(id) {
@@ -1016,7 +1026,7 @@ function leaveRoom() {
   if (attacksRef) attacksRef.off();
   if (roomRef) {
     roomRef.child('status').off();
-    // 방장이면 방 삭제
+    // ë°©ì¥ì´ë©´ ë°© ì­ì 
     if (myRole === 'player1') roomRef.remove();
     else if (myRef) myRef.remove();
   }
@@ -1024,9 +1034,9 @@ function leaveRoom() {
   roomId = null; myRole = null;
 }
 
-// ═══════════════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââââââââââ
 // INPUT
-// ═══════════════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââââââââââ
 document.addEventListener('keydown', e => {
   if (!running || paused) return;
   switch (e.code) {
@@ -1056,15 +1066,15 @@ function bindBtn(id, fn, repeat = false) {
   el.addEventListener('mouseup', () => clearInterval(tmr));
 }
 
-// ═══════════════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââââââââââ
 // INIT
-// ═══════════════════════════════════════════════
+// âââââââââââââââââââââââââââââââââââââââââââââââ
 window.addEventListener('DOMContentLoaded', () => {
-  // 닉네임 복원
+  // ëë¤ì ë³µì
   const savedNick = localStorage.getItem('battleNick') || localStorage.getItem('blockNick') || '';
   document.getElementById('nickInput').value = savedNick;
 
-  // 로비 시간 선택
+  // ë¡ë¹ ìê° ì í
   document.querySelectorAll('.time-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('sel'));
@@ -1073,7 +1083,7 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // 대기실 시간 선택 (방장만)
+  // ëê¸°ì¤ ìê° ì í (ë°©ì¥ë§)
   document.querySelectorAll('.wait-time-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       if (btn.hasAttribute('disabled')) return;
@@ -1097,13 +1107,13 @@ window.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('startWaitBtn').addEventListener('click', () => {
     if (myRole !== 'player1') return;
-    // 게임 시작 → Firebase status 변경으로 양쪽 동시 진입
+    // ê²ì ìì â Firebase status ë³ê²½ì¼ë¡ ììª½ ëì ì§ì
     if (roomRef) {
       roomRef.update({ status: 'playing', startedAt: Date.now() });
     }
   });
 
-  // 게임 버튼
+  // ê²ì ë²í¼
   bindBtn('btnL', () => { if (canPlace(cur, curX - 1, curY)) { curX--; drawAll(); } }, true);
   bindBtn('btnRot', () => doRotate(), false);
   bindBtn('btnD', () => {
@@ -1113,7 +1123,7 @@ window.addEventListener('DOMContentLoaded', () => {
   }, true);
   bindBtn('btnR', () => { if (canPlace(cur, curX + 1, curY)) { curX++; drawAll(); } }, true);
 
-  // 스와이프 하드드롭
+  // ì¤ìì´í íëëë¡­
   let tx0, ty0;
   gc.addEventListener('touchstart', e => { tx0 = e.touches[0].clientX; ty0 = e.touches[0].clientY; }, { passive: true });
   gc.addEventListener('touchend', e => {
@@ -1122,12 +1132,12 @@ window.addEventListener('DOMContentLoaded', () => {
     if (dy > 40) doHardDrop();
   }, { passive: true });
 
-  // 결과 버튼
+  // ê²°ê³¼ ë²í¼
   document.getElementById('rematchBtn').addEventListener('click', () => {
     document.getElementById('resultOv').classList.remove('on');
     leaveRoom();
     showScreen('lobbyScreen');
-    // 간단 재대결: 로비로 돌아가서 다시 방 만들기
+    // ê°ë¨ ì¬ëê²°: ë¡ë¹ë¡ ëìê°ì ë¤ì ë°© ë§ë¤ê¸°
   });
   document.getElementById('resultHomeBtn').addEventListener('click', () => {
     document.getElementById('resultOv').classList.remove('on');
@@ -1140,10 +1150,10 @@ window.addEventListener('resize', () => {
   if (running) { setupLayout(); drawAll(); }
 });
 
-// 페이지 닫힐 때 정리
+// íì´ì§ ë«í ë ì ë¦¬
 window.addEventListener('beforeunload', () => leaveRoom());
 
-// ── GAME MODE & ROOM LIST ──
+// ââ GAME MODE & ROOM LIST ââ
 let selectedMode = 'normal';
 
 function selectMode(mode) {
@@ -1162,20 +1172,20 @@ function selectMode(mode) {
 function refreshRoomList() {
   const body = document.getElementById('roomListBody');
   if (!body) return;
-  body.innerHTML = '<div class="room-list-empty">불러오는 중...</div>';
+  body.innerHTML = '<div class="room-list-empty">ë¶ë¬ì¤ë ì¤...</div>';
   db.ref('battle/rooms').orderByChild('status').equalTo('waiting').once('value').then(snap => {
     const val = snap.val();
     body.innerHTML = '';
-    if (!val) { body.innerHTML = '<div class="room-list-empty">열린 방이 없습니다</div>'; return; }
+    if (!val) { body.innerHTML = '<div class="room-list-empty">ì´ë¦° ë°©ì´ ììµëë¤</div>'; return; }
     const rooms = Object.entries(val).sort((a,b) => (b[1].createdAt||0)-(a[1].createdAt||0));
     rooms.forEach(([code, room]) => {
       const hostName = (room.players && room.players.player1 && room.players.player1.nickname) || '???';
       const mode = room.gameMode || 'normal';
-      const timeLabel = room.timeLimit === 120 ? '2분' : room.timeLimit === 60 ? '1분' : '30초';
-      const modeLabel = mode === 'item' ? '🎁 아이템전' : '일반전';
+      const timeLabel = room.timeLimit === 120 ? '2ë¶' : room.timeLimit === 60 ? '1ë¶' : '30ì´';
+      const modeLabel = mode === 'item' ? 'ð ìì´íì ' : 'ì¼ë°ì ';
       const item = document.createElement('div');
       item.className = 'room-item';
-      item.innerHTML = `<div class="room-item-left"><div class="room-item-code">${code}</div><div class="room-item-info">👑 ${hostName} · ⏱ ${timeLabel}</div></div><div class="room-item-mode ${mode}">${modeLabel}</div>`;
+      item.innerHTML = `<div class="room-item-left"><div class="room-item-code">${code}</div><div class="room-item-info">ð ${hostName} Â· â± ${timeLabel}</div></div><div class="room-item-mode ${mode}">${modeLabel}</div>`;
       item.onclick = () => {
         document.getElementById('roomCodeInput').value = code;
         document.getElementById('roomCodeInput').style.borderColor = '#4ab8e8';
@@ -1183,13 +1193,13 @@ function refreshRoomList() {
       };
       body.appendChild(item);
     });
-  }).catch(() => { body.innerHTML = '<div class="room-list-empty">불러오기 실패</div>'; });
+  }).catch(() => { body.innerHTML = '<div class="room-list-empty">ë¶ë¬ì¤ê¸° ì¤í¨</div>'; });
 }
 
 </script>
 
 <div style="position:fixed;bottom:4px;left:50%;transform:translateX(-50%);font-size:9px;color:rgba(255,255,255,0.2);letter-spacing:.8px;z-index:1;pointer-events:none;font-family:Arial,sans-serif;white-space:nowrap;">
-  ⚔️ Battle Mode · Crafted with ❤️ by Lee Hyunsoo & Claude AI
+  âï¸ Battle Mode Â· Crafted with â¤ï¸ by Lee Hyunsoo & Claude AI
 </div>
 </body>
 </html>
