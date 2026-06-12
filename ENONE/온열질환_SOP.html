@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>혹서기 체온관리 SOP | 이앤원 여주물류센터</title>
+<style>
+:root {
+  --orange: #ff6b35;
+  --orange-light: #fff4f0;
+  --orange-mid: #ffe0d3;
+  --red: #e53935;
+  --red-light: #fff5f5;
+  --yellow: #f59e0b;
+  --green: #16a34a;
+  --blue: #1d4ed8;
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-400: #9ca3af;
+  --gray-600: #4b5563;
+  --gray-800: #1f2937;
+  --max-w: 800px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; background: var(--gray-50); color: var(--gray-800); min-height: 100vh; }
+
+.header {
+  background: #fff;
+  border-bottom: 3px solid var(--orange);
+  padding: 0 20px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+.header-inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 52px;
+}
+.header-title { font-size: 16px; font-weight: 700; }
+.header-sub { font-size: 11px; color: var(--gray-400); margin-left: auto; }
+
+.content { max-width: var(--max-w); margin: 0 auto; padding: 16px 14px 40px; }
+
+.sop-hero {
+  background: var(--orange);
+  color: #fff;
+  border-radius: 12px;
+  padding: 20px 22px;
+  margin-bottom: 14px;
+}
+.sop-hero h2 { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+.sop-hero p { font-size: 12px; opacity: .85; margin-bottom: 8px; }
+.doc-no { font-size: 11px; opacity: .75; }
+
+.card { background: #fff; border-radius: 10px; border: 1px solid var(--gray-200); margin-bottom: 12px; padding: 16px; }
+.card-title { font-size: 14px; font-weight: 800; color: var(--gray-800); margin-bottom: 12px; display: flex; align-items: center; gap: 7px; }
+.card-title .icon { font-size: 16px; }
+
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.info-item { background: var(--gray-50); border-radius: 8px; padding: 10px 12px; }
+.info-item .label { font-size: 11px; color: var(--gray-400); margin-bottom: 3px; }
+.info-item .value { font-size: 13px; font-weight: 700; }
+
+.five-rules { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.rule-item { background: #fff; border: 1.5px solid var(--orange-mid); border-radius: 8px; padding: 12px 8px; text-align: center; font-size: 12px; }
+.rule-item .rule-num { font-size: 20px; margin-bottom: 4px; }
+.rule-item .rule-text { font-weight: 700; color: var(--orange); }
+
+.temp-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.temp-table th { background: var(--gray-100); padding: 8px 10px; text-align: left; font-size: 12px; color: var(--gray-600); border-bottom: 1px solid var(--gray-200); }
+.temp-table td { padding: 9px 10px; border-bottom: 1px solid var(--gray-100); vertical-align: top; line-height: 1.6; }
+.temp-table tr:last-child td { border-bottom: none; }
+
+.badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+.badge-관심 { background: #dbeafe; color: #1e40af; }
+.badge-경계 { background: #fef3c7; color: #92400e; }
+.badge-위험 { background: #fee2e2; color: #991b1b; }
+.badge-극위험 { background: #1f2937; color: #fff; }
+
+.temp-badge-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.temp-badge-item { flex: 1; min-width: 140px; border-radius: 8px; padding: 10px 12px; font-size: 12px; }
+.temp-badge-item .temp-range { font-weight: 800; font-size: 14px; margin-bottom: 4px; }
+.temp-badge-item .temp-action { line-height: 1.5; }
+.tb-normal   { background: #dcfce7; color: #166534; }
+.tb-caution  { background: #fef3c7; color: #92400e; }
+.tb-danger   { background: #fee2e2; color: #991b1b; }
+.tb-emergency{ background: #1f2937; color: #fff; }
+
+.emergency-steps { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.step-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; background: var(--gray-50); border-radius: 8px; font-size: 13px; }
+.step-item.danger { background: var(--red-light); border-left: 3px solid var(--red); }
+.step-num { width: 24px; height: 24px; background: var(--orange); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; flex-shrink: 0; }
+.step-item.danger .step-num { background: var(--red); }
+.step-text { line-height: 1.6; }
+
+.disease-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.disease-item { background: #fff; border-radius: 8px; padding: 12px; border: 1.5px solid var(--gray-200); }
+.disease-item.heat-stroke { border-color: var(--red); }
+.disease-item .d-title { font-weight: 800; font-size: 14px; margin-bottom: 8px; }
+.disease-item .d-symptom { font-size: 12px; color: var(--gray-600); line-height: 1.7; margin-bottom: 8px; }
+.disease-item .d-action { font-size: 12px; color: var(--blue); font-weight: 600; }
+.disease-item.heat-stroke .d-title { color: var(--red); }
+.disease-item.heat-stroke .d-action { color: var(--red); }
+
+.risk-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.risk-table th { background: var(--gray-100); padding: 8px 10px; text-align: left; font-size: 11px; color: var(--gray-600); border-bottom: 1px solid var(--gray-200); }
+.risk-table td { padding: 9px 10px; border-bottom: 1px solid var(--gray-100); vertical-align: top; line-height: 1.6; }
+.risk-table tr:last-child td { border-bottom: none; }
+.risk-table td:first-child { font-weight: 700; white-space: nowrap; }
+
+.law-list { list-style: none; }
+.law-list li { padding: 6px 0; border-bottom: 1px solid var(--gray-100); font-size: 12px; color: var(--gray-600); line-height: 1.6; }
+.law-list li:last-child { border-bottom: none; }
+.law-list li::before { content: '•'; color: var(--orange); margin-right: 8px; font-weight: 700; }
+
+.alert-banner { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px 14px; font-size: 12px; color: #1e40af; margin-bottom: 12px; }
+
+.accordion-btn {
+  width: 100%; background: var(--gray-50); border: 1.5px solid var(--gray-200); border-radius: 8px;
+  padding: 10px 14px; font-size: 13px; font-weight: 700; color: var(--gray-600); cursor: pointer;
+  text-align: left; display: flex; align-items: center; justify-content: space-between;
+  margin-top: 12px; font-family: inherit; transition: all .15s;
+}
+.accordion-btn:hover { background: var(--orange-light); border-color: var(--orange); color: var(--orange); }
+.accordion-btn.open { background: var(--orange-light); border-color: var(--orange); color: var(--orange); }
+.accordion-btn .arrow { transition: transform .2s; font-size: 11px; }
+.accordion-btn.open .arrow { transform: rotate(180deg); }
+.accordion-body { display: none; margin-top: 10px; padding: 14px; background: var(--gray-50); border-radius: 8px; border: 1px solid var(--gray-200); font-size: 13px; line-height: 1.8; }
+.accordion-body.open { display: block; }
+
+.footer { text-align: center; font-size: 11px; color: var(--gray-400); margin-top: 20px; padding-bottom: 24px; line-height: 1.8; }
+
+@media (max-width: 600px) {
+  .five-rules { grid-template-columns: repeat(3, 1fr); }
+  .disease-grid { grid-template-columns: 1fr; }
+  .info-grid { grid-template-columns: 1fr; }
+  .temp-badge-row { flex-direction: column; }
+  .temp-badge-item { min-width: unset; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <span class="header-title">🌡️ 혹서기 체온관리 SOP</span>
+    <span class="header-sub">이앤원(주) 여주물류센터</span>
+  </div>
+</div>
+
+<div class="content">
+
+  <div class="sop-hero">
+    <h2>혹서기 근로자 체온관리 SOP</h2>
+    <p>Heat Illness Prevention Standard Operating Procedure</p>
+    <div class="doc-no">ENO-SHW-2026-01 Rev.02 | 2026.05.15 | 작성: 안전관리자</div>
+  </div>
+
+  <!-- 적용범위 -->
+  <div class="card">
+    <div class="card-title"><span class="icon">📌</span> 적용 범위</div>
+    <div class="info-grid">
+      <div class="info-item"><div class="label">적용 기간</div><div class="value">혹서기 6월 ~ 9월</div></div>
+      <div class="info-item"><div class="label">적용 조건</div><div class="value">체감온도 31℃ 이상</div></div>
+      <div class="info-item"><div class="label">적용 대상</div><div class="value">전 근로자 (실내·실외 구분 없음)</div></div>
+      <div class="info-item"><div class="label">주요 구역</div><div class="value">실외 하역·상차, DRY동, 로딩도크, 환기 불량 구역</div></div>
+    </div>
+  </div>
+
+  <!-- 5대 기본수칙 -->
+  <div class="card">
+    <div class="card-title"><span class="icon">✋</span> 폭염안전 5대 기본수칙 (고용노동부)</div>
+    <div class="five-rules">
+      <div class="rule-item"><div class="rule-num">💧</div><div class="rule-text">시원한 물</div></div>
+      <div class="rule-item"><div class="rule-num">❄️</div><div class="rule-text">냉방장치</div></div>
+      <div class="rule-item"><div class="rule-num">⏰</div><div class="rule-text">휴식<br><span style="font-size:11px;color:var(--gray-400)">2시간마다 20분</span></div></div>
+      <div class="rule-item"><div class="rule-num">🧊</div><div class="rule-text">보냉장구 지급</div></div>
+      <div class="rule-item"><div class="rule-num">📞</div><div class="rule-text">119 신고</div></div>
+    </div>
+  </div>
+
+  <!-- 체감온도 단계별 조치 -->
+  <div class="card">
+    <div class="card-title"><span class="icon">🌡️</span> 체감온도 단계별 조치</div>
+    <table class="temp-table">
+      <thead><tr><th>체감온도</th><th>단계</th><th>주요 조치</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>31℃ 이상</strong></td>
+          <td><span class="badge badge-관심">관심</span></td>
+          <td>온·습도계 측정·기록, 냉각수·소금 비치, 냉방장치 가동, 예방교육</td>
+        </tr>
+        <tr>
+          <td><strong>33℃ 이상</strong></td>
+          <td><span class="badge badge-경계">경계</span></td>
+          <td><strong>매 2시간마다 20분 이상 휴식 (법적 의무)</strong><br>이앤원 기준: 1차 20분 / 2차 25분 / 3차 25분</td>
+        </tr>
+        <tr>
+          <td><strong>35℃ 이상</strong></td>
+          <td><span class="badge badge-위험">위험</span></td>
+          <td>매시간 15분 이상 휴식, 14~17시 옥외작업 중지(권고), 민감군 옥외작업 제한</td>
+        </tr>
+        <tr>
+          <td><strong>38℃ 이상</strong></td>
+          <td><span class="badge badge-극위험">극위험</span></td>
+          <td><strong>긴급조치 외 옥외작업 전면 중지(권고)</strong>, 민감군 전면 제한</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 휴게시간 운영 -->
+  <div class="card">
+    <div class="card-title"><span class="icon">⏰</span> 혹서기 휴게시간 운영 (이앤원 기준)</div>
+    <div class="info-grid">
+      <div class="info-item"><div class="label">1차 (오전)</div><div class="value">10:00 ~ 10:20 (20분)</div></div>
+      <div class="info-item"><div class="label">2차 (오후)</div><div class="value">14:20 ~ 14:45 (25분)</div></div>
+      <div class="info-item"><div class="label">3차 (오후, 선택)</div><div class="value">16:00 ~ 16:25 (25분)</div></div>
+      <div class="info-item"><div class="label">시행 조건</div><div class="value">체감온도 33℃ 이상<br>(7.25 이후 무조건 시행)</div></div>
+    </div>
+  </div>
+
+  <!-- 체온 측정 방법 및 주기 -->
+  <div class="card">
+    <div class="card-title"><span class="icon">🔬</span> 체온 측정 방법 및 주기</div>
+    <div class="alert-banner">
+      ℹ️ <strong>2단계 측정:</strong> 이마(비접촉식) 전체 스크리닝 → 38℃ 이상 시 귀(고막체온계) 정밀 측정
+    </div>
+    <table class="temp-table">
+      <thead><tr><th>회차</th><th>시간</th><th>측정 방법</th></tr></thead>
+      <tbody>
+        <tr><td>1차</td><td>10:00</td><td>이마(스크리닝) → 38℃ 이상 시 고막 재확인</td></tr>
+        <tr><td>2차</td><td>14:20</td><td>이마(스크리닝) → 38℃ 이상 시 고막 재확인</td></tr>
+        <tr><td>3차 (선택)</td><td>16:00</td><td>이마(스크리닝) → 38℃ 이상 시 고막 재확인</td></tr>
+        <tr><td>수시</td><td>이상징후 즉시</td><td>고막체온계로 직접 측정 후 기록</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 체온 단계별 조치 기준 -->
+  <div class="card">
+    <div class="card-title"><span class="icon">🌡️</span> 체온 단계별 조치 기준</div>
+    <div class="temp-badge-row">
+      <div class="temp-badge-item tb-normal">
+        <div class="temp-range">36.0 ~ 37.4℃</div>
+        <div class="temp-action">✅ 정상 — 계속 작업</div>
+      </div>
+      <div class="temp-badge-item tb-caution">
+        <div class="temp-range">37.5 ~ 37.9℃</div>
+        <div class="temp-action">⚠️ 주의 — 보건실 이동, 고막 재측정, 15분 후 재확인</div>
+      </div>
+      <div class="temp-badge-item tb-danger">
+        <div class="temp-range">38.0 ~ 38.9℃</div>
+        <div class="temp-action">🚨 위험 — 즉시 작업중지, 보건실, 혈압측정, 관리자 보고</div>
+      </div>
+      <div class="temp-badge-item tb-emergency">
+        <div class="temp-range">39.0℃ 이상</div>
+        <div class="temp-action">🆘 응급 — 즉시 119 신고! 냉각 조치, 의식 없으면 음료 금지</div>
+      </div>
+    </div>
+    <button class="accordion-btn" onclick="toggleAcc(this)">▶ 체온 단계별 세부 조치 상세 보기 <span class="arrow">▼</span></button>
+    <div class="accordion-body">
+      <div style="margin-bottom:14px;">
+        <div style="font-weight:800;color:#92400e;margin-bottom:6px;">⚠️ 37.5 ~ 37.9℃ (주의)</div>
+        <div style="color:var(--gray-600);line-height:1.9;font-size:13px;">
+          ① 즉시 작업 중지 → 휴게실 또는 보건실(에어컨) 이동<br>
+          ② 휴식, 이온음료 등 수분 섭취<br>
+          ③ 보건관리자 또는 안전관리자(근무 중인 자)에게 보고<br>
+          ④ 15분 후 이마 재측정 → 유지·상승 시 상위 단계 조치
+        </div>
+      </div>
+      <div style="margin-bottom:14px;padding-top:12px;border-top:1px solid var(--gray-200);">
+        <div style="font-weight:800;color:var(--red);margin-bottom:6px;">🚨 38.0 ~ 38.9℃ (위험)</div>
+        <div style="color:var(--gray-600);line-height:1.9;font-size:13px;">
+          ① 즉시 작업 중지 → 보건실(에어컨) 이동<br>
+          ② 보건실 도착 즉시 고막체온 + 혈압 측정 및 기록<br>
+          ③ 보건관리자·안전관리자 동시 보고 → 측정값 확인 후 병원 연계 판단<br>
+          ④ 의복 느슨하게, 목·겨드랑이·사타구니 냉찜질<br>
+          ⑤ 의식 있으면 냉각수·이온음료 소량 섭취 유도
+        </div>
+      </div>
+      <div style="padding-top:12px;border-top:1px solid var(--gray-200);">
+        <div style="font-weight:800;color:var(--red);margin-bottom:6px;">🆘 39.0℃ 이상 또는 온열질환 증상 호소 (응급)</div>
+        <div style="color:var(--gray-600);line-height:1.9;font-size:13px;">
+          ① <strong style="color:var(--red)">즉시 119 신고</strong> (체온 확인 기다리지 않음)<br>
+          ② 보건실(에어컨) 이동, 옷 느슨하게<br>
+          ③ 목·겨드랑이·사타구니 얼음팩 또는 냉수 냉각 (119 대기 중 지속)<br>
+          ④ <strong style="color:var(--red)">의식 없으면 절대 음료 투여 금지</strong><br>
+          ⑤ 의식 있으면 차가운 물 소량씩 섭취 유도
+        </div>
+      </div>
+      <div style="margin-top:12px;padding:10px;background:var(--red-light);border-radius:6px;font-size:12px;color:var(--red);">
+        ※ 체온이 38℃ 미만이라도 두통·어지러움·의식 이상·근육경련 등 증상 동반 시 즉시 119 신고<br>
+        ※ 보건관리자 또는 안전관리자 중 1인 이상 상시 근무. 양측 부재 시 현장책임자가 119 신고 후 안전관리자 연락
+      </div>
+    </div>
+  </div>
+
+  <!-- 열사병 응급 조치 -->
+  <div class="card">
+    <div class="card-title"><span class="icon">🆘</span> 온열질환 응급 조치 (열사병)</div>
+    <div class="emergency-steps">
+      <div class="step-item danger">
+        <div class="step-num">1</div>
+        <div class="step-text"><strong>즉시 119 신고</strong> — 체온 확인 기다리지 말고 즉시!</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-text">보건실(에어컨) 이동, 옷 느슨하게</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-text">목·겨드랑이·사타구니 얼음팩 또는 냉수 냉각 (119 대기 중 지속)</div>
+      </div>
+      <div class="step-item danger">
+        <div class="step-num">4</div>
+        <div class="step-text"><strong>의식 없으면 절대 음료 투여 금지!</strong> 의식 있으면 차가운 물 소량씩</div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">5</div>
+        <div class="step-text">동일 작업 전원 중단 + 체감온도 재측정 → 이마트 보고</div>
+      </div>
+    </div>
+    <button class="accordion-btn" onclick="toggleAcc(this)">▶ 온열질환 타입별 증상·조치 상세 보기 <span class="arrow">▼</span></button>
+    <div class="accordion-body">
+      <div class="disease-grid">
+        <div class="disease-item">
+          <div class="d-title">🔵 열경련</div>
+          <div class="d-symptom">근육경련·복통·오심</div>
+          <div class="d-action">서늘한 장소 이동<br>전해질 음료 섭취</div>
+        </div>
+        <div class="disease-item">
+          <div class="d-title">🟡 열탈진</div>
+          <div class="d-symptom">다량의 땀, 창백, 극심한 피로, 두통, 어지러움, 오심·구토</div>
+          <div class="d-action">작업 중지<br>보건실 이동<br>냉각수 섭취</div>
+        </div>
+        <div class="disease-item heat-stroke">
+          <div class="d-title">🔴 열사병 (응급)</div>
+          <div class="d-symptom">체온 40℃↑, 의식저하·혼미, 땀 감소(피부 뜨겁고 건조), 빠른 맥박</div>
+          <div class="d-action">즉시 119 신고<br>신속 냉각<br>음료 투여 절대 금지</div>
+        </div>
+      </div>
+      <div style="margin-top:10px;padding:8px 12px;background:var(--red-light);border-radius:6px;font-size:12px;color:var(--red);">
+        ※ 체온과 무관하게 증상 기반으로 판단 — 위 증상 발현 즉시 119 신고
+      </div>
+    </div>
+  </div>
+
+  <!-- 고위험군 관리 -->
+  <div class="card">
+    <div class="card-title"><span class="icon">⚠️</span> 고위험군 (온열질환 민감군) 관리</div>
+    <table class="risk-table">
+      <thead><tr><th>유형</th><th>세부 기준 및 관리</th></tr></thead>
+      <tbody>
+        <tr><td>신규·미적응<br>근로자</td><td>배치 후 7~14일 이내 (열순응 미완성) → 첫 1주일간 작업강도·시간 단계적 조정, 건강상태 집중 관찰</td></tr>
+        <tr><td>고령자</td><td>65세 이상 → 작업시간 분산, 체온 측정 강화, 단독작업 지양</td></tr>
+        <tr><td>만성질환자</td><td>당뇨·고혈압·심혈관질환·신장질환 등 → 주치의 소견 확인 후 배치</td></tr>
+        <tr><td>특정 약물<br>복용자</td><td>이뇨제·항히스타민제·항정신병약·파킨슨병 치료제 등 → 사전 파악 후 표시 관리</td></tr>
+        <tr><td>알코올 의존·<br>전날 음주</td><td>땀 분비 기능 저하 → 당일 작업 배치 시 집중 관찰</td></tr>
+        <tr><td>작업강도<br>높은 작업자</td><td>중량물 반복 취급, 전신 작업 등 → 휴식시간 추가 배정</td></tr>
+        <tr><td>온열질환<br>기왕력자</td><td>과거 열사병·열탈진 이력 → 폭염작업 배치 전 건강상담 실시</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 법적 근거 -->
+  <div class="card">
+    <div class="card-title"><span class="icon">⚖️</span> 법적 근거</div>
+    <div style="font-size:13px;line-height:1.9;color:var(--gray-600);">
+      • 산업안전보건법 제39조 제1항 제7호 — 폭염 건강장해 예방 보건조치<br>
+      • 산업안전보건기준에 관한 규칙 제559조·560조·562조·567조·571조<br>
+      • 중대재해처벌법 시행령 제4조 — 안전보건관리체계 구축·이행 의무<br>
+      • 이마트 온열질환 예방 가이드라인
+      <div style="margin-top:10px;padding:10px;background:var(--red-light);border-radius:6px;color:var(--red);font-size:12px;">
+        ⚠️ 위반 시: 5년 이하 징역 또는 5천만원 이하 벌금 / 사망 시: 7년 이하 징역 또는 1억원 이하 벌금 (산안법 제167·168조)
+      </div>
+    </div>
+    <button class="accordion-btn" onclick="toggleAcc(this)">▶ 법령 조문 상세 보기 <span class="arrow">▼</span></button>
+    <div class="accordion-body">
+      <ul class="law-list">
+        <li>산안법 제39조 제1항 제7호: 폭염에 의한 건강장해 예방 조치 의무 (2025.6.1. 시행)</li>
+        <li>산안법 시행규칙 별표 13의2: 체감온도 측정 곤란 시 기상청 발표 체감온도 대체 가능</li>
+        <li>산업안전보건기준에 관한 규칙 제559조: 폭염작업 정의 (체감온도 31℃ 이상, 2시간 이상)</li>
+        <li>규칙 제560조: 온·습도계 비치 및 체감온도 측정·기록 의무</li>
+        <li>규칙 제562조 제2항 제3호: 체감온도 측정·조치사항 해당 연도 12.31까지 보관 의무</li>
+        <li>규칙 제567조: 체감온도 33℃ 이상 시 매 2시간마다 20분 이상 휴식 부여 의무 (2025.7.17. 시행)</li>
+        <li>규칙 제571조: 고위험군 작업 제한 및 관리 의무</li>
+        <li>중대재해처벌법 시행령 제4조: 안전보건관리체계 구축 및 이행 의무</li>
+        <li>산안법 제64조: 도급사에 대한 안전보건 보고 의무</li>
+        <li>근로기준법 제54조: 폭염 휴식시간은 법정 휴게시간과 별도 부여 원칙</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer">
+    ENO-SHW-2026-01 Rev.02 | 이앤원(주) 여주물류센터 | 안전관리자 이현수<br>
+    보관기간: 해당 연도 12월 31일 | 문의: 031-887-5061
+  </div>
+
+</div>
+
+<script>
+function toggleAcc(btn) {
+  btn.classList.toggle('open');
+  btn.nextElementSibling.classList.toggle('open');
+}
+</script>
+
+</body>
+</html>
