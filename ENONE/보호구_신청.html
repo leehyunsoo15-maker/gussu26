@@ -54,8 +54,22 @@ select.f-input{cursor:pointer;}
 
 <div class="container">
 
+  <!-- 비밀번호 화면 -->
+  <div id="pwView">
+    <div class="card" style="margin-top:40px;text-align:center;">
+      <div style="font-size:36px;margin-bottom:12px;">🔒</div>
+      <div style="font-size:15px;font-weight:800;color:var(--navy);margin-bottom:6px;">접근 비밀번호 입력</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:18px;">이앤원(주) 여주물류센터 안전관리</div>
+      <input class="f-input" id="pwInput" type="password" placeholder="비밀번호 입력" maxlength="20"
+        style="text-align:center;font-size:18px;letter-spacing:4px;margin-bottom:10px;"
+        onkeydown="if(event.key==='Enter')checkPw()">
+      <div id="pwError" style="font-size:12px;color:var(--red);min-height:18px;margin-bottom:10px;"></div>
+      <button class="btn-submit" onclick="checkPw()" style="font-size:14px;padding:12px;">확인</button>
+    </div>
+  </div>
+
   <!-- 폼 영역 -->
-  <div id="formView">
+  <div id="formView" style="display:none;">
     <div class="notice">
       ※ 매월 <b>23일까지</b> 신청 바랍니다<br>
       ※ 이름과 사이즈를 정확히 입력해 주세요<br>
@@ -100,6 +114,13 @@ select.f-input{cursor:pointer;}
     <!-- 신청 인원 -->
     <div class="card">
       <div class="card-title">신청 인원 목록</div>
+      <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+        <button class="btn-add-row" onclick="downloadTemplate()" style="flex:1;border-style:solid;color:#1a2744;border-color:#1a2744;">⬇️ 양식 다운로드</button>
+        <label class="btn-add-row" style="flex:1;text-align:center;cursor:pointer;border-color:var(--orange);color:var(--orange);">
+          📂 엑셀 업로드
+          <input type="file" accept=".xlsx,.xls,.csv" onchange="uploadExcel(this)" style="display:none;">
+        </label>
+      </div>
       <table class="tbl">
         <thead>
           <tr>
@@ -126,6 +147,10 @@ select.f-input{cursor:pointer;}
         <div class="s-msg" id="successMsg"></div>
       </div>
     </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+      <button class="btn-submit" onclick="downloadExcel()" style="font-size:14px;padding:12px;background:#1a2744;">📊 엑셀 저장</button>
+      <button class="btn-submit" onclick="printSubmit()" style="font-size:14px;padding:12px;background:#38a169;">🖨️ 인쇄</button>
+    </div>
     <button class="btn-again" onclick="resetForm()">다시 신청하기</button>
   </div>
 
@@ -133,6 +158,8 @@ select.f-input{cursor:pointer;}
 
 <div class="toast" id="toast"></div>
 
+<!-- SheetJS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -178,6 +205,19 @@ function removeRow(id) {
   if(el) el.remove();
 }
 
+// 비밀번호 확인
+function checkPw(){
+  const val = document.getElementById('pwInput').value.trim().toUpperCase();
+  if(val === 'EMART'){
+    document.getElementById('pwView').style.display = 'none';
+    document.getElementById('formView').style.display = 'block';
+  } else {
+    document.getElementById('pwError').textContent = '비밀번호가 틀렸습니다';
+    document.getElementById('pwInput').value = '';
+    document.getElementById('pwInput').focus();
+  }
+}
+
 // 신청일 자동 기재
 const today = new Date();
 document.getElementById('submitDate').value =
@@ -220,6 +260,9 @@ async function submitRequest() {
       status: 'pending'
     });
 
+    // 제출 데이터 저장 (엑셀/인쇄용)
+    window._lastSubmit = { managerName, part, job, items, date: today.toLocaleDateString('ko-KR') };
+
     document.getElementById('formView').style.display = 'none';
     document.getElementById('successView').style.display = 'block';
     document.getElementById('successMsg').innerHTML =
@@ -245,6 +288,96 @@ function resetForm() {
   const btn = document.getElementById('submitBtn');
   btn.disabled = false;
   btn.textContent = '신청 제출';
+}
+
+function downloadTemplate() {
+  const ws = XLSX.utils.aoa_to_sheet([
+    ['성명', '사이즈(mm)'],
+    ['홍길동', '265'],
+    ['김철수', '270'],
+    ['', ''],
+    ['', ''],
+    ['', ''],
+  ]);
+  ws['!cols'] = [{wch:14},{wch:12}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, '안전화신청');
+  XLSX.writeFile(wb, '안전화신청_양식.xlsx');
+}
+
+function uploadExcel(input) {
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const wb = XLSX.read(e.target.result, {type:'binary'});
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(ws, {defval:''});
+    const items = [];
+    rows.forEach(row => {
+      const name = String(row['성명']||row['이름']||'').trim();
+      const size = String(row['사이즈(mm)']||row['사이즈']||'').trim().replace('mm','');
+      if(name) items.push({name, size});
+    });
+    if(!items.length){ showToast('데이터를 찾을 수 없습니다. 양식을 확인해 주세요.'); return; }
+    document.getElementById('memberRows').innerHTML = '';
+    rowCount = 0;
+    items.forEach(p => addRow(p.name, p.size));
+    showToast(`✅ ${items.length}명 자동 입력됐습니다`);
+  };
+  reader.readAsBinaryString(file);
+  input.value = '';
+}
+
+function downloadExcel() {
+  const d = window._lastSubmit;
+  if(!d) return;
+  const rows = [
+    ['안전화 지급 신청서'],
+    ['신청일', d.date],
+    ['팀장', d.managerName],
+    ['파트', d.part],
+    ['직무(조)', d.job],
+    [''],
+    ['No', '성명', '사이즈'],
+    ...d.items.map((p, i) => [i+1, p.name, p.size ? p.size+'mm' : '미등록'])
+  ];
+  const csv = '﻿' + rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `안전화신청_${d.part}${d.job}_${d.date.replace(/\./g,'')}.csv`;
+  a.click();
+}
+
+function printSubmit() {
+  const d = window._lastSubmit;
+  if(!d) return;
+  const w = window.open('', '_blank', 'width=700,height=600');
+  w.document.write(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+  <title>안전화 신청서 — ${d.managerName} 팀장</title>
+  <style>
+    body{font-family:'Malgun Gothic',sans-serif;font-size:12pt;margin:20mm 15mm;}
+    h2{font-size:16pt;text-align:center;margin-bottom:4pt;}
+    .sub{text-align:center;font-size:10pt;color:#555;margin-bottom:16pt;}
+    table{width:100%;border-collapse:collapse;}
+    th{background:#1a2744;color:white;padding:7pt 10pt;font-size:10pt;text-align:left;}
+    td{padding:7pt 10pt;border:1pt solid #ccc;font-size:11pt;}
+    tr:nth-child(even) td{background:#f9f9f9;}
+    @media print{body{margin:10mm;}}
+  </style></head><body>
+  <h2>안전화 지급 신청서</h2>
+  <div class="sub">이앤원(주) 여주물류센터 · 신청일: ${d.date} · ${d.part} ${d.job} · ${d.managerName} 팀장</div>
+  <table>
+    <thead><tr><th>No</th><th>성명</th><th>사이즈</th></tr></thead>
+    <tbody>
+      ${d.items.map((p,i)=>`<tr><td style="text-align:center;width:40pt">${i+1}</td><td style="font-weight:700">${p.name}</td><td style="text-align:center">${p.size?p.size+'mm':'-'}</td></tr>`).join('')}
+    </tbody>
+  </table>
+  <p style="margin-top:16pt;font-size:10pt;color:#555;">총 ${d.items.length}명 · 문의: 안전관리자 이현수 031-887-5154</p>
+  <script>window.onload=()=>{window.print();}<\/script>
+  </body></html>`);
+  w.document.close();
 }
 
 let _toastTimer;
