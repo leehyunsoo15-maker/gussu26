@@ -14,11 +14,11 @@ body{font-family:'Jua',sans-serif;color:#fff;}
 .screen.active{display:flex;}
 
 /* ── LOBBY ── */
-#lobbyScreen{background:linear-gradient(180deg,#0a0a2e,#1a1a4e);}
-#lobbyScreen h1{font-family:'Black Han Sans',sans-serif;font-size:48px;letter-spacing:4px;margin-bottom:6px;
+#lobbyScreen{background:linear-gradient(180deg,#0a0a2e,#1a1a4e);justify-content:flex-start;overflow-y:auto;padding-top:16px;padding-bottom:24px;}
+#lobbyScreen h1{font-family:'Black Han Sans',sans-serif;font-size:40px;letter-spacing:4px;margin-bottom:4px;
 background:linear-gradient(135deg,#ff4dae,#44bbff,#ffe500);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.lobby-sub{font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:28px;letter-spacing:2px;}
-.glass{background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);border-radius:20px;padding:20px;width:100%;max-width:340px;margin-bottom:14px;}
+.lobby-sub{font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:16px;letter-spacing:2px;}
+.glass{background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);border-radius:20px;padding:14px;width:100%;max-width:340px;margin-bottom:10px;}
 .glass .lbl{font-size:14px;color:rgba(255,255,255,0.7);margin-bottom:12px;}hh
 .nick-input{width:100%;padding:12px 14px;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.25);border-radius:12px;
 color:#fff;font-size:16px;font-family:'Jua',sans-serif;outline:none;margin-bottom:10px;}
@@ -42,16 +42,16 @@ color:#fff;font-size:16px;font-family:'Jua',sans-serif;outline:none;letter-spaci
 color:#fff;font-family:'Black Han Sans',sans-serif;font-size:16px;cursor:pointer;white-space:nowrap;}
 
 /* ── WAITING ── */
-#waitScreen{background:linear-gradient(180deg,#0a0a2e,#1a1a4e);}
-.wait-box{background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);border-radius:24px;
-padding:32px 24px;text-align:center;width:100%;max-width:340px;}
-.wait-box h2{font-family:'Black Han Sans',sans-serif;font-size:26px;margin-bottom:8px;}
-.room-code-display{font-family:'Black Han Sans',sans-serif;font-size:40px;letter-spacing:8px;color:#4ab8e8;
-background:rgba(74,184,232,0.1);border:2px dashed rgba(74,184,232,0.4);border-radius:14px;
-padding:16px 20px;margin:16px 0;cursor:pointer;user-select:all;}
+#waitScreen{background:linear-gradient(180deg,#0a0a2e,#1a1a4e);justify-content:flex-start;overflow-y:auto;padding-top:12px;padding-bottom:20px;}
+.wait-box{background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.2);border-radius:20px;
+padding:16px 16px;text-align:center;width:100%;max-width:340px;}
+.wait-box h2{font-family:'Black Han Sans',sans-serif;font-size:22px;margin-bottom:6px;}
+.room-code-display{font-family:'Black Han Sans',sans-serif;font-size:32px;letter-spacing:6px;color:#4ab8e8;
+background:rgba(74,184,232,0.1);border:2px dashed rgba(74,184,232,0.4);border-radius:12px;
+padding:10px 16px;margin:8px 0;cursor:pointer;user-select:all;}
 .room-code-display:active{background:rgba(74,184,232,0.2);}
-.copy-hint{font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:20px;}
-.players-row{display:flex;gap:12px;margin-bottom:24px;}
+.copy-hint{font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:10px;}
+.players-row{display:flex;gap:10px;margin-bottom:12px;}
 .player-slot{flex:1;padding:14px 8px;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.15);
 border-radius:14px;text-align:center;font-size:13px;}
 .player-slot.me{border-color:#4ab8e8;}
@@ -60,7 +60,7 @@ white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .player-slot .ps-status{font-size:11px;color:rgba(255,255,255,0.45);margin-top:3px;}
 .dot-anim::after{content:'...';animation:dots 1.2s steps(3,end) infinite;}
 @keyframes dots{0%,100%{content:'.';}33%{content:'..';}66%{content:'...';}  }
-.wait-time-row{display:flex;gap:8px;margin-bottom:16px;}
+.wait-time-row{display:flex;gap:6px;margin-bottom:10px;}
 .wait-time-btn{flex:1;padding:10px 4px;background:rgba(255,255,255,0.06);border:1.5px solid rgba(255,255,255,0.15);
 border-radius:12px;color:#aaa;font-family:'Jua',sans-serif;font-size:12px;cursor:pointer;text-align:center;}
 .wait-time-btn .wtn{font-family:'Black Han Sans',sans-serif;font-size:18px;color:#ddd;}
@@ -233,7 +233,7 @@ border-radius:14px;z-index:300;display:none;pointer-events:none;white-space:nowr
 <div class="room-code-display" id="roomCodeDisplay" onclick="copyRoomCode()">------</div>
 <div class="copy-hint">탭하면 복사됩니다</div>
 
-<div id="waitTimeSel" style="margin-bottom:14px;">
+<div id="waitTimeSel" style="margin-bottom:8px;">
 <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:8px;">⏱ 제한 시간</div>
 <div class="wait-time-row">
 <div class="wait-time-btn" data-sec="120"><div class="wtn">2분</div>여유</div>
@@ -959,19 +959,20 @@ document.getElementById('startWaitBtn').innerHTML = '방장이 시작할 때까�
 roomRef.child('status').on('value', snap => {
 if (snap.val() === 'playing') launchGame();
 });
-  // 방장이 나가면 방이 삭제됨 → 로비로 이동
-  roomRef.child('players/player1').on('value', snap => {
+  // 방 전체 감시: 방장이 나가면 방이 삭제됨 → 로비로 이동
+  roomRef.on('value', snap => {
     if (!snap.val() && myRole === 'player2') {
+      roomRef.off();
       showLobbyMsg('방장이 방을 나갔습니다.');
-      leaveRoom();
+      myRef = null; opRef = null; attacksRef = null; roomRef = null; roomId = null; myRole = null;
       showScreen('lobbyScreen');
     }
   });
 }
 
 function launchGame() {
-// 리스너 정리 (status 감시 제거)
-if (roomRef) roomRef.child('status').off();
+// 리스너 정리 (status 감시 + 방 삭제 감시 제거)
+if (roomRef) { roomRef.child('status').off(); roomRef.off(); }
 if (myRole === 'player1' && opRef) opRef.off();
 
 gameStartTimestamp = Date.now();
@@ -1019,6 +1020,7 @@ if (opRef) opRef.off();
 if (attacksRef) attacksRef.off();
 if (roomRef) {
 roomRef.child('status').off();
+roomRef.off(); // roomRef 자체의 모든 리스너 제거 (방 삭제 감지 포함)
 // 방장이면 방 삭제
 if (myRole === 'player1') roomRef.remove();
 else if (myRef) myRef.remove();
