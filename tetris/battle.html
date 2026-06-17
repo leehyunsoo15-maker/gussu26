@@ -778,13 +778,13 @@ running = false;
 clearInterval(dropTimer);
 clearInterval(gameTimer);
 
-if (myRef) myRef.update({ score, gameOver: true });
-
 if (reason === 'blockout') {
-// 내가 블록아웃 → 즉시 패배
+// 블록아웃만 gameOver:true → 상대방이 '상대 블록아웃=내가 이김'으로 처리
+if (myRef) myRef.update({ score, gameOver: true });
 showResult('my_blockout');
 } else if (reason === 'timeout') {
-// 시간 종료 → 점수 비교
+// 타임아웃은 gameOver:false → 양쪽 각자 점수 비교로 결과 판정
+if (myRef) myRef.update({ score });
 showResult('timeout');
 }
 // 'opponent_blockout'은 opRef 리스너에서 호출
