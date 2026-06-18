@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>E&ONE 여주물류센터 안전관리시스템</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --navy:#16263f;
+  --navy-deep:#0f1c30;
+  --navy-soft:#1e3450;
+  --orange:#D97757;
+  --orange-soft:#e89378;
+  --bg:#eef1f5;
+  --card:#ffffff;
+  --border:#e6eaef;
+  --text:#1a2332;
+  --muted:#64748b;
+  --sub:#94a3b8;
+  --good:#2e9e5b;
+  --warn:#e08c00;
+  --danger:#d64545;
+}
+html,body{height:100%;font-family:'Noto Sans KR',sans-serif;background:var(--bg);overflow:hidden;color:var(--text)}
+
+.wrap{display:flex;height:100vh;width:100vw}
+
+/* ───────── 사이드바 ───────── */
+.sidebar{
+  width:84px;flex-shrink:0;
+  background:linear-gradient(180deg,#1b2e4a 0%,#13233b 60%,#0f1c30 100%);
+  display:flex;flex-direction:column;align-items:center;
+  padding:16px 0 12px;
+  position:relative;
+  box-shadow:2px 0 16px rgba(15,28,48,0.18);
+  overflow-y:auto;
+}
+.sidebar::-webkit-scrollbar{width:0}
+.sb-logo{
+  font-size:12px;font-weight:900;letter-spacing:0.5px;
+  color:#fff;
+  background:linear-gradient(135deg,#D97757,#c2654a);
+  padding:6px 10px;border-radius:9px;
+  box-shadow:0 4px 12px rgba(217,119,87,0.35);
+  margin-bottom:18px;
+}
+.sb-item{
+  width:72px;display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:10px 4px;border-radius:12px;cursor:pointer;
+  position:relative;
+  transition:background 0.18s ease, transform 0.1s ease;
+}
+.sb-item i{font-size:21px;color:#a7b8d0;transition:color 0.18s ease}
+.sb-item span{font-size:9px;color:#7e91ab;text-align:center;line-height:1.3;transition:color 0.18s ease}
+.sb-item:hover{background:rgba(255,255,255,0.06)}
+.sb-item:hover i,.sb-item:hover span{color:#dce5f0}
+.sb-item.active{background:rgba(217,119,87,0.14)}
+.sb-item.active i{color:var(--orange-soft)}
+.sb-item.active span{color:#fff;font-weight:700}
+.sb-item.active::before{
+  content:'';position:absolute;left:-0px;top:50%;transform:translateY(-50%);
+  width:3px;height:26px;background:var(--orange);border-radius:0 3px 3px 0;
+  box-shadow:0 0 10px rgba(217,119,87,0.6);
+}
+.sb-div{width:46px;height:1px;background:rgba(255,255,255,0.08);margin:8px 0}
+
+/* ───────── 메인 ───────── */
+.main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+
+.topbar{
+  flex-shrink:0;
+  background:linear-gradient(180deg,#1b2e4a,#16263f);
+  padding:14px 24px;
+  display:flex;align-items:center;justify-content:space-between;
+  box-shadow:0 2px 12px rgba(15,28,48,0.12);
+  z-index:2;
+}
+.topbar-title{color:#fff;font-size:17px;font-weight:700;letter-spacing:-0.2px}
+.topbar-right{display:flex;align-items:center;gap:18px}
+.status-pill{
+  background:rgba(46,158,91,0.16);color:#5ed68a;
+  font-size:11px;font-weight:500;
+  padding:5px 13px;border-radius:20px;
+  display:flex;align-items:center;gap:6px;
+  border:0.5px solid rgba(94,214,138,0.25);
+}
+.dot{width:6px;height:6px;background:#5ed68a;border-radius:50%;box-shadow:0 0 6px #5ed68a}
+.tdate{color:#9fb0c8;font-size:11.5px;font-weight:500}
+
+/* ───────── 콘텐츠 레이아웃 ───────── */
+.content{
+  flex:1;padding:18px;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 360px;
+  gap:16px;
+  overflow:auto;min-height:0;
+}
+.col-left{
+  display:grid;
+  grid-template-rows:1fr 1fr;
+  gap:16px;min-height:0;
+}
+.row-top{
+  display:grid;grid-template-columns:1fr 1fr;gap:16px;
+}
+.row-bottom{
+  display:grid;grid-template-columns:1fr 1fr;gap:16px;min-height:0;
+}
+
+/* ───────── 카드 ───────── */
+.card{
+  background:var(--card);
+  border:0.5px solid var(--border);
+  border-radius:16px;
+  padding:18px;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  box-shadow:0 1px 3px rgba(22,38,63,0.04),0 6px 20px rgba(22,38,63,0.05);
+}
+.clbl{
+  font-size:12px;color:var(--muted);font-weight:700;
+  display:flex;align-items:center;gap:7px;
+  margin-bottom:14px;flex-shrink:0;letter-spacing:-0.1px;
+}
+.clbl i{font-size:16px;color:var(--orange)}
+.clbl .right{margin-left:auto;font-size:10.5px;color:var(--sub);font-weight:500}
+
+/* 분기별 사고 차트 */
+.chart-area{display:flex;align-items:flex-end;gap:14px;flex:1;padding:8px 4px 0;min-height:130px}
+.bw{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;justify-content:flex-end;height:100%}
+.bar{width:100%;max-width:54px;border-radius:7px 7px 0 0;background:linear-gradient(180deg,#e89378,#D97757);transition:height 0.4s cubic-bezier(.2,.8,.2,1);box-shadow:0 2px 8px rgba(217,119,87,0.25)}
+.bar.z{background:#eef1f5;box-shadow:none}
+.blbl{font-size:11px;color:var(--muted);font-weight:500}
+.bval{font-size:13px;font-weight:700;color:var(--text)}
+.bval.zero{color:var(--sub)}
+
+/* 산재율 도넛 */
+.injury-body{flex:1;display:flex;align-items:center;gap:20px}
+.donut{position:relative;width:120px;height:120px;flex-shrink:0}
+.donut svg{transform:rotate(-90deg)}
+.donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.donut-val{font-size:24px;font-weight:900;color:var(--text);line-height:1}
+.donut-lbl{font-size:10px;color:var(--sub);margin-top:3px}
+.injury-info{flex:1}
+.injury-stat{display:flex;align-items:baseline;gap:6px;margin-bottom:10px}
+.injury-stat .n{font-size:22px;font-weight:700;color:var(--text)}
+.injury-stat .n-edit{font-size:22px;font-weight:700;color:var(--text);width:72px;border:none;border-bottom:1.5px solid transparent;background:transparent;outline:none;font-family:inherit;padding:0 2px;border-radius:4px;transition:all 0.15s;-moz-appearance:textfield}
+.injury-stat .n-edit::-webkit-outer-spin-button,.injury-stat .n-edit::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.injury-stat .n-edit:hover{background:#f6f8fa}
+.injury-stat .n-edit:focus{border-bottom-color:var(--orange);background:#fdf3ee}
+.injury-stat .u{font-size:12px;color:var(--muted)}
+.injury-stat .t{font-size:11px;color:var(--sub);margin-right:4px;width:64px}
+.injury-formula{margin-top:auto;padding-top:12px;border-top:0.5px solid var(--border);font-size:10.5px;color:var(--sub)}
+
+/* 할 일 */
+.todo-rows{display:flex;flex-direction:column;gap:7px;flex:1;min-height:0}
+.tr{
+  display:flex;align-items:center;gap:9px;
+  padding:9px 11px;background:#f6f8fa;border-radius:10px;
+  font-size:12.5px;color:var(--text);min-height:38px;
+}
+.tr.empty{border:1px dashed #dde3ea;background:transparent;color:var(--sub);font-size:11px;justify-content:center}
+.tr.dn span{text-decoration:line-through;color:var(--sub)}
+.chk{width:16px;height:16px;border:1.5px solid #c4cdd9;border-radius:5px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;transition:all 0.15s}
+.chk.on{background:var(--orange);border-color:var(--orange)}
+.tdel{margin-left:auto;background:none;border:none;cursor:pointer;color:#cbd3dd;font-size:13px;line-height:1}
+.tdel:hover{color:var(--danger)}
+.tadd{display:flex;gap:7px;margin-top:11px;flex-shrink:0}
+.tadd input{flex:1;font-size:12px;padding:8px 12px;border:0.5px solid var(--border);border-radius:10px;background:#fff;color:var(--text);outline:none;transition:border 0.15s}
+.tadd input:focus{border-color:var(--orange)}
+.tadd button{background:var(--orange);color:#fff;border:none;border-radius:10px;padding:8px 15px;font-size:12px;cursor:pointer;font-weight:700;transition:background 0.15s}
+.tadd button:hover{background:#c2654a}
+
+/* 빠른 실행 */
+.qgrid{display:grid;grid-template-columns:repeat(5,1fr);grid-auto-rows:minmax(0,1fr);gap:14px;flex:1;padding:6px 4px}
+.qbtn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:transparent;border-radius:14px;cursor:pointer;border:none;transition:all 0.18s;padding:8px 4px}
+.qbtn:hover{transform:translateY(-3px)}
+.qbtn:hover .qicon{background:linear-gradient(135deg,#D97757,#c2654a);box-shadow:0 6px 16px rgba(217,119,87,0.35)}
+.qbtn:hover .qicon i{color:#fff}
+.qbtn:hover span{color:var(--orange)}
+.qicon{width:44px;height:44px;border-radius:13px;background:#fbeee8;display:flex;align-items:center;justify-content:center;transition:all 0.18s}
+.qicon i{font-size:21px;color:var(--orange);transition:color 0.18s}
+.qbtn span{font-size:10px;color:var(--muted);text-align:center;font-weight:700;line-height:1.3;transition:color 0.18s}
+
+/* ───────── 우측: 날씨+달력 ───────── */
+.side-card{
+  background:var(--card);border:0.5px solid var(--border);border-radius:16px;
+  padding:18px;display:flex;flex-direction:column;overflow:hidden;min-height:0;
+  box-shadow:0 1px 3px rgba(22,38,63,0.04),0 6px 20px rgba(22,38,63,0.05);
+}
+.weather-hero{
+  background:linear-gradient(135deg,#fdf0ea,#fae3d8);
+  border-radius:13px;padding:14px 16px;margin-bottom:14px;
+}
+.wh-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.wh-loc{font-size:11px;color:#9c6f5c;font-weight:700;display:flex;align-items:center;gap:4px}
+.wh-main{display:flex;align-items:center;gap:12px}
+.wicon{font-size:38px;line-height:1}
+.wtemp{font-size:34px;font-weight:900;color:#7a3f29;line-height:1}
+.wdesc{font-size:12px;color:#9c6f5c;margin-top:3px;font-weight:500}
+.wgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:12px}
+.wcell{background:rgba(255,255,255,0.6);border-radius:9px;padding:7px 4px;text-align:center}
+.wcval{font-size:13px;font-weight:700;color:#7a3f29}
+.wclbl{font-size:9px;color:#a87d6a;margin-top:2px}
+.hpill{padding:6px 12px;border-radius:20px;font-size:11px;font-weight:700;text-align:center;margin-bottom:16px}
+.hd{background:#fde8e8;color:var(--danger)}
+.hw{background:#fdf2e0;color:var(--warn)}
+.ho{background:#e8f6ee;color:var(--good)}
+
+.cal-wrap{flex:1;display:flex;flex-direction:column;min-height:0}
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-shrink:0}
+.cal-nav span{font-size:13px;font-weight:700;color:var(--text)}
+.cal-nav button{background:#f6f8fa;border:none;cursor:pointer;color:var(--muted);font-size:15px;width:26px;height:26px;border-radius:8px;line-height:1;transition:all 0.15s}
+.cal-nav button:hover{background:var(--orange);color:#fff}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;flex-shrink:0}
+.cal-dh{font-size:10px;color:var(--sub);text-align:center;padding:4px 0;font-weight:700}
+.cal-dh.sun{color:#e08585}
+.cal-dh.sat{color:#7fa8d6}
+.cal-d{font-size:11px;text-align:center;padding:5px 2px;border-radius:8px;cursor:pointer;color:var(--text);line-height:1.4;position:relative;transition:background 0.12s}
+.cal-d:hover{background:#f0f3f7}
+.cal-d.other{color:#cfd6df;cursor:default}
+.cal-d.other:hover{background:transparent}
+.cal-d .dnum{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;margin:0 auto}
+.cal-d.today .dnum{background:var(--orange);color:#fff;font-weight:700;box-shadow:0 2px 8px rgba(217,119,87,0.4)}
+.cal-d.selected:not(.today) .dnum{background:var(--navy);color:#fff;font-weight:700}
+.cal-d.sun:not(.today):not(.selected) .dnum{color:#e08585}
+.cal-d.sat:not(.today):not(.selected) .dnum{color:#7fa8d6}
+.has-event::after{content:'';position:absolute;bottom:1px;left:50%;transform:translateX(-50%);width:4px;height:4px;background:var(--orange);border-radius:50%}
+.cal-d.today.has-event::after,.cal-d.selected.has-event::after{background:#fff}
+
+.event-area{flex:1;overflow-y:auto;margin-top:14px;padding-top:14px;border-top:0.5px solid var(--border);min-height:0}
+.event-area::-webkit-scrollbar{width:4px}
+.event-area::-webkit-scrollbar-thumb{background:#dde3ea;border-radius:4px}
+.event-date-lbl{font-size:12px;font-weight:700;color:var(--navy);margin-bottom:9px}
+.event-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#f6f8fa;border-radius:9px;font-size:12px;color:var(--text);margin-bottom:6px}
+.event-dot{width:6px;height:6px;background:var(--orange);border-radius:50%;flex-shrink:0}
+.event-del{margin-left:auto;background:none;border:none;cursor:pointer;color:#cbd3dd;font-size:13px}
+.event-del:hover{color:var(--danger)}
+.event-empty{font-size:11px;color:var(--sub);text-align:center;padding:14px 0}
+.event-add{display:flex;gap:7px;margin-top:10px;flex-shrink:0}
+.event-add input{flex:1;font-size:12px;padding:8px 12px;border:0.5px solid var(--border);border-radius:10px;background:#fff;color:var(--text);outline:none;transition:border 0.15s}
+.event-add input:focus{border-color:var(--orange)}
+.event-add button{background:var(--orange);color:#fff;border:none;border-radius:10px;padding:8px 14px;font-size:12px;cursor:pointer;font-weight:700}
+.event-add button:hover{background:#c2654a}
+
+@media (max-width:1100px){
+  .content{grid-template-columns:1fr}
+  .col-right{display:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="sidebar">
+    <div class="sb-logo">E&ONE</div>
+    <div class="sb-item active"><i class="ti ti-layout-dashboard"></i><span>홈</span></div>
+    <div class="sb-div"></div>
+    <div class="sb-item"><i class="ti ti-alert-triangle"></i><span>위험성평가</span></div>
+    <div class="sb-item"><i class="ti ti-clipboard-check"></i><span>보고서</span></div>
+    <div class="sb-item"><i class="ti ti-ambulance"></i><span>사고관리</span></div>
+    <div class="sb-div"></div>
+    <div class="sb-item"><i class="ti ti-scale"></i><span>중처법</span></div>
+    <div class="sb-item"><i class="ti ti-file-text"></i><span>작업계획서</span></div>
+    <div class="sb-item"><i class="ti ti-shield-check"></i><span>보호구</span></div>
+    <div class="sb-item"><i class="ti ti-forklift"></i><span>물류장비</span></div>
+    <div class="sb-div"></div>
+    <div class="sb-item"><i class="ti ti-search"></i><span>법령검색</span></div>
+    <div class="sb-item"><i class="ti ti-users"></i><span>TBM교육</span></div>
+  </nav>
+
+  <div class="main">
+    <header class="topbar">
+      <div>
+        <div class="topbar-title">이앤원 여주물류센터 안전관리시스템</div>
+      </div>
+      <div class="topbar-right">
+        <div class="status-pill"><div class="dot"></div>정상 운영 중</div>
+        <div class="tdate" id="td"></div>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="col-left">
+        <div class="row-top">
+          <div class="card">
+            <div class="clbl"><i class="ti ti-chart-bar"></i>분기별 사고 건수<span class="right">2026년</span></div>
+            <div class="chart-area" id="chart"></div>
+          </div>
+          <div class="card">
+            <div class="clbl"><i class="ti ti-heart-rate-monitor"></i>금년 산재율<span class="right">2026년</span></div>
+            <div class="injury-body">
+              <div class="donut">
+                <svg width="120" height="120" viewBox="0 0 120 120">
+                  <circle cx="60" cy="60" r="50" fill="none" stroke="#eef1f5" stroke-width="12"/>
+                  <circle id="donut-arc" cx="60" cy="60" r="50" fill="none" stroke="#D97757" stroke-width="12" stroke-linecap="round" stroke-dasharray="314.16" stroke-dashoffset="314.16"/>
+                </svg>
+                <div class="donut-center">
+                  <div class="donut-val">0.00<span style="font-size:14px">%</span></div>
+                  <div class="donut-lbl">산재율</div>
+                </div>
+              </div>
+              <div class="injury-info" style="display:flex;flex-direction:column;align-self:stretch">
+                <div class="injury-stat"><span class="t">재해자</span><input class="n-edit" id="inj-victim" type="number" min="0" value="0"><span class="u">명</span></div>
+                <div class="injury-stat"><span class="t">상시근로자</span><input class="n-edit" id="inj-worker" type="number" min="1" value="400"><span class="u">명</span></div>
+                <div class="injury-formula">산재율 = 재해자 ÷ 상시근로자 × 100 · 숫자를 직접 입력하면 자동 계산됩니다</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row-bottom">
+          <div class="card">
+            <div class="clbl"><i class="ti ti-checklist"></i>할 일<span class="right" id="tcnt"></span></div>
+            <div class="todo-rows" id="tlist"></div>
+            <div class="tadd">
+              <input id="tinp" placeholder="할 일 추가 (최대 5개)..." />
+              <button onclick="addTodo()">추가</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="clbl"><i class="ti ti-bolt"></i>빠른 실행</div>
+            <div class="qgrid">
+              <div class="qbtn"><div class="qicon"><i class="ti ti-alert-triangle"></i></div><span>위험성평가</span></div>
+              <div class="qbtn"><div class="qicon"><i class="ti ti-clipboard-check"></i></div><span>순회점검</span></div>
+              <div class="qbtn"><div class="qicon"><i class="ti ti-ambulance"></i></div><span>사고관리</span></div>
+              <div class="qbtn"><div class="qicon"><i class="ti ti-file-report"></i></div><span>주간보고서</span></div>
+              <div class="qbtn"><div class="qicon"><i class="ti ti-school"></i></div><span>교육일지</span></div>
+              <div class="qbtn"><div class="qicon"><i class="ti ti-shield-check"></i></div><span>보호구</span></div>
+              <div class="qbtn"><div class="qicon"><i class="ti ti-forklift"></i></div><span>물류장비</span></div>
+              <div class="qbtn"><div class="qicon"><i class="ti ti-search"></i></div><span>법령검색</span></div>
+              <div class="qbtn"><div class="qicon"><i class="ti ti-building-community"></i></div><span>안전보건구축</span></div>
+              <div class="qbtn"><div class="qicon"><i class="ti ti-clock"></i></div><span id="rlbl">최근작업</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="col-right">
+        <div class="side-card">
+          <div class="weather-hero">
+            <div class="wh-top">
+              <div class="wh-loc"><i class="ti ti-map-pin"></i>여주</div>
+              <div class="wdesc" id="wd" style="margin:0">불러오는 중</div>
+            </div>
+            <div class="wh-main">
+              <span class="wicon" id="wi">🌤️</span>
+              <div class="wtemp" id="wt">--°</div>
+            </div>
+            <div class="wgrid">
+              <div class="wcell"><div class="wcval" id="wh2">--%</div><div class="wclbl">습도</div></div>
+              <div class="wcell"><div class="wcval" id="ww">--</div><div class="wclbl">풍속(m/s)</div></div>
+              <div class="wcell"><div class="wcval" id="wf">--°</div><div class="wclbl">체감</div></div>
+            </div>
+          </div>
+          <div class="hpill ho" id="hp">날씨 확인 중...</div>
+
+          <div class="cal-wrap">
+            <div class="cal-nav">
+              <button id="cal-prev">‹</button>
+              <span id="cal-title"></span>
+              <button id="cal-next">›</button>
+            </div>
+            <div class="cal-grid" id="cal-head"></div>
+            <div class="cal-grid" id="cal-body" style="margin-top:3px"></div>
+            <div class="event-area" id="event-area"></div>
+            <div class="event-add">
+              <input id="einp" placeholder="일정 입력 후 Enter..." />
+              <button onclick="addEvent()">추가</button>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<script>
+const days=['일','월','화','수','목','금','토'];
+const now=new Date();
+document.getElementById('td').textContent=`${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')} (${days[now.getDay()]})`;
+
+// 분기별 차트
+const quarters=[{q:'1분기',v:2},{q:'2분기',v:1},{q:'3분기',v:0},{q:'4분기',v:0}];
+const mx=Math.max(...quarters.map(d=>d.v),1);
+const chartEl=document.getElementById('chart');
+quarters.forEach(({q,v})=>{
+  const w=document.createElement('div');w.className='bw';
+  const vl=document.createElement('div');vl.className='bval'+(v===0?' zero':'');vl.textContent=v;
+  const b=document.createElement('div');b.className='bar'+(v===0?' z':'');
+  b.style.height=(v===0?6:Math.max(24,Math.round(v/mx*110)))+'px';
+  const l=document.createElement('div');l.className='blbl';l.textContent=q;
+  w.append(vl,b,l);chartEl.appendChild(w);
+});
+
+// 산재율 도넛 + 자동 계산 (재해자/상시근로자 입력값 기반)
+const injVictim=document.getElementById('inj-victim');
+const injWorker=document.getElementById('inj-worker');
+const donutVal=document.querySelector('.donut-val');
+function loadInjury(){
+  try{
+    const s=JSON.parse(localStorage.getItem('en_injury')||'{}');
+    if(s.victim!=null)injVictim.value=s.victim;
+    if(s.worker!=null)injWorker.value=s.worker;
+  }catch(e){}
+}
+function saveInjury(){
+  try{localStorage.setItem('en_injury',JSON.stringify({victim:injVictim.value,worker:injWorker.value}))}catch(e){}
+}
+function updateInjury(){
+  const v=parseFloat(injVictim.value)||0;
+  const w=parseFloat(injWorker.value)||0;
+  const rate=w>0?(v/w*100):0;
+  donutVal.innerHTML=rate.toFixed(2)+'<span style="font-size:14px">%</span>';
+  const circ=2*Math.PI*50;
+  const off=circ-(Math.min(rate,100)/100)*circ;
+  document.getElementById('donut-arc').style.strokeDashoffset=off;
+  saveInjury();
+}
+loadInjury();
+injVictim.addEventListener('input',updateInjury);
+injWorker.addEventListener('input',updateInjury);
+updateInjury();
+
+// 할 일
+let todos=[];try{todos=JSON.parse(localStorage.getItem('en_todos')||'[]')}catch(e){}
+if(!todos.length)todos=[{t:'순회점검 일지 작성',d:false},{t:'위험성평가 검토',d:true}];
+function saveTodos(){try{localStorage.setItem('en_todos',JSON.stringify(todos))}catch(e){}}
+function renderTodos(){
+  const list=document.getElementById('tlist'),cnt=document.getElementById('tcnt');
+  list.innerHTML='';
+  cnt.textContent=todos.filter(t=>!t.d).length+'개 남음';
+  for(let i=0;i<5;i++){
+    const row=document.createElement('div');
+    if(i<todos.length){
+      const t=todos[i];
+      row.className='tr'+(t.d?' dn':'');
+      const chk=document.createElement('div');chk.className='chk'+(t.d?' on':'');chk.textContent=t.d?'✓':'';
+      chk.onclick=(idx=>()=>{todos[idx].d=!todos[idx].d;saveTodos();renderTodos();})(i);
+      const sp=document.createElement('span');sp.textContent=t.t;sp.style.flex='1';
+      const del=document.createElement('button');del.className='tdel';del.textContent='✕';
+      del.onclick=(idx=>()=>{todos.splice(idx,1);saveTodos();renderTodos();})(i);
+      row.append(chk,sp,del);
+    } else {row.className='tr empty';row.textContent=`${i+1}번 슬롯 비어있음`;}
+    list.appendChild(row);
+  }
+}
+function addTodo(){
+  const inp=document.getElementById('tinp');
+  if(!inp.value.trim()||todos.length>=5)return;
+  todos.push({t:inp.value.trim(),d:false});inp.value='';saveTodos();renderTodos();
+}
+document.getElementById('tinp').addEventListener('keydown',e=>{if(e.key==='Enter')addTodo();});
+renderTodos();
+
+// 달력 + 일정
+let calYear=now.getFullYear(),calMonth=now.getMonth(),selectedDate=null,events={};
+try{events=JSON.parse(localStorage.getItem('en_events')||'{}')}catch(e){}
+function saveEvents(){try{localStorage.setItem('en_events',JSON.stringify(events))}catch(e){}}
+function dateKey(y,m,d){return`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`}
+function renderCal(){
+  document.getElementById('cal-title').textContent=`${calYear}년 ${calMonth+1}월`;
+  const head=document.getElementById('cal-head');head.innerHTML='';
+  ['일','월','화','수','목','금','토'].forEach((d,i)=>{
+    const el=document.createElement('div');el.className='cal-dh'+(i===0?' sun':i===6?' sat':'');el.textContent=d;head.appendChild(el);
+  });
+  const body=document.getElementById('cal-body');body.innerHTML='';
+  const first=new Date(calYear,calMonth,1).getDay();
+  const last=new Date(calYear,calMonth+1,0).getDate();
+  const prevLast=new Date(calYear,calMonth,0).getDate();
+  for(let i=0;i<42;i++){
+    const el=document.createElement('div');let d,isOther=false;const dow=i%7;
+    if(i<first){d=prevLast-first+i+1;isOther=true;}
+    else if(i>=first+last){d=i-first-last+1;isOther=true;}
+    else d=i-first+1;
+    let cls='cal-d';
+    if(isOther)cls+=' other';
+    const isToday=!isOther&&d===now.getDate()&&calMonth===now.getMonth()&&calYear===now.getFullYear();
+    const key=isOther?null:dateKey(calYear,calMonth,d);
+    if(isToday)cls+=' today';
+    else if(key&&key===selectedDate)cls+=' selected';
+    else if(dow===0&&!isOther)cls+=' sun';
+    else if(dow===6&&!isOther)cls+=' sat';
+    if(key&&events[key]&&events[key].length)cls+=' has-event';
+    el.className=cls;
+    const dn=document.createElement('div');dn.className='dnum';dn.textContent=d;el.appendChild(dn);
+    if(!isOther)el.onclick=()=>{selectedDate=key;renderCal();renderEvents();};
+    body.appendChild(el);
+  }
+}
+function renderEvents(){
+  const area=document.getElementById('event-area');area.innerHTML='';
+  if(!selectedDate){area.innerHTML='<div class="event-empty">날짜를 선택하면 일정을 볼 수 있어요</div>';return;}
+  const [y,m,d]=selectedDate.split('-');
+  const lbl=document.createElement('div');lbl.className='event-date-lbl';lbl.textContent=`${parseInt(m)}월 ${parseInt(d)}일 일정`;area.appendChild(lbl);
+  const list=events[selectedDate]||[];
+  if(!list.length){area.innerHTML+='<div class="event-empty">등록된 일정이 없습니다</div>';return;}
+  list.forEach((ev,idx)=>{
+    const item=document.createElement('div');item.className='event-item';
+    const dot=document.createElement('div');dot.className='event-dot';
+    const txt=document.createElement('span');txt.textContent=ev;txt.style.flex='1';
+    const del=document.createElement('button');del.className='event-del';del.textContent='✕';
+    del.onclick=()=>{events[selectedDate].splice(idx,1);if(!events[selectedDate].length)delete events[selectedDate];saveEvents();renderCal();renderEvents();};
+    item.append(dot,txt,del);area.appendChild(item);
+  });
+}
+function addEvent(){
+  const inp=document.getElementById('einp');
+  if(!inp.value.trim()||!selectedDate)return;
+  if(!events[selectedDate])events[selectedDate]=[];
+  events[selectedDate].push(inp.value.trim());inp.value='';saveEvents();renderCal();renderEvents();
+}
+document.getElementById('einp').addEventListener('keydown',e=>{if(e.key==='Enter')addEvent();});
+document.getElementById('cal-prev').onclick=()=>{calMonth--;if(calMonth<0){calMonth=11;calYear--;}renderCal();};
+document.getElementById('cal-next').onclick=()=>{calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderCal();};
+selectedDate=dateKey(now.getFullYear(),now.getMonth(),now.getDate());
+renderCal();renderEvents();
+
+// 날씨
+fetch('https://api.open-meteo.com/v1/forecast?latitude=37.2967&longitude=127.6389&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&wind_speed_unit=ms&timezone=Asia%2FSeoul')
+.then(r=>r.json()).then(d=>{
+  const c=d.current;
+  const temp=Math.round(c.temperature_2m*10)/10,feel=Math.round(c.apparent_temperature*10)/10;
+  const hum=Math.round(c.relative_humidity_2m),wind=Math.round(c.wind_speed_10m*10)/10,code=c.weather_code;
+  document.getElementById('wt').textContent=temp+'°';
+  document.getElementById('wf').textContent=feel+'°';
+  document.getElementById('wh2').textContent=hum+'%';
+  document.getElementById('ww').textContent=wind;
+  const icons={0:'☀️',1:'🌤️',2:'⛅',3:'☁️',45:'🌫️',51:'🌦️',61:'🌧️',71:'🌨️',80:'🌧️',95:'⛈️'};
+  const descs={0:'맑음',1:'대체로 맑음',2:'구름 조금',3:'흐림',45:'안개',51:'이슬비',61:'비',71:'눈',80:'소나기',95:'뇌우'};
+  const nc=Object.keys(icons).map(Number).reduce((a,b)=>Math.abs(b-code)<Math.abs(a-code)?b:a);
+  document.getElementById('wi').textContent=icons[nc]||'🌤️';
+  document.getElementById('wd').textContent=descs[nc]||'--';
+  const hp=document.getElementById('hp');
+  if(temp>=35){hp.className='hpill hd';hp.textContent='⚠ 온열질환 위험 — 야외작업 중지 검토';}
+  else if(temp>=33){hp.className='hpill hw';hp.textContent='온열질환 경고 — 수분 보충·휴식 필요';}
+  else if(temp>=31){hp.className='hpill hw';hp.textContent='온열질환 주의 — 고온 환경 모니터링';}
+  else{hp.className='hpill ho';hp.textContent='온열질환 위험 없음';}
+}).catch(()=>{document.getElementById('wd').textContent='날씨 실패';});
+
+try{const r=localStorage.getItem('en_recent');if(r)document.getElementById('rlbl').textContent=r;}catch(e){}
+</script>
+</body>
+</html>
