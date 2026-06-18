@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>E&ONE 관리감독자 안전포털</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --navy:#16263f;
+  --orange:#D97757;
+  --blue:#185fa5;
+  --blue-bg:#e6f1fb;
+  --orange-bg:#faece7;
+  --bg:#eef1f5;
+  --text:#1a2332;
+  --muted:#94a3b8;
+  --border:#e6eaef;
+}
+html,body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+.sup-top{
+  background:linear-gradient(180deg,#1b2e4a,#16263f);
+  padding:22px 24px;display:flex;align-items:center;gap:14px;
+  box-shadow:0 2px 12px rgba(15,28,48,0.12);
+}
+.sup-logo{
+  background:linear-gradient(135deg,#D97757,#c2654a);color:#fff;
+  font-size:14px;font-weight:700;padding:8px 13px;border-radius:11px;
+  letter-spacing:0.3px;flex-shrink:0;
+  box-shadow:0 4px 12px rgba(217,119,87,0.35);
+}
+.sup-ttl{color:#fff;font-size:20px;font-weight:700}
+.sup-sub{color:#9fb0c8;font-size:13px;margin-top:4px}
+
+.sup-body{max-width:920px;margin:0 auto;padding:24px 20px 40px}
+
+.sec-head{display:flex;align-items:center;gap:10px;margin:8px 2px 16px}
+.sec-bar{width:5px;height:22px;border-radius:3px;flex-shrink:0}
+.sec-bar.view{background:var(--blue)}
+.sec-bar.submit{background:var(--orange)}
+.sec-ttl{font-size:18px;font-weight:700;color:var(--text)}
+.sec-ttl small{font-size:13px;color:var(--muted);font-weight:400;margin-left:8px}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:14px;margin-bottom:30px;
+}
+
+.tile{
+  background:#fff;border-radius:18px;padding:24px 16px;
+  display:flex;flex-direction:column;align-items:center;gap:14px;
+  cursor:pointer;border:1px solid var(--border);
+  transition:transform 0.15s,box-shadow 0.15s;
+  text-align:center;text-decoration:none;
+}
+.tile:hover{transform:translateY(-4px);box-shadow:0 10px 26px rgba(22,38,63,0.12)}
+.tile:active{transform:translateY(-1px)}
+.tile-ic{width:66px;height:66px;border-radius:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tile-ic i{font-size:33px}
+.view .tile-ic{background:var(--blue-bg)}
+.view .tile-ic i{color:var(--blue)}
+.submit .tile-ic{background:var(--orange-bg)}
+.submit .tile-ic i{color:#c2654a}
+.tile-lbl{font-size:16px;font-weight:700;color:var(--text);line-height:1.35}
+.tile-tag{font-size:12px;padding:3px 11px;border-radius:20px;font-weight:700}
+.view .tile-tag{background:var(--blue-bg);color:var(--blue)}
+.submit .tile-tag{background:var(--orange-bg);color:#c2654a}
+
+@media(max-width:520px){
+  .sup-ttl{font-size:18px}
+  .grid{grid-template-columns:repeat(2,1fr);gap:11px}
+  .tile{padding:20px 10px;gap:11px}
+  .tile-ic{width:58px;height:58px}
+  .tile-ic i{font-size:28px}
+  .tile-lbl{font-size:15px}
+}
+</style>
+</head>
+<body>
+
+<header class="sup-top">
+  <span class="sup-logo">E&ONE</span>
+  <div>
+    <div class="sup-ttl">관리감독자 안전포털</div>
+    <div class="sup-sub">여주물류센터 · 보고 싶은 항목을 눌러주세요</div>
+  </div>
+</header>
+
+<main class="sup-body">
+
+  <div class="sec-head">
+    <div class="sec-bar view"></div>
+    <div class="sec-ttl">자료 보기<small>누르면 바로 열립니다</small></div>
+  </div>
+  <div class="grid view">
+    <a class="tile" href="#"><div class="tile-ic"><i class="ti ti-temperature-sun"></i></div><div class="tile-lbl">온열질환 SOP</div><span class="tile-tag">열람</span></a>
+    <a class="tile" href="#"><div class="tile-ic"><i class="ti ti-clipboard-list"></i></div><div class="tile-lbl">작업계획서</div><span class="tile-tag">열람</span></a>
+    <a class="tile" href="#"><div class="tile-ic"><i class="ti ti-school"></i></div><div class="tile-lbl">교육자료</div><span class="tile-tag">열람</span></a>
+    <a class="tile" href="#"><div class="tile-ic"><i class="ti ti-files"></i></div><div class="tile-lbl">각종 서식</div><span class="tile-tag">열람</span></a>
+  </div>
+
+  <div class="sec-head">
+    <div class="sec-bar submit"></div>
+    <div class="sec-ttl">제출 · 신청<small>작성해서 안전팀에 보냅니다</small></div>
+  </div>
+  <div class="grid submit">
+    <a class="tile" href="#"><div class="tile-ic"><i class="ti ti-forklift"></i></div><div class="tile-lbl">물류장비<br>점검 보고</div><span class="tile-tag">제출</span></a>
+    <a class="tile" href="#"><div class="tile-ic"><i class="ti ti-shield-check"></i></div><div class="tile-lbl">보호구 신청</div><span class="tile-tag">제출</span></a>
+    <a class="tile" href="#"><div class="tile-ic"><i class="ti ti-alert-triangle"></i></div><div class="tile-lbl">사고보고서<br>제출</div><span class="tile-tag">제출</span></a>
+    <a class="tile" href="#"><div class="tile-ic"><i class="ti ti-checkup-list"></i></div><div class="tile-lbl">위험성평가<br>교육</div><span class="tile-tag">제출</span></a>
+  </div>
+
+</main>
+
+</body>
+</html>
