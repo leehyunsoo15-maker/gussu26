@@ -1,6 +1,7 @@
-const CACHE_NAME = 'seomu-v1';
+const CACHE_NAME = 'seomu-v2';
 const ASSETS = [
   './index.html',
+  './attendance.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png'
