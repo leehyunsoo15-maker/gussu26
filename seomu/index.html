@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1f4e79">
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./service-worker.js');
+  }
+</script>
+<title>서무 경비장부</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{--bg:#f4f6f9;--card:#ffffff;--text:#1b2a3a;--muted:#5d6f82;--border:#d8e0e8;--accent:#1f4e79;--accent-soft:#e3edf7;--warn:#b45309;--warn-bg:#fff4e0;--danger:#b42318;--danger-bg:#fdecea;--ok:#1a7f4b;--ok-bg:#e6f4ec;--radius:12px;}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0f1720;--card:#18222e;--text:#e4ebf2;--muted:#9aabbc;--border:#2c3a48;--accent:#7fb2e5;--accent-soft:#1f3347;--warn:#f0b35a;--warn-bg:#3a2b12;--danger:#f2877c;--danger-bg:#3d1c19;--ok:#6fcf97;--ok-bg:#163326;}}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:0 16px 80px;}
+header{max-width:960px;margin:0 auto;padding:20px 0 12px;}
+header h1{font-size:1.35rem;}
+header p{color:var(--muted);font-size:.85rem;margin-top:2px;}
+nav{max-width:960px;margin:0 auto 16px;display:flex;gap:6px;overflow-x:auto;}
+nav button{flex:1;min-width:84px;padding:10px 8px;border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:10px;font:inherit;font-size:.9rem;cursor:pointer;}
+nav button.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) nav button.active{color:#0f1720;}}
+main{max-width:960px;margin:0 auto;}
+section{display:none;}
+section.active{display:block;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px;}
+.card h2{font-size:1rem;margin-bottom:12px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;}
+label{display:flex;flex-direction:column;gap:4px;font-size:.82rem;color:var(--muted);}
+label.inline{flex-direction:row;align-items:center;gap:8px;color:var(--text);font-size:.9rem;}
+input,select,textarea{font:inherit;font-size:.95rem;padding:9px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);width:100%;}
+input[type=checkbox]{width:18px;height:18px;}
+.split{font-size:.85rem;color:var(--muted);margin-top:8px;}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
+.btn{padding:10px 16px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:#fff;font:inherit;font-size:.9rem;cursor:pointer;}
+.btn.ghost{background:transparent;color:var(--accent);}
+.btn.danger{background:transparent;color:var(--danger);border-color:var(--danger);}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn:not(.ghost):not(.danger){color:#0f1720;}}
+.alert{padding:10px 12px;border-radius:8px;font-size:.85rem;margin-top:6px;line-height:1.5;}
+.alert.warn{background:var(--warn-bg);color:var(--warn);}
+.alert.danger{background:var(--danger-bg);color:var(--danger);}
+.alert.ok{background:var(--ok-bg);color:var(--ok);}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin-bottom:12px;}
+.toolbar label{flex:1;min-width:140px;}
+.list{display:flex;flex-direction:column;gap:8px;}
+.item{border:1px solid var(--border);border-radius:10px;padding:12px;background:var(--card);}
+.item .top{display:flex;justify-content:space-between;gap:8px;align-items:baseline;}
+.item .amt{font-weight:700;white-space:nowrap;}
+.item .amt.in{color:var(--ok);}
+.item .meta{font-size:.8rem;color:var(--muted);margin-top:4px;}
+.item .tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;}
+.tag{font-size:.72rem;padding:2px 8px;border-radius:99px;background:var(--accent-soft);color:var(--accent);}
+.tag.warn{background:var(--warn-bg);color:var(--warn);}
+.tag.danger{background:var(--danger-bg);color:var(--danger);}
+.item .acts{display:flex;gap:6px;margin-top:8px;}
+.item .acts button{font:inherit;font-size:.8rem;padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);cursor:pointer;}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px;}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;}
+.kpi .k{font-size:.78rem;color:var(--muted);}
+.kpi .v{font-size:1.15rem;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums;}
+table{width:100%;border-collapse:collapse;font-size:.88rem;}
+th,td{padding:8px 6px;}
+th{white-space:nowrap;}
+th,td{border-bottom:1px solid var(--border);text-align:left;}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;}
+.tablewrap{overflow-x:auto;}
+.empty{color:var(--muted);font-size:.9rem;text-align:center;padding:24px 0;}
+.note{font-size:.8rem;color:var(--muted);line-height:1.6;}
+.note li{margin-left:18px;}
+.print-head{display:none;}
+@media print{
+  body{background:#fff;color:#000;padding:0;}
+  header,nav,.no-print,section:not(#tab-summary){display:none !important;}
+  #tab-summary{display:block !important;}
+  .card,.kpi{border-color:#999;break-inside:avoid;}
+  .print-head{display:block;margin-bottom:12px;}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>서무 경비장부</h1>
+  <p>경비 출납 · 적격증빙 점검 · 전도금 · 월별 집계 · <a href="attendance.html" style="color:var(--accent);">출퇴근·급여 정리 →</a></p>
+</header>
+<nav>
+  <button data-tab="input" class="active">입력</button>
+  <button data-tab="list">내역</button>
+  <button data-tab="summary">월별 집계</button>
+  <button data-tab="settings">설정·백업</button>
+</nav>
+<main>
+
+<!-- 입력 -->
+<section id="tab-input" class="active">
+  <form id="entryForm" class="card" autocomplete="off">
+    <h2 id="formTitle">거래 입력</h2>
+    <div class="grid">
+      <label>일자<input type="date" id="f-date" required></label>
+      <label>구분
+        <select id="f-type">
+          <option value="out">지출</option>
+          <option value="in">전도금 입금</option>
+        </select>
+      </label>
+      <label>금액 (부가세 포함 합계, 원)<input type="text" inputmode="numeric" id="f-amount" required placeholder="0"></label>
+    </div>
+    <div class="grid out-only" style="margin-top:12px;">
+      <label>계정과목<select id="f-account"></select></label>
+      <label>결제수단<select id="f-method"></select></label>
+      <label>증빙 종류<select id="f-evidence"></select></label>
+    </div>
+    <div class="grid" style="margin-top:12px;">
+      <label>적요 (내용)<input type="text" id="f-desc" placeholder="예: 안전화 20족 구입"></label>
+      <label class="out-only">거래처<input type="text" id="f-vendor" placeholder="상호"></label>
+      <label class="out-only">사업자번호<input type="text" inputmode="numeric" id="f-bizno" placeholder="000-00-00000"></label>
+    </div>
+    <div class="out-only" style="margin-top:12px;display:flex;gap:18px;flex-wrap:wrap;">
+      <label class="inline"><input type="checkbox" id="f-vat" checked>과세 거래 (부가세 포함 금액)</label>
+      <label class="inline"><input type="checkbox" id="f-nodeduct">매입세액 불공제</label>
+      <label class="inline"><input type="checkbox" id="f-received" checked>증빙 원본 수취함</label>
+      <label class="inline" id="settledWrap"><input type="checkbox" id="f-settled">개인 선지출 정산 완료</label>
+    </div>
+    <label style="margin-top:12px;">비고<input type="text" id="f-memo"></label>
+    <div class="split out-only" id="splitInfo"></div>
+    <div id="liveWarn"></div>
+    <div class="btns">
+      <button type="submit" class="btn" id="saveBtn">저장</button>
+      <button type="button" class="btn ghost" id="resetBtn">새로 입력</button>
+    </div>
+  </form>
+  <div class="card note">
+    <h2>증빙 점검 기준</h2>
+    <ul>
+      <li>건당 3만원(부가세 포함) 초과 지출은 세금계산서·계산서·신용카드매출전표·현금영수증(지출증빙) 중 하나를 받아야 합니다. 받지 않으면 해당 금액의 2%가 증명서류 수취 불성실 가산세로 붙습니다. (법인세법 제116조, 제75조의5 / 시행령 제158조)</li>
+      <li>기업업무추진비(구 접대비)는 건당 3만원, 경조사비는 20만원을 넘으면 적격증빙이 있어야 손금에 산입됩니다. 신용카드는 법인 명의 카드여야 인정됩니다. (법인세법 제25조 / 시행령 제41조)</li>
+      <li>기업업무추진비 관련 매입세액은 부가세 공제를 받을 수 없어 자동으로 불공제 처리합니다. 비영업용 소형승용차 관련 비용처럼 다른 불공제 항목은 "매입세액 불공제"에 직접 체크하세요.</li>
+      <li>이 앱은 내부 관리용 점검 도구입니다. 최종 세무 판단은 본사 회계팀이나 세무대리인 확인을 거치세요.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 내역 -->
+<section id="tab-list">
+  <div class="card">
+    <div class="toolbar">
+      <label>월<input type="month" id="l-month"></label>
+      <label>필터
+        <select id="l-filter">
+          <option value="all">전체</option>
+          <option value="warn">점검 필요만</option>
+          <option value="unsettled">개인 선지출 미정산</option>
+          <option value="noreceipt">증빙 미수취</option>
+        </select>
+      </label>
+      <label>검색<input type="search" id="l-search" placeholder="적요·거래처"></label>
+    </div>
+    <div id="listBox" class="list"></div>
+  </div>
+</section>
+
+<!-- 월별 집계 -->
+<section id="tab-summary">
+  <div class="print-head">
+    <h2 id="printTitle"></h2>
+    <p id="printSub"></p>
+  </div>
+  <div class="card no-print">
+    <div class="toolbar">
+      <label>월<input type="month" id="s-month"></label>
+      <button class="btn ghost" id="printBtn" type="button">인쇄 / PDF</button>
+      <button class="btn ghost" id="csvBtn" type="button">엑셀(CSV) 내보내기</button>
+    </div>
+  </div>
+  <div class="kpis" id="kpiBox"></div>
+  <div class="card"><h2>계정과목별</h2><div class="tablewrap"><table id="accTable"></table></div></div>
+  <div class="card"><h2>결제수단별</h2><div class="tablewrap"><table id="methodTable"></table></div></div>
+  <div class="card"><h2>전도금(현금) 현황</h2><div class="tablewrap"><table id="cashTable"></table></div></div>
+  <div class="card"><h2>점검 필요 건</h2><div id="warnBox"></div></div>
+</section>
+
+<!-- 설정·백업 -->
+<section id="tab-settings">
+  <div class="card">
+    <h2>기본 정보</h2>
+    <div class="grid">
+      <label>사업장명<input type="text" id="st-site" placeholder="예: 여주물류센터"></label>
+      <label>담당자<input type="text" id="st-owner" placeholder="서무 담당자"></label>
+    </div>
+    <div class="btns"><button class="btn" id="saveSettings" type="button">저장</button></div>
+  </div>
+  <div class="card">
+    <h2>백업 · 복원</h2>
+    <p class="note">데이터는 이 기기의 브라우저에만 저장됩니다. 브라우저 데이터를 지우거나 기기를 바꾸면 사라지니 주기적으로 백업 파일을 받아 두세요.</p>
+    <div class="btns">
+      <button class="btn" id="backupBtn" type="button">백업 파일 받기 (JSON)</button>
+      <button class="btn ghost" id="restoreBtn" type="button">백업 파일로 복원</button>
+      <button class="btn ghost" id="csvAllBtn" type="button">전체 내역 CSV</button>
+      <input type="file" id="restoreFile" accept="application/json,.json" hidden>
+    </div>
+    <div id="backupMsg"></div>
+  </div>
+  <div class="card">
+    <h2>초기화</h2>
+    <div class="btns"><button class="btn danger" id="wipeBtn" type="button">모든 거래 삭제</button></div>
+  </div>
+</section>
+
+</main>
+
+<script>
+// ---------- 기준 데이터 ----------
+const ACCOUNTS = [
+  '복리후생비', '소모품비', '여비교통비', '차량유지비', '통신비', '수도광열비',
+  '수선비', '운반비', '지급수수료', '교육훈련비', '도서인쇄비', '회의비',
+  '안전관리비', '세금과공과', '임직원 경조사비', '기업업무추진비', '기업업무추진비(경조사비)', '잡비'
+];
+// 재화·용역 매입이 아니어서 적격증빙 대상이 아닌 계정
+const NO_EVIDENCE_ACCOUNTS = ['세금과공과', '임직원 경조사비'];
+const ENTERTAIN = ['기업업무추진비', '기업업무추진비(경조사비)'];
+
+const METHODS = {
+  corp: '법인카드',
+  cash: '전도금(현금)',
+  transfer: '계좌이체',
+  personal: '개인카드·개인 선지출'
+};
+const EVIDENCE = {
+  tax: '세금계산서',
+  bill: '계산서(면세)',
+  card: '신용카드매출전표',
+  cashrcpt: '현금영수증(지출증빙)',
+  simple: '간이영수증',
+  invite: '청첩장·부고장',
+  none: '증빙 없음'
+};
+const QUALIFIED = ['tax', 'bill', 'card', 'cashrcpt'];
+const VAT_EVIDENCE = ['tax', 'card', 'cashrcpt'];
+const LIMIT = 30000;
+const ENTERTAIN_CONDOLENCE_LIMIT = 200000;
+
+// ---------- 저장소 ----------
+const KEY = 'seomu-ledger-v1';
+const SKEY = 'seomu-settings-v1';
+function load(key, fallback) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+  catch (e) { return fallback; }
+}
+function persist() {
+  try { localStorage.setItem(KEY, JSON.stringify(entries)); }
+  catch (e) { alert('브라우저에 저장하지 못했습니다. 백업 파일을 받아 두세요.'); }
+}
+let entries = load(KEY, []);
+let settings = load(SKEY, { site: '', owner: '' });
+let editingId = null;
+
+// ---------- 유틸 ----------
+const $ = id => document.getElementById(id);
+const won = n => (Math.round(n) || 0).toLocaleString('ko-KR');
+const parseAmt = s => parseInt(String(s).replace(/[^0-9]/g, ''), 10) || 0;
+const today = () => new Date().toISOString().slice(0, 10);
+const thisMonth = () => today().slice(0, 7);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
+// 공급가액·세액 분리 (합계 ÷ 1.1, 원 단위 반올림)
+function split(e) {
+  if (e.type !== 'out' || !e.vat || !VAT_EVIDENCE.includes(e.evidence)) {
+    return { supply: e.amount, tax: 0, deductible: 0, nonDeductible: 0 };
+  }
+  const supply = Math.round(e.amount / 1.1);
+  const tax = e.amount - supply;
+  const blocked = e.noDeduct || ENTERTAIN.includes(e.account);
+  return { supply, tax, deductible: blocked ? 0 : tax, nonDeductible: blocked ? tax : 0 };
+}
+
+// 거래별 점검 결과 [{level, text}]
+function check(e) {
+  const out = [];
+  if (e.type !== 'out') return out;
+  const qualified = QUALIFIED.includes(e.evidence);
+
+  if (ENTERTAIN.includes(e.account)) {
+    const limit = e.account === '기업업무추진비(경조사비)' ? ENTERTAIN_CONDOLENCE_LIMIT : LIMIT;
+    if (e.amount > limit && !qualified) {
+      out.push({ level: 'danger', text: `기업업무추진비 ${won(limit)}원 초과인데 적격증빙이 없어 손금불산입 대상입니다.` });
+    }
+    if (e.amount > limit && e.evidence === 'card' && e.method === 'personal') {
+      out.push({ level: 'danger', text: '기업업무추진비는 법인 명의 카드로 결제해야 카드전표가 적격증빙으로 인정됩니다.' });
+    }
+  } else if (!NO_EVIDENCE_ACCOUNTS.includes(e.account) && e.amount > LIMIT && !qualified) {
+    out.push({ level: 'danger', text: `3만원 초과 지출인데 적격증빙이 없습니다. 가산세 2%(약 ${won(Math.floor(e.amount * 0.02))}원) 대상입니다.` });
+  }
+  if (e.evidence !== 'none' && !e.received) {
+    out.push({ level: 'warn', text: '증빙 원본을 아직 받지 않았습니다.' });
+  }
+  if (e.method === 'personal' && !e.settled) {
+    out.push({ level: 'warn', text: '개인 선지출 건이 아직 정산되지 않았습니다.' });
+  }
+  if (e.evidence === 'tax' && !e.bizno) {
+    out.push({ level: 'warn', text: '세금계산서 거래는 거래처 사업자번호를 적어 두세요.' });
+  }
+  return out;
+}
+
+// ---------- 탭 ----------
+document.querySelectorAll('nav button').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
+function showTab(name) {
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+  document.querySelectorAll('main section').forEach(s => s.classList.toggle('active', s.id === 'tab-' + name));
+  if (name === 'list') renderList();
+  if (name === 'summary') renderSummary();
+}
+
+// ---------- 입력 폼 ----------
+$('f-account').innerHTML = ACCOUNTS.map(a => `<option>${a}</option>`).join('');
+$('f-method').innerHTML = Object.entries(METHODS).map(([k, v]) => `<option value="${k}">${v}</option>`).join('');
+$('f-evidence').innerHTML = Object.entries(EVIDENCE).map(([k, v]) => `<option value="${k}">${v}</option>`).join('');
+
+function readForm() {
+  return {
+    id: editingId || uid(),
+    date: $('f-date').value,
+    type: $('f-type').value,
+    amount: parseAmt($('f-amount').value),
+    account: $('f-account').value,
+    method: $('f-method').value,
+    evidence: $('f-evidence').value,
+    desc: $('f-desc').value.trim(),
+    vendor: $('f-vendor').value.trim(),
+    bizno: $('f-bizno').value.trim(),
+    vat: $('f-vat').checked,
+    noDeduct: $('f-nodeduct').checked,
+    received: $('f-received').checked,
+    settled: $('f-settled').checked,
+    memo: $('f-memo').value.trim()
+  };
+}
+
+function fillForm(e) {
+  $('f-date').value = e.date;
+  $('f-type').value = e.type;
+  $('f-amount').value = e.amount ? won(e.amount) : '';
+  $('f-account').value = e.account || ACCOUNTS[0];
+  $('f-method').value = e.method || 'corp';
+  $('f-evidence').value = e.evidence || 'card';
+  $('f-desc').value = e.desc || '';
+  $('f-vendor').value = e.vendor || '';
+  $('f-bizno').value = e.bizno || '';
+  $('f-vat').checked = e.vat !== false;
+  $('f-nodeduct').checked = !!e.noDeduct;
+  $('f-received').checked = e.received !== false;
+  $('f-settled').checked = !!e.settled;
+  $('f-memo').value = e.memo || '';
+  refreshForm();
+}
+
+function resetForm() {
+  editingId = null;
+  $('formTitle').textContent = '거래 입력';
+  $('saveBtn').textContent = '저장';
+  fillForm({ date: today(), type: 'out', amount: 0, method: 'corp', evidence: 'card', vat: true, received: true });
+}
+
+function refreshForm() {
+  const e = readForm();
+  const isOut = e.type === 'out';
+  document.querySelectorAll('.out-only').forEach(el => el.style.display = isOut ? '' : 'none');
+  $('settledWrap').style.display = isOut && e.method === 'personal' ? '' : 'none';
+  if (isOut && e.amount) {
+    const s = split(e);
+    $('splitInfo').textContent = s.tax
+      ? `공급가액 ${won(s.supply)}원 · 부가세 ${won(s.tax)}원` + (s.nonDeductible ? ' (불공제)' : ' (공제 대상)')
+      : '부가세 없음 (면세·간이영수증 등)';
+  } else {
+    $('splitInfo').textContent = '';
+  }
+  $('liveWarn').innerHTML = check(e).map(w => `<div class="alert ${w.level}">${esc(w.text)}</div>`).join('');
+}
+
+$('entryForm').addEventListener('input', refreshForm);
+$('entryForm').addEventListener('change', refreshForm);
+$('f-amount').addEventListener('input', ev => {
+  const n = parseAmt(ev.target.value);
+  ev.target.value = n ? won(n) : '';
+});
+$('resetBtn').addEventListener('click', resetForm);
+
+$('entryForm').addEventListener('submit', ev => {
+  ev.preventDefault();
+  const e = readForm();
+  if (!e.date || e.amount <= 0) { alert('일자와 금액을 입력하세요.'); return; }
+  if (e.type === 'in') {
+    Object.assign(e, { account: '', method: 'cash', evidence: 'none', vendor: '', bizno: '', vat: false, noDeduct: false, received: true, settled: false });
+  }
+  const i = entries.findIndex(x => x.id === e.id);
+  if (i >= 0) entries[i] = e; else entries.push(e);
+  persist();
+  const wasEditing = !!editingId;
+  resetForm();
+  if (wasEditing) showTab('list');
+  else $('liveWarn').innerHTML = '<div class="alert ok">저장했습니다.</div>';
+});
+
+// ---------- 내역 ----------
+$('l-month').value = thisMonth();
+['l-month', 'l-filter', 'l-search'].forEach(id => $(id).addEventListener('input', renderList));
+
+function itemHTML(e) {
+  const warns = check(e);
+  const isIn = e.type === 'in';
+  const tags = isIn ? ['<span class="tag">전도금 입금</span>'] : [
+    `<span class="tag">${esc(e.account)}</span>`,
+    `<span class="tag">${esc(METHODS[e.method])}</span>`,
+    `<span class="tag ${QUALIFIED.includes(e.evidence) ? '' : 'warn'}">${esc(EVIDENCE[e.evidence])}</span>`
+  ];
+  return `<div class="item">
+    <div class="top">
+      <div><strong>${esc(e.desc || (isIn ? '전도금 입금' : '(적요 없음)'))}</strong></div>
+      <div class="amt ${isIn ? 'in' : ''}">${isIn ? '+' : ''}${won(e.amount)}원</div>
+    </div>
+    <div class="meta">${esc(e.date)}${e.vendor ? ' · ' + esc(e.vendor) : ''}${e.bizno ? ' (' + esc(e.bizno) + ')' : ''}${e.memo ? ' · ' + esc(e.memo) : ''}</div>
+    <div class="tags">${tags.join('')}</div>
+    ${warns.map(w => `<div class="alert ${w.level}">${esc(w.text)}</div>`).join('')}
+    <div class="acts">
+      <button data-act="edit" data-id="${e.id}">수정</button>
+      ${e.method === 'personal' && !e.settled ? `<button data-act="settle" data-id="${e.id}">정산 완료</button>` : ''}
+      ${!e.received && e.evidence !== 'none' ? `<button data-act="receive" data-id="${e.id}">증빙 수취</button>` : ''}
+      <button data-act="del" data-id="${e.id}">삭제</button>
+    </div>
+  </div>`;
+}
+
+function renderList() {
+  const m = $('l-month').value;
+  const f = $('l-filter').value;
+  const q = $('l-search').value.trim().toLowerCase();
+  const rows = entries
+    .filter(e => !m || e.date.startsWith(m))
+    .filter(e => f === 'all'
+      || (f === 'warn' && check(e).length)
+      || (f === 'unsettled' && e.method === 'personal' && !e.settled)
+      || (f === 'noreceipt' && !e.received && e.evidence !== 'none'))
+    .filter(e => !q || (e.desc + ' ' + e.vendor + ' ' + e.memo).toLowerCase().includes(q))
+    .sort((a, b) => b.date.localeCompare(a.date));
+  $('listBox').innerHTML = rows.length ? rows.map(itemHTML).join('') : '<div class="empty">해당하는 거래가 없습니다.</div>';
+}
+
+// 내역·집계 화면 공통 버튼 처리
+function handleAction(ev, rerender) {
+  const b = ev.target.closest('button[data-act]');
+  if (!b) return;
+  const e = entries.find(x => x.id === b.dataset.id);
+  if (!e) return;
+  if (b.dataset.act === 'edit') {
+    editingId = e.id;
+    fillForm(e);
+    $('formTitle').textContent = '거래 수정';
+    $('saveBtn').textContent = '수정 저장';
+    showTab('input');
+    window.scrollTo(0, 0);
+    return;
+  }
+  if (b.dataset.act === 'del') {
+    if (!confirm('이 거래를 삭제할까요?')) return;
+    entries = entries.filter(x => x.id !== e.id);
+  }
+  if (b.dataset.act === 'settle') e.settled = true;
+  if (b.dataset.act === 'receive') e.received = true;
+  persist();
+  rerender();
+}
+$('listBox').addEventListener('click', ev => handleAction(ev, renderList));
+
+// ---------- 월별 집계 ----------
+$('s-month').value = thisMonth();
+$('s-month').addEventListener('input', renderSummary);
+
+function sumBy(list, keyFn) {
+  const map = new Map();
+  list.forEach(e => {
+    const k = keyFn(e);
+    const s = split(e);
+    const cur = map.get(k) || { count: 0, amount: 0, supply: 0, tax: 0 };
+    cur.count++; cur.amount += e.amount; cur.supply += s.supply; cur.tax += s.tax;
+    map.set(k, cur);
+  });
+  return [...map.entries()].sort((a, b) => b[1].amount - a[1].amount);
+}
+
+function groupTable(rows, label) {
+  if (!rows.length) return '<tr><td class="empty">지출 없음</td></tr>';
+  const t = rows.reduce((a, [, v]) => ({ count: a.count + v.count, amount: a.amount + v.amount, supply: a.supply + v.supply, tax: a.tax + v.tax }), { count: 0, amount: 0, supply: 0, tax: 0 });
+  return `<thead><tr><th>${label}</th><th class="num">건수</th><th class="num">공급가액</th><th class="num">세액</th><th class="num">합계</th></tr></thead>
+    <tbody>${rows.map(([k, v]) => `<tr><td>${esc(k)}</td><td class="num">${v.count}</td><td class="num">${won(v.supply)}</td><td class="num">${won(v.tax)}</td><td class="num">${won(v.amount)}</td></tr>`).join('')}</tbody>
+    <tfoot><tr><th>합계</th><th class="num">${t.count}</th><th class="num">${won(t.supply)}</th><th class="num">${won(t.tax)}</th><th class="num">${won(t.amount)}</th></tr></tfoot>`;
+}
+
+function cashFlow(month) {
+  const isCash = e => e.type === 'in' || e.method === 'cash';
+  const delta = e => e.type === 'in' ? e.amount : -e.amount;
+  const before = entries.filter(e => isCash(e) && e.date < month).reduce((s, e) => s + delta(e), 0);
+  const inMonth = entries.filter(e => isCash(e) && e.date.startsWith(month));
+  const income = inMonth.filter(e => e.type === 'in').reduce((s, e) => s + e.amount, 0);
+  const spent = inMonth.filter(e => e.type === 'out').reduce((s, e) => s + e.amount, 0);
+  return { before, income, spent, after: before + income - spent };
+}
+
+function renderSummary() {
+  const m = $('s-month').value || thisMonth();
+  const outs = entries.filter(e => e.type === 'out' && e.date.startsWith(m));
+  const tot = outs.reduce((a, e) => {
+    const s = split(e);
+    return { amount: a.amount + e.amount, supply: a.supply + s.supply, ded: a.ded + s.deductible, nonded: a.nonded + s.nonDeductible };
+  }, { amount: 0, supply: 0, ded: 0, nonded: 0 });
+  const warnList = outs.filter(e => check(e).length);
+  const unsettled = outs.filter(e => e.method === 'personal' && !e.settled).reduce((s, e) => s + e.amount, 0);
+  const cash = cashFlow(m);
+
+  $('printTitle').textContent = `${settings.site || ''} ${m.replace('-', '년 ')}월 경비 집계`.trim();
+  $('printSub').textContent = `담당: ${settings.owner || '-'} · 출력일 ${today()}`;
+
+  $('kpiBox').innerHTML = [
+    ['지출 합계', won(tot.amount) + '원'],
+    ['공급가액', won(tot.supply) + '원'],
+    ['공제 매입세액', won(tot.ded) + '원'],
+    ['불공제 세액', won(tot.nonded) + '원'],
+    ['전도금 잔액(월말)', won(cash.after) + '원'],
+    ['개인 선지출 미정산', won(unsettled) + '원'],
+    ['점검 필요', warnList.length + '건']
+  ].map(([k, v]) => `<div class="kpi"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
+
+  $('accTable').innerHTML = groupTable(sumBy(outs, e => e.account), '계정과목');
+  $('methodTable').innerHTML = groupTable(sumBy(outs, e => METHODS[e.method]), '결제수단');
+  $('cashTable').innerHTML = `<tbody>
+    <tr><td>전월 이월</td><td class="num">${won(cash.before)}</td></tr>
+    <tr><td>당월 입금</td><td class="num">${won(cash.income)}</td></tr>
+    <tr><td>당월 현금 지출</td><td class="num">${won(cash.spent)}</td></tr>
+    <tr><th>월말 잔액</th><th class="num">${won(cash.after)}</th></tr></tbody>`;
+  $('warnBox').innerHTML = warnList.length
+    ? `<div class="list">${warnList.sort((a, b) => a.date.localeCompare(b.date)).map(itemHTML).join('')}</div>`
+    : '<div class="alert ok">이번 달 점검 필요 건이 없습니다.</div>';
+}
+$('warnBox').addEventListener('click', ev => handleAction(ev, renderSummary));
+$('printBtn').addEventListener('click', () => window.print());
+
+// ---------- 내보내기 ----------
+function download(name, text, type) {
+  const blob = new Blob([text], { type });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+
+function toCSV(list) {
+  const head = ['일자', '구분', '계정과목', '적요', '거래처', '사업자번호', '결제수단', '증빙', '합계금액', '공급가액', '세액', '불공제세액', '증빙수취', '정산완료', '점검사항', '비고'];
+  const cell = v => {
+    const s = String(v ?? '');
+    return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  };
+  const rows = list.slice().sort((a, b) => a.date.localeCompare(b.date)).map(e => {
+    const s = split(e);
+    return [e.date, e.type === 'in' ? '전도금입금' : '지출', e.account, e.desc, e.vendor, e.bizno,
+      e.type === 'in' ? '' : METHODS[e.method], e.type === 'in' ? '' : EVIDENCE[e.evidence],
+      e.amount, s.supply, s.tax, s.nonDeductible, e.received ? 'Y' : 'N',
+      e.method === 'personal' ? (e.settled ? 'Y' : 'N') : '',
+      check(e).map(w => w.text).join(' / '), e.memo].map(cell).join(',');
+  });
+  // 엑셀에서 한글이 깨지지 않도록 BOM 추가
+  return '﻿' + [head.join(','), ...rows].join('\r\n');
+}
+
+$('csvBtn').addEventListener('click', () => {
+  const m = $('s-month').value || thisMonth();
+  download(`경비장부_${m}.csv`, toCSV(entries.filter(e => e.date.startsWith(m))), 'text/csv;charset=utf-8');
+});
+$('csvAllBtn').addEventListener('click', () => download(`경비장부_전체_${today()}.csv`, toCSV(entries), 'text/csv;charset=utf-8'));
+
+// ---------- 설정·백업 ----------
+$('st-site').value = settings.site;
+$('st-owner').value = settings.owner;
+$('saveSettings').addEventListener('click', () => {
+  settings = { site: $('st-site').value.trim(), owner: $('st-owner').value.trim() };
+  try { localStorage.setItem(SKEY, JSON.stringify(settings)); } catch (e) {}
+  $('backupMsg').innerHTML = '';
+  alert('저장했습니다.');
+});
+
+$('backupBtn').addEventListener('click', () => {
+  download(`경비장부_백업_${today()}.json`, JSON.stringify({ app: 'seomu', version: 1, settings, entries }, null, 2), 'application/json');
+});
+$('restoreBtn').addEventListener('click', () => $('restoreFile').click());
+$('restoreFile').addEventListener('change', async ev => {
+  const file = ev.target.files[0];
+  ev.target.value = '';
+  if (!file) return;
+  try {
+    const data = JSON.parse(await file.text());
+    if (data.app !== 'seomu' || !Array.isArray(data.entries)) throw new Error('형식 오류');
+    const merge = confirm(`백업 파일에 거래 ${data.entries.length}건이 있습니다.\n[확인] 현재 데이터에 합치기 / [취소] 현재 데이터를 지우고 덮어쓰기`);
+    if (merge) {
+      const ids = new Set(entries.map(e => e.id));
+      entries = entries.concat(data.entries.filter(e => !ids.has(e.id)));
+    } else {
+      if (!confirm('현재 데이터를 모두 지우고 백업으로 덮어씁니다. 계속할까요?')) return;
+      entries = data.entries;
+      if (data.settings) {
+        settings = data.settings;
+        $('st-site').value = settings.site || '';
+        $('st-owner').value = settings.owner || '';
+        try { localStorage.setItem(SKEY, JSON.stringify(settings)); } catch (e) {}
+      }
+    }
+    persist();
+    $('backupMsg').innerHTML = `<div class="alert ok">복원했습니다. 현재 거래 ${entries.length}건.</div>`;
+  } catch (e) {
+    $('backupMsg').innerHTML = '<div class="alert danger">이 앱의 백업 파일이 아니거나 파일이 손상되었습니다.</div>';
+  }
+});
+
+$('wipeBtn').addEventListener('click', () => {
+  if (!confirm('모든 거래를 삭제합니다. 먼저 백업 파일을 받아 두셨나요?')) return;
+  if (!confirm('정말 삭제할까요? 되돌릴 수 없습니다.')) return;
+  entries = [];
+  persist();
+  alert('삭제했습니다.');
+});
+
+resetForm();
+</script>
+</body>
+</html>
